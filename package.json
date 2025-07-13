@@ -1,0 +1,25 @@
+{
+  "name": "shadymeadows-automation-suite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:non-functional": "npx playwright test ui/tests/non_functional --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.2",
+    "@types/node": "^24.0.10",
+    "typescript": "^5.5.3"
+  },
+  "private": true,
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@faker-js/faker": "^9.9.0",
+    "axe-playwright": "^2.1.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.3.1"
+  }
+}
