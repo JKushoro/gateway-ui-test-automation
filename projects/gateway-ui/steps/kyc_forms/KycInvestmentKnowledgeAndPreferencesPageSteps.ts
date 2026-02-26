@@ -33,9 +33,6 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     await this.answerInvestmentExperience('Basic');
     await this.answerSustainabilityRequirements('Yes - relating to all of their objectives');
     await this.answerSustainabilityAwareness('Yes - they are comfortable proceeding');
-   //   await this.answerSustainabilityAwareness(
-   //     'No - Following discussion with their financial adviser, they have concluded that their financial objectives are more important.'
-   //   );
    await this.assertResponsibleInvestmentFramework();
     await this.answerResponsibleInvestmentFramework('No');
     await this.answerFaithBasedRequirements('No');

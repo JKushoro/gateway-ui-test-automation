@@ -41,15 +41,6 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
   }
 
   /* -------------------- Questions (split into methods) -------------------- */
-  //
-  // // Question 1 – Do you own or rent your [DYNAMIC ADDRESS]?
-  // private async answerOwnOrRentPropertyQuestion(answer: string = 'Owner'): Promise<void> {
-  //   const questionPattern = /do you own or rent .+\?/i;
-  //
-  //   await this.action.setRadioByQuestionPattern(questionPattern, answer);
-  //   this.logInfo(`✓ Answered own or rent property question: ${answer}`);
-  // }
-
   private async answerOwnOrRentPropertyQuestion(answer?: string): Promise<void> {
     await this.action.setRadioByQuestionPattern(/do you own or rent .+\?/i, answer);
     this.logInfo(`✓ Answered own or rent property question: ${answer ?? 'auto'}`);
@@ -82,22 +73,6 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
     await this.action.fillInputByLabel(label, value);
     this.logInfo(`✓ Filled property value: ${value}`);
   }
-
-  // private async fillPurchaseHomeDate(): Promise<void> {
-  //   const label = 'When did you purchase your home?';
-  //
-  //   if (await this.elementNotExists(label)) {
-  //     this.logInfo('Purchase home date field not present, skipping');
-  //     return;
-  //   }
-  //   const moveInDate = dataStore.getValue('kyc.address.moveInDate');
-  //   if (!moveInDate) {
-  //     throw new Error('Move in date not found in dataStore (kyc.address.moveInDate)');
-  //   }
-  //
-  //   const dateUsed = await this.purchaseHomeDatePicker.setAddressMoveInDate(label, moveInDate);
-  //   this.logInfo(`✓ Filled purchase home date: ${dateUsed}`);
-  // }
 
   private async fillPurchaseHomeDate(): Promise<void> {
     const label = 'When did you purchase your home?';

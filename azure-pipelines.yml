@@ -1,0 +1,63 @@
+# Azure DevOps Pipeline for Playwright Test Automation
+# Runs UI tests for the Gateway application using Playwright framework
+
+# Trigger on main/develop branch changes
+trigger:
+- main
+- develop
+
+# Build agent configuration
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Pipeline variables
+variables:
+  node_version: '20'
+
+stages:
+- stage: Build_and_Test
+  displayName: 'Build and Test'
+  jobs:
+  - job: Test
+    displayName: 'Run Tests'
+    steps:
+    
+    # Setup Node.js environment
+    - task: NodeTool@0
+      displayName: 'Use Node.js $(node_version)'
+      inputs:
+        versionSpec: '$(node_version)'
+
+    # Install dependencies
+    - script: npm ci
+      displayName: 'Install dependencies'
+
+    # Install Playwright browsers
+    - script: npx playwright install --with-deps
+      displayName: 'Install Playwright browsers'
+
+    # Execute Playwright tests
+    - script: npx playwright test
+      displayName: 'Run Playwright tests'
+      env:
+        CI: true
+
+# Additional Configuration Options (commented out):
+#
+# To run tests on multiple environments:
+# strategy:
+#   matrix:
+#     development:
+#       TEST_ENV: 'development'
+#     qa:
+#       TEST_ENV: 'qa'
+#     production:
+#       TEST_ENV: 'production'
+#
+# To run tests in parallel:
+# - script: npm run test:parallel
+#   displayName: 'Run Playwright tests (parallel)'
+#
+# To add retry logic for flaky tests:
+# - script: npm run test:retry
+#   displayName: 'Run Playwright tests (with retries)'

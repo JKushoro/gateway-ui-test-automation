@@ -1,0 +1,47 @@
+{
+  "name": "@fairstone/ui-automation-framework",
+  "version": "1.0.0",
+  "description": "Reusable UI Test Automation Framework using Playwright with clean architecture",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "ui-testing",
+    "e2e",
+    "typescript",
+    "page-object-model",
+    "framework"
+  ],
+  "author": "John Kushoro",
+  "license": "MIT",
+  "dependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

@@ -181,44 +181,44 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
       : `${address.buildingNumber} ${address.street}`;
 
     // Address 1
-    if (await this.page.getByText('Address 1', { exact: false }).count()) {
+    await this.ifElementExists('Address 1', async () => {
       await this.action.fillInputByLabel('Address 1', address1);
 
       const input = this.page.getByLabel('Address 1', { exact: false });
       if ((await input.count()) > 0) {
         await expect(input).toHaveValue(address1);
       }
-    }
+    });
 
     // Town/City
-    if (await this.page.getByText('Town or City', { exact: false }).count()) {
+    await this.ifElementExists('Town or City', async () => {
       await this.action.fillInputByLabel('Town or City', address.town);
 
       const input = this.page.getByLabel('Town or City', { exact: false });
       if ((await input.count()) > 0) {
         await expect(input).toHaveValue(address.town);
       }
-    }
+    });
 
     // County
-    if (await this.page.getByText('County', { exact: false }).count()) {
+    await this.ifElementExists('County', async () => {
       await this.action.fillInputByLabel('County', address.county ?? '');
 
       const input = this.page.getByLabel('County', { exact: false });
       if ((await input.count()) > 0) {
         await expect(input).toHaveValue(address.county ?? '');
       }
-    }
+    });
 
     // Postcode
-    if (await this.page.getByText('Postcode', { exact: false }).count()) {
+    await this.ifElementExists('Postcode', async () => {
       await this.action.fillInputByLabel('Postcode', address.postcode);
 
       const input = this.page.getByLabel('Postcode', { exact: false });
       if ((await input.count()) > 0) {
         await expect(input).toHaveValue(address.postcode);
       }
-    }
+    });
 
     // Country (select) — choose specific or random
     await this.selectCountry('United Kingdom of Great Britain and Northern Ireland');

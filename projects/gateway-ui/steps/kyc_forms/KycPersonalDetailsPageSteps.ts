@@ -26,11 +26,25 @@ import { KycPersonalDetailsPageLocators } from '@pages/kycElementLocators/KycPer
  * - Answer Personal Details questions (explicitly)
  * - Fill Children/Dependants details (if shown)
  *
- * Notes for junior testers:
+ * Notes:
  * - Each method does ONE job
  * - Assertions live next to the action they validate
- * - If something is optional, we skip safely and log why
+ * - REQUIRED fields: never swallow errors, never return empty silently
+ * - OPTIONAL fields: skip safely and log why
  */
+
+// =====================================================
+// Types (module scope - correct TypeScript)
+// =====================================================
+type DisplayedKycClient = {
+  title: string;
+  firstName: string;
+  surname: string;
+  fullName: string;
+  dob: string;
+  sexAtBirth: string;
+};
+
 export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Services / Locators
@@ -98,9 +112,9 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   }
 
   // =====================================================
-  // Read + Assert Displayed KYC Client
+  // Read + Assert Displayed KYC Client (REQUIRED)
   // =====================================================
-  private async readAndStoreDisplayedKycClient(): Promise<any> {
+  private async readAndStoreDisplayedKycClient(): Promise<DisplayedKycClient> {
     const title = await this.readAndAssertTitle();
     const { firstName, surname } = await this.readAndAssertNames('First name', 'Surname');
     const dob = await this.readAndAssertDateOfBirth();
@@ -108,7 +122,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
 
     const fullName = `${firstName} ${surname}`.replace(/\s+/g, ' ').trim();
 
-    const displayedKycClient = {
+    const displayedKycClient: DisplayedKycClient = {
       title,
       firstName,
       surname,
@@ -122,12 +136,8 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   }
 
   private async readAndAssertTitle(): Promise<string> {
-    const title = await this.action.getReactSelectValueByLabelStrict('Title').catch(() => '');
-
-    if (title) {
-      await expect(this.page.getByText(title, { exact: false }).first()).toBeVisible();
-    }
-
+    const title = (await this.action.getReactSelectValueByLabelStrict('Title')).trim();
+    expect(title, 'Title should not be empty').not.toBe('');
     return title;
   }
 
@@ -135,44 +145,34 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     firstNameLabel: string,
     surnameLabel: string
   ): Promise<{ firstName: string; surname: string }> {
-    const firstName = await this.action.getInputValueByLabel(firstNameLabel).catch(() => '');
-    const surname = await this.action.getInputValueByLabel(surnameLabel).catch(() => '');
+    const firstNameInput = await this.action.findInputFieldByLabel(firstNameLabel);
+    const surnameInput = await this.action.findInputFieldByLabel(surnameLabel);
 
-    const firstNameInput = this.page.getByLabel(firstNameLabel, { exact: false });
-    if ((await firstNameInput.count()) > 0) {
-      await expect(firstNameInput.first()).toHaveValue(firstName);
-    }
+    await expect(firstNameInput, `"${firstNameLabel}" input should be visible`).toBeVisible();
+    await expect(surnameInput, `"${surnameLabel}" input should be visible`).toBeVisible();
 
-    const surnameInput = this.page.getByLabel(surnameLabel, { exact: false });
-    if ((await surnameInput.count()) > 0) {
-      await expect(surnameInput.first()).toHaveValue(surname);
-    }
+    const firstName = (await firstNameInput.inputValue()).trim();
+    const surname = (await surnameInput.inputValue()).trim();
+
+    expect(firstName, `${firstNameLabel} should not be empty`).not.toBe('');
+    expect(surname, `${surnameLabel} should not be empty`).not.toBe('');
 
     return { firstName, surname };
   }
 
   private async readAndAssertDateOfBirth(): Promise<string> {
-    const dob = await this.action.getInputValueByLabel('Date of birth').catch(() => '');
+    const dobInput = await this.action.findInputFieldByLabel('Date of birth');
+    await expect(dobInput, '"Date of birth" input should be visible').toBeVisible();
 
-    if (dob) {
-      const input = this.page.getByLabel('Date of birth', { exact: false });
-      if ((await input.count()) > 0) {
-        await expect(input.first()).toHaveValue(dob);
-      }
-    }
+    const dob = (await dobInput.inputValue()).trim();
+    expect(dob, 'Date of birth should not be empty').not.toBe('');
 
     return dob;
   }
 
   private async readAndAssertSexAtBirth(): Promise<string> {
-    const sexAtBirth = await this.action
-      .getReactSelectValueByLabelStrict('Sex at birth')
-      .catch(() => '');
-
-    if (sexAtBirth) {
-     await expect(this.page.getByText(sexAtBirth, { exact: false }).first()).toBeVisible();
-    }
-
+    const sexAtBirth = (await this.action.getReactSelectValueByLabelStrict('Sex at birth')).trim();
+    expect(sexAtBirth, 'Sex at birth should not be empty').not.toBe('');
     return sexAtBirth;
   }
 
@@ -181,7 +181,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   private async compareSelectedGatewayVsDisplayedKyc(
     gatewayClient: any,
-    displayedKycClient: any
+    displayedKycClient: DisplayedKycClient
   ): Promise<void> {
     if (gatewayClient.title) {
       expect(displayedKycClient.title).toBe(gatewayClient.title);
@@ -202,7 +202,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     if (gatewayClient.gender) {
       const expected = this.mapGender(gatewayClient.gender);
       if (expected) {
-       expect(displayedKycClient.sexAtBirth).toBe(expected);
+        expect(displayedKycClient.sexAtBirth).toBe(expected);
       }
     }
   }
@@ -228,27 +228,26 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     await this.fillEmailAndAssert(data.email);
     await this.selectPreferredContact('Email');
 
+    // If these are REQUIRED in your journey, keep them strict (no .catch)
     dataStore.setValue(
       'displayed.kyc.contact.mobile',
-      await this.action.getInputValueByLabel('Mobile number').catch(() => '')
+      await this.action.getInputValueByLabel('Mobile number')
     );
     dataStore.setValue(
       'displayed.kyc.contact.email',
-      await this.action.getInputValueByLabel('Email').catch(() => '')
+      await this.action.getInputValueByLabel('Email')
     );
   }
 
   private async fillMobileNumberAndAssert(mobile: string): Promise<void> {
     await this.action.fillInputByLabel('Mobile number', mobile);
-
-    const displayed = await this.action.getInputValueByLabel('Mobile number').catch(() => '');
+    const displayed = (await this.action.getInputValueByLabel('Mobile number')).trim();
     expect(displayed).toBe(mobile);
   }
 
   private async fillEmailAndAssert(email: string): Promise<void> {
     await this.action.fillInputByLabel('Email', email);
-
-    const displayed = await this.action.getInputValueByLabel('Email').catch(() => '');
+    const displayed = (await this.action.getInputValueByLabel('Email')).trim();
     expect(displayed).toBe(email);
   }
 
@@ -270,27 +269,24 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   private async fillCurrentAddress_Address1(): Promise<void> {
     const currentAddress = TestDataGenerator.generateUKAddress({ useRealPostcode: true });
 
-    await this.fillTextByLabelAndAssert(
+    await this.action.fillInputByLabelAndAssert(
       'Address 1',
       `${currentAddress.buildingNumber} ${currentAddress.street}`
     );
 
-    await this.fillTextByLabelAndAssert('Town or City', currentAddress.town);
+    await this.action.fillInputByLabelAndAssert('Town or City', currentAddress.town);
 
     if (currentAddress.county) {
-      await this.fillTextByLabelAndAssert('County', currentAddress.county);
+      await this.action.fillInputByLabelAndAssert('County', currentAddress.county);
     }
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown(
       'Country',
       'United Kingdom of Great Britain and Northern Ireland'
     );
+    expect(chosen, 'Country should be selected').not.toBe('');
 
-    if (chosen) {
-      await expect(this.page.getByText(chosen, { exact: false }).first()).toBeVisible();
-    }
-
-    await this.fillTextByLabelAndAssert('Postcode', currentAddress.postcode);
+    await this.action.fillInputByLabelAndAssert('Postcode', currentAddress.postcode);
 
     const moveInDate = await this.setAddressMoveInDate('Move in date', 6, 20);
     dataStore.setValue('kyc.address1.moveInDate', moveInDate);
@@ -324,7 +320,6 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     await this.setSecondAddressCounty(previousAddress.county);
 
     await this.selectSecondAddressCountry('United Kingdom of Great Britain and Northern Ireland');
-
     await this.setSecondAddressPostcode(previousAddress.postcode);
 
     const moveInDate2 = await this.setSecondAddressMoveInDate(6, 20);
@@ -340,7 +335,6 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Previous Address (Address 2) - Field Helpers
   // =====================================================
-
   private async setSecondAddressLine1(value: string): Promise<void> {
     const input = this.locators.addressLine1;
 
@@ -419,7 +413,6 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   private async setSecondAddressPostcode(postcode: string): Promise<void> {
     const input = this.locators.postcode;
 
-    // If postcode is required in Address 2, use `await expect(input).toBeVisible();` instead.
     if (!(await input.count())) {
       this.logInfo('↷ Skipped Previous address postcode (not displayed)');
       return;
@@ -452,9 +445,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
 
     await option.click();
 
-    // Assert selection actually applied (prevents silent failures)
     await expect(this.page.getByText(value, { exact: false }).first()).toBeVisible();
-
     this.logInfo(`✓ Previous address (Address 2) country selected: ${value}`);
   }
 
@@ -681,13 +672,6 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Shared Helpers (Small + Focused)
   // =====================================================
-  private async fillTextByLabelAndAssert(label: string, value: string): Promise<void> {
-    await this.action.fillInputByLabel(label, value);
-
-    const displayed = await this.action.getInputValueByLabel(label).catch(() => '');
-    expect(displayed).toBe(value);
-  }
-
   private async setAddressMoveInDate(
     labelText: string,
     minYearsAgo: number,
@@ -701,10 +685,8 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
       date
     );
 
-    const displayed = await this.action.getInputValueByLabel(labelText).catch(() => '');
-    if (displayed) {
-      expect(displayed).toBe(date);
-    }
+    const displayed = (await this.action.getInputValueByLabel(labelText)).trim();
+    expect(displayed).toBe(date);
 
     return date;
   }
@@ -723,8 +705,5 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     return this.postcodeLookup.kycAddressSearchField(labelText, postcode);
   }
 }
-
-
-
 
 

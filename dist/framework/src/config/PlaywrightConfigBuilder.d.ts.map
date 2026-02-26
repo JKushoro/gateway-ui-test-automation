@@ -1,0 +1,1 @@
+{"version":3,"file":"PlaywrightConfigBuilder.d.ts","sourceRoot":"","sources":["../../../../framework/src/config/PlaywrightConfigBuilder.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,oBAAoB,EAAE,MAAM,kBAAkB,CAAC;AAGxD;;;GAGG;AACH,qBAAa,uBAAuB;IAElC;;OAEG;WACW,WAAW,CAAC,qBAAqB,CAAC,EAAE,OAAO,CAAC,oBAAoB,CAAC,GAAG,oBAAoB;IAsCtG;;OAEG;WACW,WAAW,CAAC,WAAW,EAAE,MAAM,GAAG,oBAAoB;CAKrE"}
