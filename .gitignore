@@ -9,6 +9,7 @@ yarn-error.log*
 .pnp.js
 
 .vscode/*
+.idea/
 
 # Playwright
 node_modules/
@@ -17,5 +18,17 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Project-specific test results and reports
+projects/*/test-results/
+projects/*/playwright-report/
+projects/*/tests/*/test-results/
+
 # Environment variables
 .env
+
+# Environment files with credentials (keep template)
+.env.*
+!.env.template
+
+# Ignore Playwright saved session state
+storageState.json

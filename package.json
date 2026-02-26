@@ -1,25 +1,65 @@
 {
-  "name": "shadymeadows-automation-suite",
+  "name": "gateway-ui-tests",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "description": "Gateway UI Tests - Playwright automation testing",
+  "private": true,
   "scripts": {
-    "build": "tsc",
-    "test": "npx playwright test",
-    "test:headed": "npx playwright test --headed",
-    "test:non-functional": "npx playwright test ui/tests/non_functional --headed"
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:smoke": "playwright test tests/smoke",
+    "test:smoke:headed": "playwright test tests/smoke --headed",
+    "test:qa": "cross-env TEST_ENV=qa playwright test",
+    "install:browsers": "playwright install",
+    "setup": "npm install && npm run install:browsers",
+    "build": "tsc"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2",
     "@types/node": "^24.0.10",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "cross-env": "^10.0.0",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
     "typescript": "^5.5.3"
   },
-  "private": true,
   "dependencies": {
+    "@fairstone/ui-automation-framework": "file:./framework",
     "@axe-core/playwright": "^4.10.2",
-    "@faker-js/faker": "^9.9.0",
-    "axe-playwright": "^2.1.0",
-    "date-fns": "^4.1.0",
-    "dotenv": "^16.3.1"
+    "axe-playwright": "^2.1.0"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "ui-testing",
+    "e2e",
+    "typescript",
+    "gateway-ui"
+  ],
+  "author": "John Kushoro",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run type-check"
+    }
   }
 }

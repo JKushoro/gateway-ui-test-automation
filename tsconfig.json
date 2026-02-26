@@ -1,14 +1,59 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ES2020",
     "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2020", "DOM"],
+    "outDir": "./dist",
+    "rootDir": ".",
     "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@framework/*": ["./framework/src/*"],
+      "@gateway/*": ["./projects/gateway-ui/*"],
+      "@components/*": ["./projects/gateway-ui/pages/componentsLocator/*"],
+      "@config/*": ["./projects/gateway-ui/config/*"],
+      "@pages/*": ["./projects/gateway-ui/pages/*"],
+      "@steps/*": ["./projects/gateway-ui/steps/*"],
+      "@setup/*": ["./projects/gateway-ui/setup/*"],
+      "@tests/*": ["./projects/gateway-ui/tests/*"],
+      "@utils/*": ["./projects/gateway-ui/utils/*"]
+    }
   },
   "include": [
-    "ui"
-  ]
+    "framework/src",
+    "projects/gateway-ui"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test-results",
+    "playwright-report",
+    "blob-report",
+    "coverage"
+  ],
+  "ts-node": {
+    "esm": true
+  }
 }
