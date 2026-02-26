@@ -28,7 +28,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   }
 
   private async answerInvestmentKnowledgeAndPreferencesQuestions(): Promise<void> {
-    await this.answerInvestmentKnowledgeAndPreference('No');
+    await this.answerInvestmentKnowledgeAndPreference('Yes');
     await this.answerClientClassification('Retail');
     await this.answerInvestmentExperience('Basic');
     await this.answerSustainabilityRequirements('Yes - relating to all of their objectives');

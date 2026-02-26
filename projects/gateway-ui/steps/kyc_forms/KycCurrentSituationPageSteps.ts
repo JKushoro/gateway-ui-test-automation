@@ -10,14 +10,15 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   }
 
   /* -------------------- Verification -------------------- */
+
   public async verifyCurrentSituationHeading(): Promise<void> {
     await this.assert.assertPageURLContains('page=current-situation');
-
     await expect(this.heading).toBeVisible({ timeout: 15_000 });
     await expect(this.heading).toHaveText('Current situation');
   }
 
   /* -------------------- Main Flow -------------------- */
+
   public async completeKYCCurrentSituation(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
     await this.verifyCurrentSituationHeading();
@@ -27,220 +28,136 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   }
 
   private async answerCurrentSituationQuestions(): Promise<void> {
-    await this.selectEmploymentStatus();
+    //await this.selectEmploymentStatus('Semi-Retired');
+    await this.selectEmploymentStatus('Unemployed');
     await this.selectEmploymentContract();
     await this.answerRetirementAndAge('No');
-    await this.fillRetirementAge();
+    await this.fillRetirementAge('When do you plan to retire?', '75');
     await this.selectOverallHealth();
     await this.answerMedicalConditions();
 
-    const occupation = await this.fillOccupation();
-    const currentEmployer = await this.fillCurrentEmployer();
+    const occupation = await this.fillOccupation(
+      'What is your occupation?',
+      dataStore.getValue<string>('kyc.currentSituation.occupation')
+    );
+
+    const currentEmployer = await this.fillCurrentEmployer(
+      'Who is your current employer?',
+      dataStore.getValue<string>('kyc.currentSituation.currentEmployer')
+    );
+
     await this.selectEmploymentChangeExpected();
     await this.answerSmoking12Months();
-    await this.answerWillQuestion();
-    await this.answerPowerOfAttorney();
+    await this.answerWillQuestion('Yes');
+    await this.answerPowerOfAttorney('Yes');
     await this.selectPowerOfAttorneyType('Enduring POA', 'Lasting POA Both', 'Ordinary POA');
+
     await this.action.clickButtonByText('Save & Continue');
 
+    // Persist both individually (recommended)
+    dataStore.setValue('kyc.currentSituation.occupation', occupation);
+    dataStore.setValue('kyc.currentSituation.currentEmployer', currentEmployer);
+
+    // Optional: store combined object
     dataStore.setValue('kyc.currentSituation', {
       occupation,
       currentEmployer,
     });
   }
 
-  /* -------------------- Questions (split into methods) -------------------- */
+  /* -------------------- Question Methods -------------------- */
 
-  private async selectEmploymentStatus(): Promise<void> {
-    const selectedValue = 'Unemployed';
-
-    this.logInfo(`Selecting employment status: ${selectedValue}`);
-    await this.action.chooseFromQuestionReactSelectDropdown(
+  private async selectEmploymentStatus(answer?: string): Promise<string> {
+    return await this.action.chooseFromQuestionReactSelectDropdown(
       'What is your current employment status?',
-      selectedValue
+      answer
     );
   }
 
-  /** (1) Employment contract */
-  private async selectEmploymentContract(): Promise<string> {
-    const question = 'What type of employment contract do you have?';
+  private async selectEmploymentContract(answer?: string): Promise<string> {
+    if (await this.elementNotExists('What type of employment contract do you have?')) return '';
 
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    )
-      return '';
-
-    const selected = await this.action.chooseFromQuestionReactSelectDropdown(question);
-    this.logInfo(`Selected employment contract: ${selected}`);
-    return selected;
+    return await this.action.chooseFromQuestionReactSelectDropdown(
+      'What type of employment contract do you have?',
+      answer
+    );
   }
 
-  /** () Retirement age question */
   private async answerRetirementAndAge(answer?: string): Promise<void> {
-    const question = this.page
-      .getByText('Do you plan to retire at this age?', { exact: false })
-      .first();
-    if (!(await question.count())) return;
+    const question = 'Do you plan to retire at this age?';
+    if (!(await this.page.getByText(question, { exact: false }).count())) return;
 
-    await expect(question).toBeVisible();
-    await this.action.setRadioByQuestion('Do you plan to retire at this age?', answer);
-
-    this.logInfo(`✓ Answered retirement age question:: ${answer}`);
+    await this.action.setRadioByQuestion(question, answer);
   }
 
-  /** () Retirement age input */
-  private async fillRetirementAge(): Promise<string> {
-    const label = 'When do you plan to retire?';
-    const value = '75';
-
-    if (
-      !(await this.page
-        .getByText(label, { exact: false })
-        .count()
-        .catch(() => 0))
-    )
-      return value;
-
-    await this.action.fillInputByLabel(label, value);
-    return value;
+  private async fillRetirementAge(label: string, value: string): Promise<void> {
+    if (await this.elementNotExists(label)) return;
+    await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  /** () Occupation */
-  private async fillOccupation(): Promise<string> {
-    const occupation = await TestDataGenerator.occupationAsync();
-    this.logInfo(`Filling occupation: ${occupation}`);
+  /* -------------------- Occupation / Employer -------------------- */
 
-    if (
-      !(await this.page
-        .getByText('What is your occupation?', { exact: false })
-        .count()
-        .catch(() => 0))
-    )
-      return occupation;
+  private async fillOccupation(label: string, value?: string): Promise<string> {
+    const occupation = value ?? (await TestDataGenerator.occupationAsync());
+    if (await this.elementNotExists(label)) return occupation;
 
-    await this.action.fillInputByLabel('What is your occupation?', occupation);
+    await this.action.fillInputByLabelAndAssert(label, occupation);
     return occupation;
   }
 
-  /** () Current employer */
-  private async fillCurrentEmployer(): Promise<string> {
-    const employer = await TestDataGenerator.employerAsync();
-    this.logInfo(`Filling current employer: ${employer}`);
+  private async fillCurrentEmployer(label: string, value?: string): Promise<string> {
+    const employer = value ?? (await TestDataGenerator.employerAsync());
+    if (await this.elementNotExists(label)) return employer;
 
-    if (
-      !(await this.page
-        .getByText('Who is your current employer?', { exact: false })
-        .count()
-        .catch(() => 0))
-    )
-      return employer;
-
-    await this.action.fillInputByLabel('Who is your current employer?', employer);
+    await this.action.fillInputByLabelAndAssert(label, employer);
     return employer;
   }
 
-  /** (4) Expected employment changes */
+  /* -------------------- Remaining Questions -------------------- */
+
   private async selectEmploymentChangeExpected(): Promise<string> {
     const question = 'Are there any expected changes to your employment in the near future?';
 
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    )
-      return '';
+    if (!(await this.page.getByText(question, { exact: false }).count())) return '';
 
-    const selected = await this.action.chooseFromLabeledReactSelectDropdown(question);
-    this.logInfo(`Selected employment change expected: ${selected}`);
-    return selected;
+    return await this.action.chooseFromQuestionReactSelectDropdown(question);
   }
 
-  /** () Overall health */
   private async selectOverallHealth(): Promise<void> {
-    const selectedValue = '';
-
-    const chosen = await this.action.chooseFromQuestionReactSelectDropdown(
-      'How would you describe your overall health?',
-      selectedValue
+    await this.action.chooseFromQuestionReactSelectDropdown(
+      'How would you describe your overall health?'
     );
-
-    this.logInfo(`Your overall health description: ${chosen}`);
   }
 
-  /** (7) Medical conditions */
   private async answerMedicalConditions(answer: string = 'No'): Promise<void> {
     const question = 'Do you have any known medical conditions?';
-
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    ) {
-      this.logInfo('↷ Skipped medical conditions question (not displayed)');
-      return;
-    }
+    if (!(await this.page.getByText(question, { exact: false }).count())) return;
 
     await this.action.setRadioByQuestion(question, answer);
-    this.logInfo(`✓ Answered known medical conditions: ${answer}`);
   }
 
-  /** (8) Smoking/Vaping in past 12 months */
   private async answerSmoking12Months(answer: string = 'Yes'): Promise<void> {
     const question = 'Do you smoke or vape, or have you done so in the past 12 months?';
 
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    ) {
-      this.logInfo('↷ Skipped smoking/vaping question (not displayed)');
-      return;
-    }
+    if (!(await this.page.getByText(question, { exact: false }).count())) return;
 
     await this.action.setRadioByQuestion(question, answer);
-    this.logInfo(`✓ Answered smoking/vaping question ${answer}`);
   }
 
-  /** (11a) Up-to-date Will */
-  private async answerWillQuestion(answer: string = 'Yes'): Promise<void> {
-    const question = 'Do you have an up to date Will that reflects your current wishes?';
-
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    ) {
-      this.logInfo('↷ Skipped Will question (not displayed)');
+  private async answerWillQuestion(answer?: string): Promise<void> {
+    if (await this.elementNotExists('Do you have an up to date Will that reflects your current wishes?')
+    )
       return;
-    }
-
-    await this.action.setRadioByQuestion(question, answer);
-    this.logInfo(`✓ Answered Will question ${answer}`);
+    this.logInfo(
+      `✓ Answered to up to date Will question: ${await this.action.setRadioByQuestion('Do you have an up to date Will that reflects your current wishes?', answer)}`
+    );
   }
 
-  /** (11b) Power of Attorney in place */
-  private async answerPowerOfAttorney(answer: string = 'Yes'): Promise<void> {
-    const question = 'Do you have a Power of Attorney in place?';
-
-    if (
-      !(await this.page
-        .getByText(question, { exact: false })
-        .count()
-        .catch(() => 0))
-    ) {
-      this.logInfo('↷ Skipped Power of Attorney question (not displayed)');
-      return;
-    }
-
-    await this.action.setRadioByQuestion(question, answer);
-    this.logInfo(`✓ Answered Power of Attorney question ${answer}`);
+  private async answerPowerOfAttorney(answer?: string): Promise<void> {
+    if (await this.elementNotExists('Do you have a Power of Attorney in place?')) return;
+    this.logInfo(
+      `✓ Answered to Power of Attorney question: ${await this.action.setRadioByQuestion('Do you have a Power of Attorney in place?', answer)}`
+    );
   }
 
   public async selectPowerOfAttorneyType(...values: string[]): Promise<void> {

@@ -28,27 +28,35 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
   }
 
   private async answerPensionQuestions(): Promise<void> {
-    await this.answerPensionsFromPreviousEmployment();
-    await this.answerOtherPensions();
-    await this.answerRequestedStatePensionForecast();
+    await this.answerWorkplacePension('No');
+    await this.answerPensionsFromPreviousEmployment('No');
+    await this.answerOtherPensions('No');
+    await this.answerRequestedStatePensionForecast('No');
   }
 
   /* -------------------- Questions (split into methods) -------------------- */
 
-  private async answerPensionsFromPreviousEmployment(answer: string = 'No'): Promise<void> {
-    await this.action.setRadioByQuestion(
-      'Do you have any pensions from previous employment?',
-      answer
+  //Are you an active member of a workplace pension scheme?
+
+  private async answerWorkplacePension(answer?: string): Promise<void> {
+    if (await this.elementNotExists('Are you an active member of a workplace pension scheme?'))
+      return;
+    this.logInfo(
+      `✓ Answered an active member of a workplace pension question: ${await this.action.setRadioByQuestion('Are you an active member of a workplace pension scheme?', answer)}`
     );
+  }
+
+  private async answerPensionsFromPreviousEmployment(answer?: string): Promise<void> {
+    await this.action.setRadioByQuestion('Do you have any pensions from previous employment?', answer);
     this.logInfo(`✓ Answered pensions from previous employment: ${answer}`);
   }
 
-  private async answerOtherPensions(answer: string = 'No'): Promise<void> {
+  private async answerOtherPensions(answer?: string): Promise<void> {
     await this.action.setRadioByQuestion('Do you have any other pensions?', answer);
     this.logInfo(`✓ Answered other pensions: ${answer}`);
   }
 
-  private async answerRequestedStatePensionForecast(answer: string = 'No'): Promise<void> {
+  private async answerRequestedStatePensionForecast(answer?: string): Promise<void> {
     await this.action.setRadioByQuestion('Have you requested a state pension forecast?', answer);
     this.logInfo(`✓ Answered state pension forecast requested: ${answer}`);
   }
