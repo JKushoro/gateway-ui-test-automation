@@ -6,8 +6,7 @@ import { BasePage } from '@framework/core/BasePage';
 import { FrameworkConfig } from '@framework/types';
 import { Environment } from '@framework/types/Environment';
 import { LoginSteps } from './LoginSteps';
-import * as path from 'path';
-import * as fs from 'fs';
+import { getEnvironmentManager } from '../utils/EnvironmentManager';
 
 /**
  * LoginValidationSteps - LOGIN TESTS / VALIDATIONS ONLY
@@ -20,45 +19,12 @@ import * as fs from 'fs';
 export class LoginValidationSteps extends BasePage {
   private readonly login: LoginSteps;
   private readonly loginPage: LoginPageLocators;
-  private readonly envSettings: Record<string, string> = {};
+  private readonly envManager = getEnvironmentManager();
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
     this.login = new LoginSteps(page, config);
     this.loginPage = new LoginPageLocators(page, config);
-  }
-
-  /* -------------------- Environment Management -------------------- */
-
-  /**
-   * Load environment settings from .env.<environment>
-   */
-  private loadEnvironment(environment: Environment = 'qa'): void {
-    const envFile = path.join(__dirname, '..', 'environments', `.env.${environment}`);
-
-    if (!fs.existsSync(envFile)) {
-      throw new Error(`Environment file not found: .env.${environment}`);
-    }
-
-    const content = fs.readFileSync(envFile, 'utf8');
-
-    content.split('\n').forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) return;
-
-      const [key, ...parts] = trimmed.split('=');
-      if (!key || parts.length === 0) return;
-
-      this.envSettings[key.trim()] = parts.join('=').trim();
-    });
-  }
-
-  /**
-   * Ensure env is loaded (lazy loading).
-   */
-  private ensureEnvLoaded(environment: Environment = 'qa'): void {
-    if (Object.keys(this.envSettings).length > 0) return;
-    this.loadEnvironment(environment);
   }
 
   /* -------------------- Small shared helpers -------------------- */
@@ -105,14 +71,7 @@ export class LoginValidationSteps extends BasePage {
    * Get advisor email from env (uses ADVISOR_EMAIL only).
    */
   private getAdvisorEmailOrThrow(environment: Environment = 'qa'): string {
-    this.ensureEnvLoaded(environment);
-    
-    const username = process.env.ADVISOR_EMAIL || this.envSettings['ADVISOR_EMAIL'];
-      
-    if (!username) {
-      throw new Error('ADVISOR_EMAIL must be set in environment file or process.env for this validation test.');
-    }
-    return username;
+    return this.envManager.getAdvisorEmail(environment);
   }
 
   /* -------------------- UI validations -------------------- */

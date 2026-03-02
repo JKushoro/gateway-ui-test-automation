@@ -6,8 +6,7 @@ import { BasePage } from '@framework/core/BasePage';
 import { FrameworkConfig } from '@framework/types';
 import { Environment } from '@framework/types/Environment';
 import { DashboardSteps } from '@steps/DashboardSteps';
-import * as path from 'path';
-import * as fs from 'fs';
+import { getEnvironmentManager } from '@utils/EnvironmentManager';
 
 type Credentials = { username: string; password: string };
 
@@ -21,7 +20,7 @@ type Credentials = { username: string; password: string };
 export class LoginSteps extends BasePage {
   private readonly loginPage: LoginPageLocators;
   private readonly dashboardSteps: DashboardSteps;
-  private readonly envSettings: Record<string, string> = {};
+  private readonly envManager = getEnvironmentManager();
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
@@ -32,42 +31,10 @@ export class LoginSteps extends BasePage {
   /* -------------------- Environment Management -------------------- */
 
   /**
-   * Load environment settings from .env.<environment>
-   */
-  private loadEnvironment(environment: Environment = 'qa'): void {
-    const envFile = path.join(__dirname, '..', 'environments', `.env.${environment}`);
-
-    if (!fs.existsSync(envFile)) {
-      throw new Error(`Environment file not found: .env.${environment}`);
-    }
-
-    const content = fs.readFileSync(envFile, 'utf8');
-
-    content.split('\n').forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) return;
-
-      const [key, ...parts] = trimmed.split('=');
-      if (!key || parts.length === 0) return;
-
-      this.envSettings[key.trim()] = parts.join('=').trim();
-    });
-  }
-
-  /**
-   * Ensure env is loaded (lazy loading).
-   */
-  private ensureEnvLoaded(environment: Environment = 'qa'): void {
-    if (Object.keys(this.envSettings).length > 0) return;
-    this.loadEnvironment(environment);
-  }
-
-  /**
    * Resolve base URL from env file.
    */
   private getBaseUrl(environment: Environment = 'qa'): string {
-    this.ensureEnvLoaded(environment);
-    return this.envSettings['BASE_URL'] || 'https://qa-fairstonegateway.fairstone.co.uk';
+    return this.envManager.getBaseUrl(environment);
   }
 
   /**
@@ -75,16 +42,7 @@ export class LoginSteps extends BasePage {
    * Uses ADVISOR_EMAIL and ADVISOR_PASSWORD only
    */
   private getCredentials(environment: Environment = 'qa'): Credentials {
-    this.ensureEnvLoaded(environment);
-
-    const username = process.env.ADVISOR_EMAIL || this.envSettings['ADVISOR_EMAIL'];
-    const password = process.env.ADVISOR_PASSWORD || this.envSettings['ADVISOR_PASSWORD'];
-
-    if (!username || !password) {
-      throw new Error('ADVISOR_EMAIL and ADVISOR_PASSWORD must be set in environment file or process.env');
-    }
-
-    return { username, password };
+    return this.envManager.getCredentials(environment);
   }
 
   /* -------------------- Navigation -------------------- */

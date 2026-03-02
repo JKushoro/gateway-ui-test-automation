@@ -334,16 +334,6 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
 
   private async fillCommittedExpenditures(): Promise<void> {
     const items: Array<{ name: string; monthly: number }> = [
-      // { name: 'Housekeeping (food and washing)', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Gas, electricity, and other heating', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Water', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Telephone', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Council tax', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Buildings insurance', monthly: TestDataGenerator.randomNumber() },
-      // { name: 'Ground rent and service charge', monthly: TestDataGenerator.randomNumber() },
-      // {
-      //   name: 'Essential travel (including to work or school)',
-      //   monthly: TestDataGenerator.randomNumber(),
 
       { name: 'Buildings insurance', monthly: TestDataGenerator.randomNumber() },
       {
@@ -354,8 +344,8 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
       { name: 'Telephone', monthly: TestDataGenerator.randomNumber() },
       { name: 'Council tax', monthly: TestDataGenerator.randomNumber() },
       { name: 'Housekeeping (food and washing)', monthly: TestDataGenerator.randomNumber() },
+      { name: 'Gas, electricity, and other heating', monthly: TestDataGenerator.randomNumber() },
 
-      // },
     ];
 
     let expectedMonthlyTotal = 0;

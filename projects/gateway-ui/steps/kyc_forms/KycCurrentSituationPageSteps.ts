@@ -9,22 +9,17 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
     super(page, config);
   }
 
-  /* -------------------- Verification -------------------- */
-
-  public async verifyCurrentSituationHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=current-situation');
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Current situation');
-  }
-
   /* -------------------- Main Flow -------------------- */
 
   public async completeKYCCurrentSituation(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.verifyCurrentSituationHeading();
-    await this.answerCurrentSituationQuestions();
-
-    this.logInfo('✓ Completed all KYC Current Situation questions');
+    await this.completeKYCPageStandard(
+      'page=current-situation',
+      'Current situation',
+      async () => {
+        await this.answerCurrentSituationQuestions();
+        this.logInfo('✓ Completed all KYC Current Situation questions');
+      }
+    );
   }
 
   private async answerCurrentSituationQuestions(): Promise<void> {
@@ -51,8 +46,6 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
     await this.answerWillQuestion('Yes');
     await this.answerPowerOfAttorney('Yes');
     await this.selectPowerOfAttorneyType('Enduring POA', 'Lasting POA Both', 'Ordinary POA');
-
-    await this.action.clickButtonByText('Save & Continue');
 
     // Persist both individually (recommended)
     dataStore.setValue('kyc.currentSituation.occupation', occupation);
