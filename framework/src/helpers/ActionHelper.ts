@@ -1,3 +1,4 @@
+// framework/helpers/ActionHelper.ts
 import { expect, Locator, Page } from '@playwright/test';
 import { LocatorHelper } from './LocatorHelper';
 import { TextHelper } from './TextHelper';
@@ -13,12 +14,27 @@ const DEFAULT_CONFIG: FrameworkConfig = {
   timeout: 30_000,
 };
 
+/**
+ * ActionHelper
+ * - One place for all user-like interactions (click/fill/select)
+ * - Consistent waiting + slowMo behaviour
+ * - Robust "find-by-label/question" utilities used across KYC flows
+ *
+ * Notes:
+ * - Keep "core primitives" (wait/click/fill) private and reused everywhere.
+ * - Keep "locator resolution" centralised (firstThatExists/tryMany/findInput...).
+ * - Public methods are grouped by concern for easier navigation/maintenance.
+ */
 export class ActionHelper {
+  // ---------------------------------------------------------------------------
+  // Dependencies (shared helpers)
+  // ---------------------------------------------------------------------------
   public readonly locatorHelper: LocatorHelper;
   public readonly waitHelper: WaitHelper;
-  public readonly logger: ILogger;
   public readonly assertionHelper: AssertionHelper;
+  public readonly logger: ILogger;
 
+  // Runtime config (can be updated)
   public config: FrameworkConfig;
 
   constructor(
@@ -33,30 +49,40 @@ export class ActionHelper {
   }
 
   // ===========================================================================
-  // Core utils
+  // Text & Regex utilities
   // ===========================================================================
 
-  private esc(s: string): string {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  /** Escape regex special chars in a string */
+  private esc(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  private exactRx(s: string): RegExp {
-    return new RegExp(`^\\s*${this.esc(s)}\\s*$`, 'i');
+  /** Exact match regex (trim + case-insensitive) */
+  private exactRx(text: string): RegExp {
+    return new RegExp(`^\\s*${this.esc(text)}\\s*$`, 'i');
   }
 
-  private containsRx(s: string): RegExp {
-    return new RegExp(this.esc(s), 'i');
+  /** Contains match regex (case-insensitive) */
+  private containsRx(text: string): RegExp {
+    return new RegExp(this.esc(text), 'i');
   }
 
+  // ===========================================================================
+  // Core timing / wait primitives (single source of truth)
+  // ===========================================================================
+
+  /** Optional slowMo after actions (useful for demo/debug) */
   private async slowMo(): Promise<void> {
     const ms = this.config.slowMo ?? 0;
     if (ms > 0) await this.page.waitForTimeout(ms);
   }
 
+  /** Wait for element to be visible/ready using WaitHelper */
   private async wait(locator: Locator, timeout?: number): Promise<void> {
     await this.waitHelper.waitForElement(locator, timeout ?? this.config.timeout);
   }
 
+  /** Click a locator with consistent wait + slowMo */
   private async clickEl(locator: Locator, options: ClickOptions = {}): Promise<void> {
     await this.wait(locator, options.timeout);
     await locator.click({
@@ -68,6 +94,7 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  /** Fill an input/textarea with consistent wait + optional clear + slowMo */
   private async fillEl(
     locator: Locator,
     value: string,
@@ -79,6 +106,11 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  // ===========================================================================
+  // Robust locator resolution utilities (avoid duplication)
+  // ===========================================================================
+
+  /** Returns first locator that exists across multiple strategies */
   private async firstThatExists(strategies: LocatorStrategy[], err: string): Promise<Locator> {
     for (const s of strategies) {
       try {
@@ -91,6 +123,7 @@ export class ActionHelper {
     throw new Error(err);
   }
 
+  /** Try many candidate strings until one operation succeeds */
   private async tryMany<T>(
     items: string[],
     op: (item: string) => Promise<T>,
@@ -107,27 +140,21 @@ export class ActionHelper {
     throw (last as Error) ?? new Error(err);
   }
 
-  public async fillInputByLabelAndAssert(label: string, value: string): Promise<void> {
-    const expected = TextHelper.cleanText(value);
-
-    await this.fillInputByLabel(label, expected);
-
-    const actual = TextHelper.cleanText(await this.getInputValueByLabel(label));
-    expect(actual, `Input "${label}" value mismatch`).toBe(expected);
-  }
-
   // ===========================================================================
-  // Clicks & navigation
+  // Clicks & basic interactions
   // ===========================================================================
 
+  /** Click by framework selector (via LocatorHelper) */
   public async click(selector: string, options: ClickOptions = {}): Promise<void> {
     await this.clickEl(this.locatorHelper.getLocator(selector), options);
   }
 
+  /** Click a Locator directly */
   public async clickLocator(locator: Locator, options: ClickOptions = {}): Promise<void> {
     await this.clickEl(locator, options);
   }
 
+  /** Click a button by accessible name */
   public async clickButtonByText(
     text: string,
     exact = true,
@@ -136,9 +163,11 @@ export class ActionHelper {
     const btn = this.page
       .getByRole('button', { name: exact ? this.exactRx(text) : this.containsRx(text) })
       .first();
+
     await this.clickEl(btn, options);
   }
 
+  /** Click a link by accessible name */
   public async clickLinkByText(
     text: string,
     exact = true,
@@ -147,9 +176,11 @@ export class ActionHelper {
     const link = this.page
       .getByRole('link', { name: exact ? this.exactRx(text) : this.containsRx(text) })
       .first();
+
     await this.clickEl(link, options);
   }
 
+  /** Click target and wait for URL change */
   public async clickAndWaitForURL(
     target: Locator,
     url: string | RegExp,
@@ -162,6 +193,10 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  /**
+   * Click a button by text inside a container (or full page)
+   * - Uses role-based match first, then falls back to DOM filtering.
+   */
   public async clickButtonByTextIn(
     text: string,
     container?: Locator,
@@ -169,10 +204,12 @@ export class ActionHelper {
   ): Promise<void> {
     const root: Locator | Page = container ?? this.page;
 
-    let btn = root.getByRole?.('button', { name: this.exactRx(text) })?.first?.() as
+    // Role-based first (works best when accessible names are correct)
+    let btn = (root as Page).getByRole?.('button', { name: this.exactRx(text) })?.first?.() as
       | Locator
       | undefined;
 
+    // DOM fallback
     if (!btn || (await btn.count()) === 0) {
       btn = (root as Locator)
         .locator?.('button')
@@ -184,16 +221,24 @@ export class ActionHelper {
     await this.clickEl(btn, options);
   }
 
+  /** Press a keyboard key */
+  public async pressKey(key: string): Promise<void> {
+    await this.page.keyboard.press(key);
+    await this.slowMo();
+  }
+
   // ===========================================================================
-  // Text / value / attributes
+  // Read text / values / attributes
   // ===========================================================================
 
+  /** Get visible text from selector */
   public async getText(selector: string, options: ActionOptions = {}): Promise<string> {
     const loc = this.locatorHelper.getLocator(selector);
     await this.wait(loc, options.timeout);
     return TextHelper.getTrimmedText(loc);
   }
 
+  /** Get element attribute from selector */
   public async getAttribute(
     selector: string,
     attr: string,
@@ -204,12 +249,17 @@ export class ActionHelper {
     return loc.getAttribute(attr);
   }
 
+  /** Get input value from selector */
   public async getInputValue(selector: string, options: ActionOptions = {}): Promise<string> {
     const loc = this.locatorHelper.getLocator(selector);
     await this.wait(loc, options.timeout);
     return loc.inputValue();
   }
 
+  /**
+   * Read a value/label pair (legacy forms)
+   * - Tries label->parent->value and form-group fallback.
+   */
   public async getTextByLabel(labelText: string, elementTag = 'span'): Promise<string> {
     const label = this.page.locator(`label:has-text("${labelText}")`).first();
 
@@ -227,6 +277,7 @@ export class ActionHelper {
     throw new Error(`Field not found for label "${labelText}"`);
   }
 
+  /** Get input value from the first label that exists in a list */
   public async getInputValueByAnyLabel(labels: string[], timeout?: number): Promise<string> {
     return this.tryMany(
       labels,
@@ -243,10 +294,16 @@ export class ActionHelper {
   // Inputs & forms
   // ===========================================================================
 
+  /** Fill by selector */
   public async fill(selector: string, value: string, options: ActionOptions = {}): Promise<void> {
     await this.fillEl(this.locatorHelper.getLocator(selector), value, options);
   }
 
+  /**
+   * Fill input by label (supports broken for/id wiring)
+   * - Tries role textbox first
+   * - Falls back to label[for] -> id/testid/name selector paths
+   */
   public async fillInputByLabel(
     labelText: string,
     value: string,
@@ -275,6 +332,7 @@ export class ActionHelper {
     await this.fillEl(input, value, options);
   }
 
+  /** Fill first found label among a list */
   public async fillInputByAnyLabel(
     labels: string[],
     value: string,
@@ -291,12 +349,20 @@ export class ActionHelper {
     );
   }
 
-  public async pressKey(key: string): Promise<void> {
-    await this.page.keyboard.press(key);
-    await this.slowMo();
+  /** Fill by label and assert the value is what we expect (normalized) */
+  public async fillInputByLabelAndAssert(label: string, value: string): Promise<void> {
+    const expected = TextHelper.cleanText(value);
+    await this.fillInputByLabel(label, expected);
+
+    const actual = TextHelper.cleanText(await this.getInputValueByLabel(label));
+    expect(actual, `Input "${label}" value mismatch`).toBe(expected);
   }
 
-  async fillFormattedNumberInput(
+  /**
+   * Fill formatted number inputs and verify formatting/parsing
+   * - Useful for currency/number masked controls
+   */
+  public async fillFormattedNumberInput(
     input: Locator,
     value: string | number,
     label = 'Formatted number input'
@@ -304,9 +370,7 @@ export class ActionHelper {
     const expected =
       typeof value === 'number' ? value : this.assertionHelper.parseFormattedNumber(String(value));
 
-    if (!Number.isFinite(expected)) {
-      throw new Error(`${label}: invalid numeric value "${value}"`);
-    }
+    if (!Number.isFinite(expected)) throw new Error(`${label}: invalid numeric value "${value}"`);
 
     await expect(input).toBeVisible();
     await input.scrollIntoViewIfNeeded();
@@ -315,7 +379,6 @@ export class ActionHelper {
     await input.evaluate(el => el.blur());
 
     await this.assertionHelper.assertFormattedNumberEquals(input, expected);
-
     this.logger.info?.(`✓ ${label}: ${expected}`);
   }
 
@@ -323,14 +386,20 @@ export class ActionHelper {
   // Visibility & state
   // ===========================================================================
 
+  /** Is selector visible right now */
   public async isVisible(selector: string): Promise<boolean> {
     return this.locatorHelper.getLocator(selector).isVisible();
   }
 
+  /** Is selector enabled right now */
   public async isEnabled(selector: string): Promise<boolean> {
     return this.locatorHelper.getLocator(selector).isEnabled();
   }
 
+  /**
+   * Ensure a locator exists and becomes visible; otherwise log and skip
+   * - Returns true if visible, false if not displayed
+   */
   public async ensureVisibleOrSkip(
     locator: Locator,
     label: string,
@@ -349,6 +418,10 @@ export class ActionHelper {
   // Radios
   // ===========================================================================
 
+  /**
+   * Select a radio by label text (several fallback strategies)
+   * - Good for non-KYC generic pages
+   */
   public async selectRadioByLabel(labelText: string, options: ActionOptions = {}): Promise<void> {
     const strategies: LocatorStrategy[] = [
       () => this.page.getByLabel(labelText, { exact: true }),
@@ -370,16 +443,19 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  /**
+   * Set radio answer for a question text (KYC style)
+   * - Finds the radiogroup following the question text
+   * - If answer missing => chooses a random enabled radio
+   */
   public async setRadioByQuestion(q: string, answer?: string | boolean): Promise<string> {
-    await this.waitHelper.waitForElement(this.page.getByText(q), 5_000);
+    const question = this.page.getByText(q, { exact: false }).first();
+    await this.waitHelper.waitForElement(question, 5_000);
 
-    const group = this.page
-      .getByText(q)
-      .locator('xpath=following::*[@role="radiogroup"][1]')
-      .first();
-
+    const group = question.locator('xpath=following::*[@role="radiogroup"][1]').first();
     await this.waitHelper.waitForElement(group, 5_000);
 
+    // Specific answer
     if (answer !== undefined && String(answer).trim()) {
       const want = String(answer).trim();
 
@@ -401,6 +477,7 @@ export class ActionHelper {
       throw new Error(`Option "${want}" not found for "${q}"`);
     }
 
+    // Random answer
     const radios = group.locator('input[type="radio"]:not(:disabled)');
     const n = await radios.count();
     if (n === 0) throw new Error(`No selectable radios for "${q}"`);
@@ -412,37 +489,71 @@ export class ActionHelper {
     return labelText || (await pick.getAttribute('value')) || '';
   }
 
+  /**
+   * Select a radio option for a question identified by regex.
+   * - Scopes to the nearest radio container for that question
+   * - If answer provided → selects matching option (case-insensitive)
+   * - If no answer → selects a random enabled radio
+   * - Strict: fails if question or option not found
+   */
   public async setRadioByQuestionPattern(
     pattern: RegExp,
     answer?: string | boolean
   ): Promise<string> {
     const q = this.page.getByText(pattern).first();
-    await q.waitFor({ state: 'visible', timeout: 15_000 });
+    await expect(q).toBeVisible({ timeout: 15_000 });
 
-    const group = q.locator('xpath=ancestor-or-self::*[.//input[@type="radio"]]').first();
-    await group.waitFor({ state: 'attached', timeout: 15_000 });
+    const box = q.locator('xpath=ancestor::*[.//input[@type="radio"]][1]');
+    await expect(box).toBeVisible({ timeout: 15_000 });
 
-    if (answer !== undefined) {
-      const value = String(answer).trim();
-      const radio = group
-        .getByRole('radio', { name: new RegExp(`^${this.esc(value)}$`, 'i') })
-        .first();
-      if (!(await radio.count())) throw new Error(`Option "${value}" not found for ${pattern}`);
+    const radios = box.getByRole('radio');
+    const v = answer !== undefined ? String(answer).trim() : '';
+    const r = v
+      ? box.getByRole('radio', { name: new RegExp(`^${this.esc(v)}$`, 'i') }).first()
+      : radios.nth(Math.floor(Math.random() * (await radios.count())));
 
-      await radio.check({ force: true }).catch(() => radio.click({ force: true }));
-      return value;
-    }
+    await r.click({ force: true });
+    await expect(r).toBeChecked();
 
-    const radio = group.locator('input[type="radio"]:not(:disabled)').first();
-    await radio.check({ force: true }).catch(() => radio.click({ force: true }));
-
-    return (
-      (await TextHelper.getTrimmedText(radio.locator('xpath=ancestor::label[1]'))) ||
-      (await radio.getAttribute('value')) ||
-      ''
-    );
+    return v || (await r.textContent())?.trim() || '';
   }
 
+  /**
+   * Optional wrapper: answer pattern-based radio only if question exists
+   * - Returns chosen value or undefined if question not shown
+   */
+  public async setRadioByQuestionPatternIfPresent(
+    pattern: RegExp,
+    answer?: string | boolean,
+    timeoutMs = 15_000
+  ): Promise<string | undefined> {
+    const q = this.page.getByText(pattern).first();
+    if ((await q.count()) === 0) return undefined;
+
+    await q.waitFor({ state: 'visible', timeout: timeoutMs });
+    return this.setRadioByQuestionPattern(pattern, answer);
+  }
+
+  /**
+   * Optional wrapper: answer text-based question radio only if question exists
+   * - Returns chosen value or undefined if question not shown
+   */
+  public async setRadioByQuestionIfPresent(
+    questionText: string,
+    answer?: string | boolean,
+    timeoutMs = 15_000
+  ): Promise<string | undefined> {
+    const q = this.page.getByText(questionText, { exact: false }).first();
+    if ((await q.count()) === 0) return undefined;
+
+    await q.waitFor({ state: 'visible', timeout: timeoutMs });
+    return this.setRadioByQuestion(questionText, answer);
+  }
+
+  /**
+   * Select random radio by name attribute (classic HTML radios)
+   * - Excludes disabled and user-provided values
+   */
   public async selectRandomRadioByName(
     name: string,
     excludeValues: string[] = [],
@@ -476,6 +587,7 @@ export class ActionHelper {
   // Checkboxes
   // ===========================================================================
 
+  /** Check a checkbox (by selector or Locator) */
   public async checkCheckbox(target: string | Locator, options: ActionOptions = {}): Promise<void> {
     const checkbox = typeof target === 'string' ? this.locatorHelper.getLocator(target) : target;
     await this.wait(checkbox, options.timeout);
@@ -484,6 +596,7 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  /** Uncheck a checkbox by selector */
   public async uncheckCheckbox(selector: string, options: ActionOptions = {}): Promise<void> {
     const checkbox = this.locatorHelper.getLocator(selector);
     await this.wait(checkbox, options.timeout);
@@ -492,44 +605,64 @@ export class ActionHelper {
     await this.slowMo();
   }
 
-  public async selectCheckboxesFromAriaGroup(
-    id: string,
-    pick: string | string[] | number = 1
-  ): Promise<string[]> {
-    const group = this.page.locator(`[aria-labelledby="${id}"]`);
-    const labels = group.locator('label');
-    const inputs = group.locator('input[type="checkbox"]');
+  /**
+   * Select checkboxes inside a fieldset locator.
+   * - No values => selects 1 random
+   * - With values => selects matching label text (contains match)
+   */
+  public async selectCheckboxGroup(fieldset: Locator, ...values: string[]): Promise<string[]> {
+    await this.waitHelper.waitForElementStable(fieldset, 200, 15_000);
 
-    await labels.first().waitFor({ state: 'visible' });
+    const labels = fieldset.locator('label');
+    const inputs = fieldset.locator('input[type="checkbox"]');
 
     const count = await labels.count();
-    if (!count) throw new Error(`No checkboxes in "${id}"`);
+    if (!count) throw new Error('No checkboxes found in fieldset.');
 
     const clickAt = async (i: number): Promise<string> => {
-      await labels
-        .nth(i)
-        .click({ force: true })
-        .catch(() => inputs.nth(i).check({ force: true }));
-      await expect(inputs.nth(i)).toBeChecked();
-      return (await labels.nth(i).textContent())?.trim() ?? '';
+      const testId = await inputs.nth(i).getAttribute('data-testid');
+      if (!testId) throw new Error('Checkbox input missing data-testid.');
+
+      const input = fieldset.locator(`[data-testid="${testId}"]`);
+      const label = labels.nth(i);
+
+      await label.scrollIntoViewIfNeeded();
+      await this.waitHelper.waitForElementStable(label, 150, 10_000);
+
+      // Retry once for flaky UI
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await label.click({ force: true });
+        if (await input.isChecked()) break;
+        await this.waitHelper.waitForTimeout(80);
+      }
+
+      await expect(input).toBeChecked({ timeout: 10_000 });
+      return ((await label.textContent()) ?? '').trim();
     };
 
-    if (typeof pick === 'number') {
-      const n = Math.min(pick, count);
-      return Promise.all([...Array(n).keys()].map(clickAt));
+    // Random single
+    if (!values.length) return [await clickAt(Math.floor(Math.random() * count))];
+
+    // Specific values
+    const texts = await labels.allTextContents();
+    const picked: string[] = [];
+
+    for (const v of values) {
+      const idx = texts.findIndex(t => (t ?? '').includes(v));
+      if (idx < 0) throw new Error(`Option "${v}" not found.`);
+      picked.push(await clickAt(idx));
     }
 
-    const wanted = Array.isArray(pick) ? pick : [pick];
-
-    return Promise.all(
-      wanted.map(async text => {
-        const label = labels.filter({ hasText: text }).first();
-        await label.click({ force: true });
-        return text;
-      })
-    );
+    return picked;
   }
 
+  /**
+   * Select checkboxes from a locator list (usually the label nodes)
+   * - options can be:
+   *   - number: random N unique items
+   *   - string[]: pick those labels exactly
+   *   - undefined: pick none (returns [])
+   */
   public async selectCheckboxes(
     optionsLocator: Locator,
     options?: string[] | number
@@ -562,7 +695,7 @@ export class ActionHelper {
     }
 
     // Specific labels
-    const wanted = Array.isArray(options) ? options : options ? [options] : [];
+    const wanted = Array.isArray(options) ? options : [];
     const selected: string[] = [];
 
     for (const t of wanted) {
@@ -577,9 +710,10 @@ export class ActionHelper {
   }
 
   // ===========================================================================
-  // Fairstone KYC groups
+  // Fairstone KYC groups (radio/checkbox groups bound to label 'for' id)
   // ===========================================================================
 
+  /** Select from a KYC radiogroup by the label text above it */
   public async selectFromRadioGroupByLabel(
     labelText: string,
     selection?: string | number
@@ -597,70 +731,55 @@ export class ActionHelper {
 
     await expect(options.first()).toBeVisible();
 
+    // Random
     if (selection === undefined) {
       const i = Math.floor(Math.random() * (await options.count()));
       const text = ((await options.nth(i).textContent()) ?? '').trim();
       await options.nth(i).click();
+      await this.slowMo();
       return text;
     }
 
+    // By index
     if (typeof selection === 'number') {
       const text = ((await options.nth(selection).textContent()) ?? '').trim();
       await options.nth(selection).click();
+      await this.slowMo();
       return text;
     }
 
-    const option = options.filter({ hasText: selection }).first();
+    // By text
+    const option = options.filter({ hasText: this.containsRx(selection) }).first();
     await expect(option).toBeVisible();
     await option.click();
+    await this.slowMo();
     return selection;
   }
 
-  // public async selectFromCheckboxGroupByLabel(
-  //   labelText: string,
-  //   selection?: string | string[] | number
-  // ): Promise<string[]> {
-  //   const group = this.page.locator(`div:has(> .mb-2 > label:has-text("${labelText}"))`);
-  //   const options = group.locator('div[role="group"] label');
-  //
-  //   await this.waitHelper.waitForElement(group);
-  //   await expect(options.first()).toBeVisible();
-  //
-  //   if (selection === undefined) {
-  //     const count = await options.count();
-  //     const value =
-  //       (await options.nth(Math.floor(Math.random() * count)).textContent())?.trim() ?? '';
-  //     await this.selectCheckboxes(options, [value]);
-  //     return [value];
-  //   }
-  //
-  //   if (typeof selection === 'number') return this.selectCheckboxes(options, selection);
-  //
-  //   const wanted = Array.isArray(selection) ? selection : [selection];
-  //   return this.selectCheckboxes(options, wanted);
-  // }
-
+  /**
+   * Select from a KYC checkbox group (fieldset[aria-labelledby])
+   * - selection can be:
+   *   - undefined: pick 1 random
+   *   - number: pick N random
+   *   - string | string[]: pick those labels
+   */
   public async selectFromCheckboxGroupByLabel(
     labelText: string,
     selection?: string | string[] | number
   ): Promise<string[]> {
-    // Find the label (ignore the required * span)
-    const label = this.page.locator('label', { hasText: labelText }).first();
+    const label = this.page.locator('label', { hasText: this.containsRx(labelText) }).first();
     await expect(label).toBeVisible({ timeout: 15_000 });
 
     const forId = await label.getAttribute('for');
-    if (!forId) {
-      throw new Error(`Label "${labelText}" does not have a 'for' attribute.`);
-    }
+    if (!forId) throw new Error(`Label "${labelText}" does not have a 'for' attribute.`);
 
-    // Fieldset is linked via aria-labelledby
     const fieldset = this.page.locator(`fieldset[aria-labelledby="${forId}"]`);
     await expect(fieldset).toBeVisible({ timeout: 15_000 });
 
-    // Each option is a <label> that contains the hidden checkbox input
     const options = fieldset.locator('label');
     await expect(options.first()).toBeVisible({ timeout: 15_000 });
 
+    // Random 1
     if (selection === undefined) {
       const count = await options.count();
       const value =
@@ -669,8 +788,10 @@ export class ActionHelper {
       return [value];
     }
 
+    // Random N
     if (typeof selection === 'number') return this.selectCheckboxes(options, selection);
 
+    // Specific list
     const wanted = Array.isArray(selection) ? selection : [selection];
     return this.selectCheckboxes(options, wanted);
   }
@@ -679,6 +800,7 @@ export class ActionHelper {
   // Native <select>
   // ===========================================================================
 
+  /** Select an option from a native <select> by label text */
   public async selectDropdownByLabel(labelText: string, option?: string): Promise<string> {
     const dropdown = await this.findDropdownByLabel(labelText);
 
@@ -696,6 +818,7 @@ export class ActionHelper {
     );
   }
 
+  /** Select from first existing label among a list */
   public async selectDropdownByAnyLabel(labels: string[], option?: string): Promise<string> {
     return this.tryMany(
       labels,
@@ -704,6 +827,7 @@ export class ActionHelper {
     );
   }
 
+  /** Select a random valid option from a native select (skips disabled/placeholder options) */
   public async selectRandomFromNativeSelect(dropdown: Locator): Promise<string | undefined> {
     const value = await dropdown.evaluate(el => {
       const select = el as HTMLSelectElement;
@@ -711,6 +835,7 @@ export class ActionHelper {
         o => !o.disabled && o.value.trim() && !/^please\s*select/i.test(o.text.trim())
       );
       if (!candidates.length) return null;
+
       const choice = candidates[Math.floor(Math.random() * candidates.length)];
       select.value = choice.value;
       select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -720,6 +845,7 @@ export class ActionHelper {
     return value ?? undefined;
   }
 
+  /** Wait until a native select is populated (more than placeholder) */
   public async waitForDropdownPopulation(
     selector: string,
     excludeText = 'Select',
@@ -742,6 +868,7 @@ export class ActionHelper {
     );
   }
 
+  /** Get valid option texts from a native select */
   public async getValidDropdownOptions(
     selector: string,
     excludeText = 'Select'
@@ -763,6 +890,7 @@ export class ActionHelper {
     );
   }
 
+  /** Select an option by exact visible text */
   public async selectSpecificOption(
     optionsLocator: Locator,
     optionText: string
@@ -771,11 +899,13 @@ export class ActionHelper {
     if (await exact.isVisible().catch(() => false)) {
       const text = (await exact.textContent())?.trim() ?? null;
       await exact.click();
+      await this.slowMo();
       return text;
     }
     return null;
   }
 
+  /** Select random option from a list, with optional exclude regex */
   public async selectRandomOption(
     optionsLocator: Locator,
     exclude?: RegExp
@@ -791,6 +921,7 @@ export class ActionHelper {
     const selected = optionsLocator.nth(pick.i);
     const text = (await selected.textContent())?.trim() ?? null;
     await selected.click();
+    await this.slowMo();
     return text;
   }
 
@@ -798,11 +929,12 @@ export class ActionHelper {
   // React Select / MUI / Select2
   // ===========================================================================
 
+  /** React Select: choose option by label */
   public async chooseFromLabeledReactSelectDropdown(
     labelText: string,
     optionText?: string
   ): Promise<string> {
-    const label = this.page.locator('label', { hasText: labelText });
+    const label = this.page.locator('label', { hasText: this.containsRx(labelText) }).first();
     await expect(label).toBeVisible();
 
     const id = await label.getAttribute('for');
@@ -816,11 +948,14 @@ export class ActionHelper {
     const options = this.page.getByRole('option');
     await expect(options.first()).toBeVisible();
 
+    // Specific
     if (optionText?.trim()) {
       await this.page.getByRole('option', { name: optionText }).click();
+      await this.slowMo();
       return optionText;
     }
 
+    // Random
     const count = await options.count();
     if (!count) throw new Error(`No options found for "${labelText}"`);
 
@@ -828,9 +963,11 @@ export class ActionHelper {
     const chosen = (await option.textContent())?.trim() ?? '';
 
     await option.click();
+    await this.slowMo();
     return chosen;
   }
 
+  /** React Select: choose option by question text */
   public async chooseFromQuestionReactSelectDropdown(
     questionText: string,
     optionText?: string
@@ -841,98 +978,31 @@ export class ActionHelper {
     const block = question.locator(
       'xpath=ancestor::*[.//div[contains(@class,"react-select__control")]][1]'
     );
-
     const control = block.locator('.react-select__control').first();
+
     await expect(control).toBeVisible();
     await control.click();
 
     const options = this.page.getByRole('listbox').getByRole('option');
     await expect(options.first()).toBeVisible();
 
+    // Specific
     if (optionText?.trim()) {
       await options.getByText(optionText, { exact: true }).click();
+      await this.slowMo();
       return optionText;
     }
 
+    // Random
     const option = options.nth(Math.floor(Math.random() * (await options.count())));
     const chosen = (await option.textContent())?.trim() ?? '';
 
     await option.click();
+    await this.slowMo();
     return chosen;
   }
 
-  public async waitForMUIMenu(
-    menuSelector: string,
-    itemSelector: string,
-    timeout = 5_000
-  ): Promise<void> {
-    await this.waitHelper.waitForElement(this.page.locator(menuSelector), timeout);
-    await this.waitHelper.waitForElement(this.page.locator(itemSelector).first(), 3_000);
-    await this.waitHelper.waitForTimeout(300);
-  }
-
-  public async selectRandomMUIMenuItem(items: Locator, menu?: Locator): Promise<string> {
-    const count = await items.count();
-    if (!count) throw new Error('No menu items found');
-
-    const idx = Math.floor(Math.random() * count);
-    const item = items.nth(idx);
-    const text = (await item.textContent())?.trim() || '';
-
-    await this.clickLocator(item);
-    if (menu) await this.waitHelper.waitForElementToBeHidden(menu, 2_000);
-
-    return text;
-  }
-
-  public async selectSelect2(
-    trigger: Locator,
-    options: Locator,
-    rendered: Locator,
-    value?: string
-  ): Promise<string> {
-    const isValid = (t: string): boolean => !!t && !/^please\s*select\b/i.test(t);
-
-    await trigger.click({ force: true });
-    await options.first().waitFor();
-
-    let pick = (typeof value === 'string' && value.trim()) || '';
-    if (!pick) {
-      const texts = (await options.allTextContents()).map(t => (t ?? '').trim()).filter(isValid);
-      if (!texts.length) throw new Error('No valid options in Select2 dropdown');
-      pick = texts[Math.floor(Math.random() * texts.length)];
-    }
-
-    let chosen = options.filter({ hasText: this.exactRx(pick) }).first();
-    if ((await chosen.count()) === 0)
-      chosen = options.filter({ hasText: this.containsRx(pick) }).first();
-    if ((await chosen.count()) === 0) throw new Error(`Select2 option not found: "${pick}"`);
-
-    const selectedText = (await chosen.textContent())?.trim() ?? '';
-    await chosen.click();
-
-    return (await rendered.textContent().catch(() => selectedText))?.trim() || selectedText;
-  }
-
-  public async selectSelect2AndVerify(
-    label: string,
-    trigger: Locator,
-    options: Locator,
-    rendered: Locator,
-    value?: string
-  ): Promise<string> {
-    const selected = await this.selectSelect2(trigger, options, rendered, value);
-
-    if (value) {
-      const renderedText = (await rendered.textContent())?.trim() ?? '';
-      if (!renderedText.toLowerCase().includes(value.toLowerCase())) {
-        throw new Error(`${label} not selected. Expected "${value}", rendered "${renderedText}"`);
-      }
-    }
-
-    return selected;
-  }
-
+  /** React Select: click control and choose an option by visible text (robust strategies) */
   public async selectReactSelect(dropdownId: string, value: string): Promise<void> {
     try {
       const dropdown = this.page.locator(`#${dropdownId.replace(/\./g, '\\.')}`);
@@ -968,6 +1038,7 @@ export class ActionHelper {
     }
   }
 
+  /** React Select: read single selected value */
   public async getReactSelectValue(dropdownId: string): Promise<string> {
     const single = this.page.locator(
       `#${dropdownId.replace(/\./g, '\\.')} .react-select__single-value`
@@ -976,16 +1047,126 @@ export class ActionHelper {
     return (await single.textContent())?.trim() || '';
   }
 
+  /** React Select: assert selected value is exact */
   public async verifyReactSelectValue(dropdownId: string, expected: string): Promise<void> {
     const actual = await this.getReactSelectValue(dropdownId);
     if (actual !== expected)
       throw new Error(`React Select mismatch. Expected "${expected}", got "${actual}"`);
   }
 
+  /** Generic: open react-select and pick value (or random) given the input locator */
+  public async selectReactSelectDropdownOption(input: Locator, value?: string): Promise<string> {
+    await expect(input).toBeVisible();
+
+    const control = input.locator('xpath=ancestor::*[contains(@class,"react-select__control")]');
+    await control.click();
+
+    const options = this.page.getByRole('option');
+    await expect(options.first()).toBeVisible();
+
+    let chosen: string;
+
+    // Specific
+    if (value?.trim()) {
+      chosen = value;
+      await options.filter({ hasText: value }).first().click();
+    } else {
+      // Random
+      const count = await options.count();
+      const idx = Math.floor(Math.random() * count);
+      const pick = options.nth(idx);
+
+      chosen = ((await pick.textContent()) ?? '').trim();
+      await pick.click();
+    }
+
+    await expect(control.getByText(chosen, { exact: false })).toBeVisible();
+    await this.slowMo();
+    return chosen;
+  }
+
+  /** Wait for MUI menu and first item */
+  public async waitForMUIMenu(
+    menuSelector: string,
+    itemSelector: string,
+    timeout = 5_000
+  ): Promise<void> {
+    await this.waitHelper.waitForElement(this.page.locator(menuSelector), timeout);
+    await this.waitHelper.waitForElement(this.page.locator(itemSelector).first(), 3_000);
+    await this.waitHelper.waitForTimeout(300);
+  }
+
+  /** Pick a random item from MUI menu list */
+  public async selectRandomMUIMenuItem(items: Locator, menu?: Locator): Promise<string> {
+    const count = await items.count();
+    if (!count) throw new Error('No menu items found');
+
+    const idx = Math.floor(Math.random() * count);
+    const item = items.nth(idx);
+    const text = (await item.textContent())?.trim() || '';
+
+    await this.clickLocator(item);
+    if (menu) await this.waitHelper.waitForElementToBeHidden(menu, 2_000);
+
+    return text;
+  }
+
+  /** Select2: open dropdown and pick value (or random) */
+  public async selectSelect2(
+    trigger: Locator,
+    options: Locator,
+    rendered: Locator,
+    value?: string
+  ): Promise<string> {
+    const isValid = (t: string): boolean => !!t && !/^please\s*select\b/i.test(t);
+
+    await trigger.click({ force: true });
+    await options.first().waitFor();
+
+    let pick = (typeof value === 'string' && value.trim()) || '';
+    if (!pick) {
+      const texts = (await options.allTextContents()).map(t => (t ?? '').trim()).filter(isValid);
+      if (!texts.length) throw new Error('No valid options in Select2 dropdown');
+      pick = texts[Math.floor(Math.random() * texts.length)];
+    }
+
+    let chosen = options.filter({ hasText: this.exactRx(pick) }).first();
+    if ((await chosen.count()) === 0)
+      chosen = options.filter({ hasText: this.containsRx(pick) }).first();
+    if ((await chosen.count()) === 0) throw new Error(`Select2 option not found: "${pick}"`);
+
+    const selectedText = (await chosen.textContent())?.trim() ?? '';
+    await chosen.click();
+    await this.slowMo();
+
+    return (await rendered.textContent().catch(() => selectedText))?.trim() || selectedText;
+  }
+
+  /** Select2 + verify rendered display contains expected */
+  public async selectSelect2AndVerify(
+    label: string,
+    trigger: Locator,
+    options: Locator,
+    rendered: Locator,
+    value?: string
+  ): Promise<string> {
+    const selected = await this.selectSelect2(trigger, options, rendered, value);
+
+    if (value) {
+      const renderedText = (await rendered.textContent())?.trim() ?? '';
+      if (!renderedText.toLowerCase().includes(value.toLowerCase())) {
+        throw new Error(`${label} not selected. Expected "${value}", rendered "${renderedText}"`);
+      }
+    }
+
+    return selected;
+  }
+
   // ===========================================================================
   // Name / Label helpers
   // ===========================================================================
 
+  /** Fill input by name attribute */
   public async fillInputByName(name: string, value: string): Promise<void> {
     const input = this.page.locator(`input[name="${name}"]`);
     await this.waitHelper.waitForElement(input, 5_000);
@@ -993,18 +1174,21 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+  /** Get input value by name attribute */
   public async getInputValueByName(name: string): Promise<string> {
     const input = this.page.locator(`input[name="${name}"]`);
     await this.waitHelper.waitForElement(input, 5_000);
     return input.inputValue();
   }
 
+  /** Verify input value by name attribute */
   public async verifyInputValue(name: string, expected: string): Promise<void> {
     const actual = await this.getInputValueByName(name);
     if (actual !== expected)
       throw new Error(`Input "${name}" mismatch. Expected "${expected}", got "${actual}"`);
   }
 
+  /** React Select: get selected value by label (loose) */
   public async getReactSelectValueByLabelLoose(labelText: string): Promise<string> {
     const label = this.page.getByText(this.containsRx(labelText), { exact: false }).first();
     await this.waitHelper.waitForElement(label, 5_000);
@@ -1012,39 +1196,22 @@ export class ActionHelper {
     const single = label
       .locator('xpath=following::*[contains(@class,"react-select__single-value")][1]')
       .first();
-
     await this.waitHelper.waitForElement(single, 5_000);
+
     return (await single.textContent())?.trim() ?? '';
   }
 
+  /** Get input value by label (robust resolver) */
   public async getInputValueByLabel(label: string): Promise<string> {
     const input = await this.findInputFieldByLabel(label);
     await this.waitHelper.waitForElement(input, 5_000);
     return input.inputValue();
   }
 
-  // public async getReactSelectValueByLabelStrict(labelText: string): Promise<string> {
-  //   const label = this.page.locator('label', { hasText: this.containsRx(labelText) }).first();
-  //   await this.waitHelper.waitForElement(label, 5_000);
-  //
-  //   const forId = await label.getAttribute('for');
-  //   if (!forId) throw new Error(`Label "${labelText}" has no 'for' attribute`);
-  //
-  //   const input = this.page.locator(`#${forId.replace(/\./g, '\\.')}`);
-  //   const container = input.locator(
-  //     'xpath=ancestor::*[contains(@class,"react-select-container") or contains(@class,"react-select__control")][1]'
-  //   );
-  //
-  //   const valueOrPlaceholder = container
-  //     .locator(
-  //       '.react-select__single-value, .react-select__placeholder, [class*="single-value"], [class*="placeholder"]'
-  //     )
-  //     .first();
-  //
-  //   await this.waitHelper.waitForElement(valueOrPlaceholder, 5_000);
-  //   return (await valueOrPlaceholder.textContent())?.trim() ?? '';
-  // }
-
+  /**
+   * React Select: get selected value by label (strict)
+   * - Uses label[for] to locate the linked react-select container
+   */
   public async getReactSelectValueByLabelStrict(
     labelText: string,
     timeoutMs = 15_000
@@ -1061,7 +1228,6 @@ export class ActionHelper {
     );
 
     const singleValue = container.locator('.react-select__single-value').first();
-
     await expect(singleValue).toBeVisible({ timeout: timeoutMs });
 
     return ((await singleValue.textContent()) ?? '').trim();
@@ -1069,6 +1235,7 @@ export class ActionHelper {
 
   /**
    * Robust: find input/textarea by label text, handling broken `for`→`id` pairs.
+   * - Uses multiple strategies (for/name/testid/label/placeholder/aria-label)
    */
   public async findInputFieldByLabel(labelText: string): Promise<Locator> {
     const forAttr = await this.resolveForId(labelText).catch(() => null);
@@ -1119,6 +1286,7 @@ export class ActionHelper {
     return this.firstThatExists(strategies, `Input not found for label "${labelText}"`);
   }
 
+  /** Find element + its id (useful when label wiring is weird) */
   public async findElementByLabelWithId(labelText: string): Promise<{ el: Locator; id: string }> {
     try {
       const el = await this.findInputFieldByLabel(labelText);
@@ -1146,6 +1314,7 @@ export class ActionHelper {
     throw new Error(`No element found for label "${labelText}"`);
   }
 
+  /** Resolve exact label text -> for id (fast DOM evaluate) */
   public async resolveForId(labelText: string): Promise<string | null> {
     return this.page.locator('label').evaluateAll((els, t): string | null => {
       const norm = (s: string) => (s ?? '').trim().toLowerCase();
@@ -1155,6 +1324,7 @@ export class ActionHelper {
     }, labelText);
   }
 
+  /** Find a native <select> by label text */
   public async findDropdownByLabel(labelText: string): Promise<Locator> {
     let dd = this.page.getByLabel(labelText, { exact: true });
     if ((await dd.count()) === 0) dd = this.page.getByLabel(labelText, { exact: false });
@@ -1174,6 +1344,7 @@ export class ActionHelper {
   // JS path for stubborn native dropdowns
   // ===========================================================================
 
+  /** Select dropdown option using JS (works when native UI is flaky) */
   public async selectDropdownOptionByJS(
     selector: string,
     optionText: string,
@@ -1194,7 +1365,7 @@ export class ActionHelper {
         }
 
         if (index !== undefined) {
-          const target = index + 1;
+          const target = index + 1; // skip placeholder
           if (target < select.options.length) {
             select.selectedIndex = target;
             select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1209,6 +1380,7 @@ export class ActionHelper {
     );
   }
 
+  /** Read selected dropdown option text via JS */
   public async getSelectedDropdownText(selector: string): Promise<string | null> {
     return this.page.evaluate((sel): string | null => {
       const select = document.querySelector(sel) as HTMLSelectElement | null;
@@ -1216,6 +1388,12 @@ export class ActionHelper {
     }, selector);
   }
 
+  /**
+   * Robust dropdown select:
+   * - open
+   * - select by JS
+   * - verify selection
+   */
   public async selectDropdownOptionRobust(
     selector: string,
     optionText: string,
@@ -1229,6 +1407,7 @@ export class ActionHelper {
     if (!ok) throw new Error(`Failed to select option: ${optionText}`);
 
     await this.waitHelper.waitForTimeout(500);
+
     const current = await this.getSelectedDropdownText(selector);
     if (current && current !== 'Select Address' && current !== optionText) return current;
 
@@ -1236,43 +1415,16 @@ export class ActionHelper {
     return optionText;
   }
 
-  public async selectReactSelectDropdownOption(input: Locator, value?: string): Promise<string> {
-    await expect(input).toBeVisible();
-
-    const control = input.locator('xpath=ancestor::*[contains(@class,"react-select__control")]');
-
-    await control.click();
-
-    const options = this.page.getByRole('option');
-    await expect(options.first()).toBeVisible();
-
-    let chosen: string;
-
-    if (value?.trim()) {
-      chosen = value;
-      await options.filter({ hasText: value }).first().click();
-    } else {
-      const count = await options.count();
-      const idx = Math.floor(Math.random() * count);
-      const pick = options.nth(idx);
-
-      chosen = ((await pick.textContent()) ?? '').trim();
-      await pick.click();
-    }
-
-    await expect(control.getByText(chosen, { exact: false })).toBeVisible();
-
-    return chosen;
-  }
-
   // ===========================================================================
   // Navigation & page info
   // ===========================================================================
 
+  /** Navigate to URL (domcontentloaded) */
   public async navigateToUrl(url: string): Promise<void> {
     await this.page.goto(url, { waitUntil: 'domcontentloaded' });
   }
 
+  /** Navigate with optional timeout + wait for DOM ready */
   public async navigateToPage(url: string, timeout?: number): Promise<void> {
     await this.page.goto(url, {
       waitUntil: 'domcontentloaded',
@@ -1281,18 +1433,22 @@ export class ActionHelper {
     await this.waitHelper.waitForDOMContentLoaded();
   }
 
+  /** Get underlying Page instance */
   public getPage(): Page {
     return this.page;
   }
 
+  /** Get current URL */
   public getCurrentUrl(): string {
     return this.page.url();
   }
 
+  /** Get page title */
   public async getPageTitle(): Promise<string> {
     return this.page.title();
   }
 
+  /** Update runtime config + keep WaitHelper in sync */
   public updateConfig(updates: Partial<FrameworkConfig>): void {
     this.config = { ...this.config, ...updates };
     this.waitHelper.updateConfig(updates);
@@ -1302,6 +1458,7 @@ export class ActionHelper {
   // Static utilities
   // ===========================================================================
 
+  /** Click first visible selector in a list (safe fallback) */
   public static async clickFirstAvailable(page: Page, selectors: string[]): Promise<boolean> {
     for (const sel of selectors) {
       try {

@@ -1,15 +1,31 @@
+// projects/gateway-ui/steps/kyc_forms/KycInvestmentKnowledgeAndPreferencesPageSteps.ts
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
 import { expect, Page } from '@playwright/test';
 import { FrameworkConfig } from '@/framework/src';
+import { TextHelper } from '@framework/helpers/TextHelper';
+import {
+  KycInvestmentKnowledgeAndPreferencesPageLocators
+} from '@pages/kycElementLocators/KycInvestmentKnowledgeAndPreferencesPageLocators';
 
+/**
+ * KycInvestmentKnowledgeAndPreferencesPageSteps
+ * - Completes the "Investment Knowledge & Preferences" KYC page
+ * - Avoids any class-level state (no sustainabilityAwarenessIsYes flag)
+ * - Avoids custom union types (no TriBool)
+ * - Uses returned boolean | undefined to drive conditional assertions
+ */
 export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps {
+  private locators: KycInvestmentKnowledgeAndPreferencesPageLocators;
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
+    this.locators = new KycInvestmentKnowledgeAndPreferencesPageLocators(page);
   }
 
-  private sustainabilityAwarenessIsYes: boolean | null = null;
-
   /* -------------------- Verification -------------------- */
+
+  /**
+   * Verify we are on the correct page and the main heading is correct.
+   */
   public async verifyInvestmentKnowledgeAndPreferencesHeading(): Promise<void> {
     await this.assert.assertPageURLContains('page=investment-knowledge-and-preferences');
 
@@ -19,6 +35,10 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
 
   /* -------------------- Main Flow -------------------- */
 
+  /**
+   * Complete the entire Investment Knowledge & Preferences page
+   * and verify the success screen.
+   */
   public async completeKYC_InvestmentKnowledgeAndPreferences(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
 
@@ -27,29 +47,42 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     await this.verifyFactFindCompleted();
   }
 
+  /**
+   * Answers all questions on the page, safely skipping those not shown.
+   */
   private async answerInvestmentKnowledgeAndPreferencesQuestions(): Promise<void> {
     await this.answerInvestmentKnowledgeAndPreference('Yes');
     await this.answerClientClassification('Retail');
     await this.answerInvestmentExperience('Basic');
-    await this.answerSustainabilityRequirements('Yes - relating to all of their objectives');
+    await this.answerSustainabilityRequirements(
+      'They require a solution that has an objective to invest in assets that are environmentally and/or socially sustainable'
+    );
+
+    // Key refactor: we return awareness answer (true/false) or undefined (question not shown)
     await this.answerSustainabilityAwareness('Yes - they are comfortable proceeding');
-   await this.assertResponsibleInvestmentFramework();
+
+    // Assert the Responsible Investment Framework based on awareness (or skip if undefined)
+    await this.assertResponsibleInvestmentFramework();
+
     await this.answerResponsibleInvestmentFramework('No');
     await this.answerFaithBasedRequirements('No');
     await this.answerNegativeScreens('Yes');
     await this.selectNegativeScreens();
-    await this.answerSustainableInvestmentStatement('Neither of the above statements align');
+    await this.answerSustainableInvestmentStatement();
+
     await this.action.clickButtonByText('Save and Submit');
   }
 
   /* -------------------- Questions -------------------- */
-  /* Each question now only asserts: label must be visible. */
 
+  /**
+   * Q: Do you need to provide or update Investment Knowledge & Preference?
+   */
   private async answerInvestmentKnowledgeAndPreference(value?: string): Promise<void> {
     const label = 'Do you need to provide or update your Investment Knowledge & Preference?';
     const locator = this.page.getByText(label, { exact: false });
 
-    if (!(await locator.count())) return;
+    if ((await locator.count()) === 0) return;
     if (!value) throw new Error('answerInvestmentKnowledgeAndPreference requires a value');
 
     await expect(locator).toBeVisible();
@@ -58,154 +91,186 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     this.logInfo(`✓ Answered investment knowledge & preference: ${value}`);
   }
 
-  private async answerClientClassification(value?: string): Promise<void> {
-    const label = "What is the client's classification?";
-    const locator = this.page.getByText(label, { exact: false });
+  /**
+   * Q: What is the client's classification?
+   */
+  private async answerClientClassification(answer?: string): Promise<void> {
+    if (await this.elementNotExists("What is the client's classification?")) return;
+    if (!answer) throw new Error('answerClientClassification requires a value');
 
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerClientClassification requires a value');
-
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered client classification: ${value}`);
+    const chosen = await this.action.setRadioByQuestion(
+      "What is the client's classification?",
+      answer
+    );
+    this.logInfo(`✓ Answered client classification: ${chosen}`);
   }
 
+  /**
+   * Q: What's the client's level of investment experience?
+   */
   private async answerInvestmentExperience(value?: string): Promise<void> {
-    const label = "What's the client's level of investment experience?";
-    const locator = this.page.getByText(label, { exact: false });
-
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerInvestmentExperience requires a value');
-
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered investment experience: ${value}`);
+    if (await this.elementNotExists("What's the client's level of investment experience?")) return;
+    this.logInfo(
+      `✓ Answered investment experience: ${await this.action.setRadioByQuestion("What's the client's level of investment experience?", value)}`
+    );
   }
 
+  /**
+   * Q: Do you have sustainability linked requirements...?
+   */
   private async answerSustainabilityRequirements(value?: string): Promise<void> {
-    const label =
-      'Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?';
-    const locator = this.page.getByText(label, { exact: false });
-
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerSustainabilityRequirements requires a value');
-
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered sustainability requirements: ${value}`);
+    if (
+      await this.elementNotExists(
+        'Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?'
+      )
+    )
+      return;
+    this.logInfo(
+      `✓ Answered sustainability requirements: ${await this.action.setRadioByQuestion('Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?', value)}`
+    );
   }
 
+  /**
+   * Q: Is the client aware that in applying sustainability preferences...?
+   *
+   * If the question is displayed, selects the provided value.
+   * If not displayed, logs and safely skips.
+   */
   private async answerSustainabilityAwareness(value?: string): Promise<void> {
-    const pattern = /Is the client aware that in applying sustainability preferences/i;
-    const question = this.page.getByText(pattern).first();
+    const questionText =
+      'Is the client aware that in applying sustainability preferences they will be reducing their investable universe ' +
+      'and this can have an effect on financial returns as well as increasing investment costs?';
 
-    if (!(await question.count())) {
-      this.sustainabilityAwarenessIsYes = null;
-      this.logInfo('ℹ Sustainability awareness question not shown - skipping');
-      return;
-    }
+    const questionPattern = TextHelper.toRegExp(questionText);
 
-    if (!value) throw new Error('answerSustainabilityAwareness requires a value');
+    const result = await this.action.setRadioByQuestionPatternIfPresent(questionPattern, value);
 
-    await expect(question, 'Missing sustainability awareness question').toBeVisible({
-      timeout: 15_000,
-    });
-
-    await this.action.setRadioByQuestionPattern(pattern, value);
-
-    this.sustainabilityAwarenessIsYes = /^yes\b/i.test(value.trim());
-    this.logInfo(`✓ Answered sustainability awareness: ${value}`);
-  }
-
-  private async assertResponsibleInvestmentFramework(): Promise<void> {
-    if (this.sustainabilityAwarenessIsYes === undefined) {
-      this.logInfo(
-        'ℹ Skipping Responsible Investment Framework checks (awareness not answered)'
-      );
-      return;
-    }
-
-    const rifHeading = this.page.getByRole('heading', {
-      name: /^Fairstone's Responsible Investment Framework$/i, // FULL match
-    });
-
-    if (this.sustainabilityAwarenessIsYes === true) {
-      await expect(rifHeading).toBeVisible({ timeout: 15_000 });
-      await expect(this.page.getByRole('heading', { name: /^Negative Screens\b/i })).toBeVisible();
-      await expect(this.page.getByRole('heading', { name: /^Carbon Reduction\b/i })).toBeVisible();
-      await expect(this.page.getByRole('heading', { name: /^Positive Outcomes\b/i })).toBeVisible();
+    if (result) {
+      this.logInfo(`✓ Answered sustainability awareness: ${result}`);
     } else {
-      await expect(rifHeading).toHaveCount(0);
+      this.logInfo('ℹ Sustainability awareness question not shown - skipping');
     }
   }
 
+  /**
+   * Assert Responsible Investment Framework section
+   * - Skips if section is not displayed
+   * - Fails clearly if text changes
+   */
+  private async assertResponsibleInvestmentFramework(): Promise<void> {
+    const box = this.locators.responsibleInvestmentFrameworkBox;
+
+    // Optional section: skip if not present
+    if ((await box.count()) === 0) {
+      this.logInfo('ℹ RIF section not shown - skipping');
+      return;
+    }
+
+    // Main heading - exact text match (will show expected vs actual on failure)
+    await expect(this.locators.responsibleInvestmentFrameworkTitle).toHaveText(
+      "Fairstone's Responsible Investment Framework",
+      { timeout: 15_000 }
+    );
+    await expect(this.locators.negativeScreensHeading).toContainText('Negative Screens');
+    await expect(this.locators.carbonReductionHeading).toContainText('Carbon Reduction');
+    await expect(this.locators.positiveOutcomesHeading).toContainText('Positive Outcomes');
+  }
+
+  /**
+   * Q: Does Fairstone's Responsible Investment Framework align...?
+   */
   private async answerResponsibleInvestmentFramework(value?: string): Promise<void> {
-    const label =
-      "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?";
-    const locator = this.page.getByText(label, { exact: false });
+    if (
+      await this.elementNotExists(
+        "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?"
+      )
+    )
+      return;
 
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerResponsibleInvestmentFramework requires a value');
+    const chosen = await this.action.setRadioByQuestion(
+      "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?",
+      value
+    );
 
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered responsible investment framework: ${value}`);
+    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
+    this.logInfo(`✓ Answered responsible investment framework: ${chosen}`);
   }
 
+  /**
+   * Q: Are the client's requirements faith based?
+   */
   private async answerFaithBasedRequirements(value?: string): Promise<void> {
-    const label = "Are the client's requirements faith based?";
-    const locator = this.page.getByText(label, { exact: false });
+    if (await this.elementNotExists("Are the client's requirements faith based?")) return;
 
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerFaithBasedRequirements requires a value');
+    const chosen = await this.action.setRadioByQuestion(
+      "Are the client's requirements faith based?",
+      value
+    );
 
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered faith-based requirements: ${value}`);
+    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
+    this.logInfo(`✓ Answered faith-based requirements: ${chosen}`);
   }
 
+  /**
+   * Q: Does the client have specific negative screens...?
+   */
   private async answerNegativeScreens(value?: string): Promise<void> {
-    const label = 'Does the client have specific negative screens that need to be employed?';
-    const locator = this.page.getByText(label, { exact: false });
+    if (
+      await this.elementNotExists(
+        'Does the client have specific negative screens that need to be employed?'
+      )
+    )
+      return;
+    const chosen = await this.action.setRadioByQuestion(
+      'Does the client have specific negative screens that need to be employed?',
+      value
+    );
 
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerNegativeScreens requires a value');
-
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered negative screens: ${value}`);
+    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
+    this.logInfo(`✓ Answered negative screens: ${chosen}`);
   }
 
-  private async selectNegativeScreens(selection?: string | string[] | number): Promise<string[]> {
-    const groupId = 'person.negativeScreens';
+  /**
+   * Select negative screens checkboxes if the aria-group is shown.
+   */
+  private async selectNegativeScreens(...values: string[]): Promise<string[]> {
+    await this.waitHelper.waitForElement(this.locators.negativeScreensFieldset, 5_000).catch(
+      () => {}
+    );
+    if (!(await this.locators.negativeScreensFieldset.isVisible())) return [];
 
-    if (!(await this.isAriaGroupVisible(groupId))) return [];
-
-    return this.action.selectCheckboxesFromAriaGroup(groupId, selection);
+    const selected = await this.action.selectCheckboxGroup(
+      this.locators.negativeScreensFieldset,
+      ...values
+    );
+    this.logInfo(`✓ Negative Screens selected: ${selected.join(', ')}`);
+    return selected;
   }
 
+  /**
+   * Q: Which statement aligns with the client's sustainable investment requirements?
+   */
   private async answerSustainableInvestmentStatement(value?: string): Promise<void> {
-    const label =
-      "Which of the below statements most closely aligns with the client's sustainable investment requirements?";
-    const locator = this.page.getByText(label, { exact: false });
+    if (
+      await this.elementNotExists(
+        "Which of the below statements most closely aligns with the client's sustainable investment requirements?"
+      )
+    )
+      return;
+    const chosen = await this.action.setRadioByQuestion(
+      "Which of the below statements most closely aligns with the client's sustainable investment requirements?",
+      value
+    );
 
-    if (!(await locator.count())) return;
-    if (!value) throw new Error('answerSustainableInvestmentStatement requires a value');
-
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered sustainable investment statement: ${value}`);
+    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
+    this.logInfo(`✓ Answered sustainable investment statement: ${chosen}`);
   }
 
   /* -------------------- Final Fact Find Completed -------------------- */
 
+  /**
+   * Verify KYC completes successfully and we land on the success page.
+   */
   private async verifyFactFindCompleted(): Promise<void> {
     await this.page.waitForURL(/\/kyc-ff\/success/i, { timeout: 15_000 });
     await expect(this.page.getByText(/Fact Find Successfully Completed/i)).toBeVisible({

@@ -6,6 +6,7 @@ import { FrameworkConfig } from '../types';
 import { Page } from '@playwright/test';
 import { createLogger, ILogger } from '../utils/Logger';
 import { TableHelper } from '@framework/helpers/TableHelper';
+import { TextHelper } from '@framework/helpers/TextHelper';
 
 /**
  * Unified Base Page Class

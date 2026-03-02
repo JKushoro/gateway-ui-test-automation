@@ -50,6 +50,24 @@ export class TextHelper {
   }
 
   /**
+   * Escape a string so it can be safely used inside a RegExp as a literal.
+   * Example: "A+B?" -> "A\+B\?"
+   */
+  public static escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Convert plain text into a RegExp (escaped by default).
+   * - escaped=true means the text is treated as a literal (recommended for UI questions)
+   * - flags defaults to 'i' for case-insensitive matching
+   */
+  public static toRegExp(text: string, flags: string = 'i', escaped: boolean = true): RegExp {
+    const source = escaped ? this.escapeRegExp(text) : text;
+    return new RegExp(source, flags);
+  }
+
+  /**
    * Clean and normalize text (remove extra whitespace, normalize line breaks)
    */
   public static cleanText(text: string): string {

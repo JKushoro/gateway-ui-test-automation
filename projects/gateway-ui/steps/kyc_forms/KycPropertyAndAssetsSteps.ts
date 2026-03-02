@@ -33,7 +33,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
   }
 
   private async answerPropertyAndAssetQuestions(): Promise<void> {
-    await this.answerOwnOrRentPropertyQuestion();
+    await this.answerOwnOrRentPropertyQuestion('Owner');
     await this.answerAssetOwnerQuestion();
     await this.fillPropertyValue();
     await this.fillPurchaseHomeDate();
@@ -42,8 +42,8 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
 
   /* -------------------- Questions (split into methods) -------------------- */
   private async answerOwnOrRentPropertyQuestion(answer?: string): Promise<void> {
-    await this.action.setRadioByQuestionPattern(/do you own or rent .+\?/i, answer);
-    this.logInfo(`✓ Answered own or rent property question: ${answer ?? 'auto'}`);
+    const selected = await this.action.setRadioByQuestionPattern(/do you own or rent .+\?/i, answer);
+    this.logInfo(`✓ Answered own or rent property question: ${selected}`);
   }
 
   /* -------------------- Supporting methods -------------------- */
