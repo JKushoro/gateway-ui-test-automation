@@ -1,62 +1,69 @@
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { FrameworkConfig } from '@/framework/src';
 
+/**
+ * KYC Protection Page Steps - handles all protection-related questions
+ * Refactored to follow DRY principles and standardized patterns
+ * Uses the enhanced BaseKYCSteps for consistent behavior
+ */
 export class KycProtectionPageSteps extends BaseKYCSteps {
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
   }
 
-  /* -------------------- Verification -------------------- */
-  /** Verify the Protection heading is visible */
-  public async verifyProtectionHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=protection');
-
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Protection');
-  }
-
-  /* -------------------- Main Flow  -------------------- */
-  /** Complete the KYC Protection section */
+  /**
+   * Main method to complete the entire Protection page
+   * Uses the standardized KYC page completion flow
+   */
   public async completeKYC_Protection(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyProtectionHeading();
-    await this.answerProtectionQuestions();
-    await this.action.clickButtonByText('Save & Continue');
+    await this.completeKYCPageStandard(
+      'page=protection',
+      'Protection',
+      () => this.answerAllProtectionQuestions()
+    );
   }
 
-  private async answerProtectionQuestions(): Promise<void> {
-    await this.answerIncomeProtectionOutsideEmployer();
-    await this.answerLifeOrCriticalIllnessCoverOutsideEmployer();
-    await this.answerPrivateMedicalInsuranceOutsideEmployer();
+  /**
+   * Answer all protection-related questions
+   * Each method handles one specific question using standardized patterns
+   */
+  private async answerAllProtectionQuestions(): Promise<void> {
+    await this.answerIncomeProtectionQuestion('No');
+    await this.answerLifeOrCriticalIllnessCoverQuestion('No');
+    await this.answerPrivateMedicalInsuranceQuestion('No');
   }
 
-  /* -------------------- Questions (split into methods) -------------------- */
-
-  private async answerIncomeProtectionOutsideEmployer(answer: string = 'No'): Promise<void> {
-    await this.action.setRadioByQuestion(
+  /**
+   * Answer: "Do you have any income protection (not provided by an employer)?"
+   * Uses the standardized radio question pattern
+   */
+  private async answerIncomeProtectionQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionIfExists(
       'Do you have any income protection (not provided by an employer)?',
       answer
     );
-    this.logInfo(`✓ Answered income protection outside employer: ${answer}`);
   }
 
-  private async answerLifeOrCriticalIllnessCoverOutsideEmployer(
-    answer: string = 'No'
-  ): Promise<void> {
-    await this.action.setRadioByQuestion(
+  /**
+   * Answer: "Do you have any life insurance or critical illness cover (not provided by an employer)?"
+   * Uses the standardized radio question pattern
+   */
+  private async answerLifeOrCriticalIllnessCoverQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionIfExists(
       'Do you have any life insurance or critical illness cover (not provided by an employer)?',
       answer
     );
-    this.logInfo(`✓ Answered life or critical illness cover outside employer: ${answer}`);
   }
 
-  private async answerPrivateMedicalInsuranceOutsideEmployer(answer: string = 'No'): Promise<void> {
-    await this.action.setRadioByQuestion(
+  /**
+   * Answer: "Do you have any Private Medical Insurance (not provided by an employer)?"
+   * Uses the standardized radio question pattern
+   */
+  private async answerPrivateMedicalInsuranceQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionIfExists(
       'Do you have any Private Medical Insurance (not provided by an employer)?',
       answer
     );
-    this.logInfo(`✓ Answered private medical insurance outside employer: ${answer}`);
   }
 }

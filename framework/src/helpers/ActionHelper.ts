@@ -551,6 +551,199 @@ export class ActionHelper {
   }
 
   /**
+   * Set radio answer with MANDATORY selection verification - FAILS TEST if selection fails
+   * - Ensures radio button is actually selected after interaction
+   * - Throws error if selection verification fails
+   * - Use this for critical form fields that MUST be selected
+   */
+  public async setRadioByQuestionWithVerification(
+    questionText: string,
+    answer?: string | boolean,
+    timeoutMs: number = 15_000
+  ): Promise<string> {
+    const result = await this.setRadioByQuestion(questionText, answer);
+    
+    // CRITICAL: Verify the selection actually worked
+    await this.verifyRadioSelection(questionText, result, timeoutMs);
+    
+    return result;
+  }
+
+  /**
+   * Set radio answer with verification for pattern-based questions
+   * - FAILS TEST if selection verification fails
+   */
+  public async setRadioByQuestionPatternWithVerification(
+    pattern: RegExp,
+    answer?: string | boolean,
+    timeoutMs: number = 15_000
+  ): Promise<string> {
+    const result = await this.setRadioByQuestionPattern(pattern, answer);
+    
+    // CRITICAL: Verify the selection actually worked
+    await this.verifyRadioSelectionByPattern(pattern, result, timeoutMs);
+    
+    return result;
+  }
+
+  /**
+   * Set radio answer with verification - only if question exists
+   * - Returns undefined if question not found
+   * - FAILS TEST if question exists but selection fails
+   */
+  public async setRadioByQuestionWithVerificationIfPresent(
+    questionText: string,
+    answer?: string | boolean,
+    timeoutMs: number = 15_000
+  ): Promise<string | undefined> {
+    const q = this.page.getByText(questionText, { exact: false }).first();
+    if ((await q.count()) === 0) return undefined;
+
+    await q.waitFor({ state: 'visible', timeout: timeoutMs });
+    return this.setRadioByQuestionWithVerification(questionText, answer, timeoutMs);
+  }
+
+  /**
+   * PRIVATE: Verify radio button selection by question text
+   * - Throws error if verification fails (causing test to fail)
+   */
+  private async verifyRadioSelection(
+    questionText: string,
+    expectedValue: string,
+    timeoutMs: number
+  ): Promise<void> {
+    try {
+      const question = this.page.getByText(questionText, { exact: false }).first();
+      const radioGroup = question.locator('xpath=following::*[@role="radiogroup"][1]').first();
+      
+      // Wait for radio group to be ready
+      await this.waitHelper.waitForElement(radioGroup, timeoutMs);
+      
+      // Check if any radio is selected
+      const selectedRadio = radioGroup.getByRole('radio', { checked: true }).first();
+      await expect(selectedRadio).toBeVisible({ timeout: timeoutMs });
+      await expect(selectedRadio).toBeChecked({ timeout: timeoutMs });
+      
+      // Verify the correct value is selected
+      const selectedValue = await this.getSelectedRadioValue(radioGroup);
+      if (!selectedValue) {
+        throw new Error(`No radio button selected for question: "${questionText}"`);
+      }
+      
+      if (this.logger?.info) {
+        this.logger.info(`Radio selection verified: "${questionText}" = "${selectedValue}"`);
+      }
+      
+    } catch (error) {
+      const errorMsg = `RADIO SELECTION VERIFICATION FAILED for question: "${questionText}". Expected: "${expectedValue}". Error: ${error instanceof Error ? error.message : String(error)}`;
+      if (this.logger?.error) {
+        this.logger.error(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+  }
+
+  /**
+   * PRIVATE: Verify radio button selection by pattern
+   */
+  private async verifyRadioSelectionByPattern(
+    pattern: RegExp,
+    expectedValue: string,
+    timeoutMs: number
+  ): Promise<void> {
+    try {
+      const question = this.page.getByText(pattern).first();
+      const questionText = await TextHelper.getTrimmedText(question);
+      await this.verifyRadioSelection(questionText, expectedValue, timeoutMs);
+    } catch (error) {
+      const errorMsg = `RADIO SELECTION VERIFICATION FAILED for pattern: ${pattern}. Expected: "${expectedValue}". Error: ${error instanceof Error ? error.message : String(error)}`;
+      if (this.logger?.error) {
+        this.logger.error(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+  }
+
+  /**
+   * PRIVATE: Get the value of the currently selected radio button
+   */
+  private async getSelectedRadioValue(radioGroup: Locator): Promise<string | null> {
+    try {
+      const selectedRadio = radioGroup.getByRole('radio', { checked: true }).first();
+      
+      // Try to get value from aria-label first
+      const ariaLabel = await selectedRadio.getAttribute('aria-label');
+      if (ariaLabel) return ariaLabel.trim();
+      
+      // Try to get value from associated label
+      const labelText = await TextHelper.getTrimmedText(selectedRadio.locator('xpath=ancestor::label[1]'));
+      if (labelText) return labelText;
+      
+      // Try to get value attribute
+      const valueAttr = await selectedRadio.getAttribute('value');
+      if (valueAttr) return valueAttr.trim();
+      
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Set checkbox with MANDATORY selection verification - FAILS TEST if selection fails
+   * - Ensures checkbox is actually checked/unchecked after interaction
+   * - Throws error if verification fails
+   */
+  public async setCheckboxWithVerification(
+    locator: Locator,
+    checked: boolean = true,
+    timeoutMs: number = 15_000
+  ): Promise<void> {
+    try {
+      await this.waitHelper.waitForElement(locator, timeoutMs);
+      
+      if (checked) {
+        await locator.check({ force: true, timeout: timeoutMs });
+        await expect(locator).toBeChecked({ timeout: timeoutMs });
+      } else {
+        await locator.uncheck({ force: true, timeout: timeoutMs });
+        await expect(locator).not.toBeChecked({ timeout: timeoutMs });
+      }
+      
+      if (this.logger?.info) {
+        this.logger.info(`Checkbox verification successful: ${checked ? 'checked' : 'unchecked'}`);
+      }
+      
+    } catch (error) {
+      const errorMsg = `CHECKBOX VERIFICATION FAILED. Expected: ${checked ? 'checked' : 'unchecked'}. Error: ${error instanceof Error ? error.message : String(error)}`;
+      if (this.logger?.error) {
+        this.logger.error(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+  }
+
+  /**
+   * Set checkbox by label with verification
+   */
+  public async setCheckboxByLabelWithVerification(
+    labelText: string,
+    checked: boolean = true,
+    timeoutMs: number = 15_000
+  ): Promise<void> {
+    try {
+      const checkbox = this.page.getByLabel(labelText, { exact: false }).first();
+      await this.setCheckboxWithVerification(checkbox, checked, timeoutMs);
+    } catch (error) {
+      const errorMsg = `CHECKBOX BY LABEL VERIFICATION FAILED. Label: "${labelText}". Expected: ${checked ? 'checked' : 'unchecked'}. Error: ${error instanceof Error ? error.message : String(error)}`;
+      if (this.logger?.error) {
+        this.logger.error(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+  }
+
+  /**
    * Select random radio by name attribute (classic HTML radios)
    * - Excludes disabled and user-provided values
    */

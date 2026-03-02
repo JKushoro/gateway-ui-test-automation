@@ -79,39 +79,33 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    * Q: Do you need to provide or update Investment Knowledge & Preference?
    */
   private async answerInvestmentKnowledgeAndPreference(value?: string): Promise<void> {
-    const label = 'Do you need to provide or update your Investment Knowledge & Preference?';
-    const locator = this.page.getByText(label, { exact: false });
-
-    if ((await locator.count()) === 0) return;
     if (!value) throw new Error('answerInvestmentKnowledgeAndPreference requires a value');
 
-    await expect(locator).toBeVisible();
-    await this.action.setRadioByQuestion(label, value);
-
-    this.logInfo(`✓ Answered investment knowledge & preference: ${value}`);
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerification('Do you need to provide or update your Investment Knowledge & Preference?', value);
   }
 
   /**
    * Q: What is the client's classification?
    */
   private async answerClientClassification(answer?: string): Promise<void> {
-    if (await this.elementNotExists("What is the client's classification?")) return;
     if (!answer) throw new Error('answerClientClassification requires a value');
 
-    const chosen = await this.action.setRadioByQuestion(
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
       "What is the client's classification?",
       answer
     );
-    this.logInfo(`✓ Answered client classification: ${chosen}`);
   }
 
   /**
    * Q: What's the client's level of investment experience?
    */
   private async answerInvestmentExperience(value?: string): Promise<void> {
-    if (await this.elementNotExists("What's the client's level of investment experience?")) return;
-    this.logInfo(
-      `✓ Answered investment experience: ${await this.action.setRadioByQuestion("What's the client's level of investment experience?", value)}`
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      "What's the client's level of investment experience?",
+      value
     );
   }
 
@@ -119,14 +113,10 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    * Q: Do you have sustainability linked requirements...?
    */
   private async answerSustainabilityRequirements(value?: string): Promise<void> {
-    if (
-      await this.elementNotExists(
-        'Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?'
-      )
-    )
-      return;
-    this.logInfo(
-      `✓ Answered sustainability requirements: ${await this.action.setRadioByQuestion('Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?', value)}`
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?',
+      value
     );
   }
 
@@ -180,54 +170,33 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    * Q: Does Fairstone's Responsible Investment Framework align...?
    */
   private async answerResponsibleInvestmentFramework(value?: string): Promise<void> {
-    if (
-      await this.elementNotExists(
-        "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?"
-      )
-    )
-      return;
-
-    const chosen = await this.action.setRadioByQuestion(
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
       "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?",
       value
     );
-
-    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
-    this.logInfo(`✓ Answered responsible investment framework: ${chosen}`);
   }
 
   /**
    * Q: Are the client's requirements faith based?
    */
   private async answerFaithBasedRequirements(value?: string): Promise<void> {
-    if (await this.elementNotExists("Are the client's requirements faith based?")) return;
-
-    const chosen = await this.action.setRadioByQuestion(
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
       "Are the client's requirements faith based?",
       value
     );
-
-    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
-    this.logInfo(`✓ Answered faith-based requirements: ${chosen}`);
   }
 
   /**
    * Q: Does the client have specific negative screens...?
    */
   private async answerNegativeScreens(value?: string): Promise<void> {
-    if (
-      await this.elementNotExists(
-        'Does the client have specific negative screens that need to be employed?'
-      )
-    )
-      return;
-    const chosen = await this.action.setRadioByQuestion(
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
       'Does the client have specific negative screens that need to be employed?',
       value
     );
-
-    await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
-    this.logInfo(`✓ Answered negative screens: ${chosen}`);
   }
 
   /**

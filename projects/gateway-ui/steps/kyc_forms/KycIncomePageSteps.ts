@@ -1,64 +1,72 @@
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { FrameworkConfig } from '@/framework/src';
 
+/**
+ * KYC Income Page Steps - handles all income-related questions
+ * Refactored to follow DRY principles and standardized patterns
+ * Uses the enhanced BaseKYCSteps for consistent behavior
+ */
 export class KycIncomePageSteps extends BaseKYCSteps {
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
   }
 
-  /* -------------------- Verification -------------------- */
-  /** Verify the Income heading is visible */
-  public async verifyIncomeHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=income');
-
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Income');
-  }
-
-  /* -------------------- Main Flow  -------------------- */
-  /** Complete the KYC Income section */
+  /**
+   * Main method to complete the entire Income page
+   * Uses the standardized KYC page completion flow
+   */
   public async completeKYC_Income(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyIncomeHeading();
-    await this.answerIncomeQuestions();
-    await this.action.clickButtonByText('Save & Continue');
-  }
-
-  private async answerIncomeQuestions(): Promise<void> {
-    await this.answerOtherIncomeSource('Yes');
-    await this.answerEarner('Joint');
-    await this.selectIncomeSource();
-    await this.fillGrossAnnualIncomeValue('Gross annual income', '£90,000');
-  }
-
-  /* -------------------- Questions (split into methods) -------------------- */
-
-  private async answerOtherIncomeSource(answer?: string): Promise<void> {
-    await this.action.setRadioByQuestion('Do you have any other income source?', answer);
-    this.logInfo(`✓ Answered other income source: ${answer}`);
-  }
-
-  private async answerEarner(answer?: string): Promise<void> {
-    if (await this.elementNotExists('Earner')) return;
-    this.logInfo(
-      `✓ Answered earner question: ${await this.action.setRadioByQuestion('Earner', answer)}`
+    await this.completeKYCPageStandard(
+      'page=income',
+      'Income',
+      () => this.answerAllIncomeQuestions()
     );
   }
 
-  private async selectIncomeSource(answer?: string): Promise<string> {
-    if (await this.elementNotExists('Income source')) return '';
-    return await this.action.chooseFromLabeledReactSelectDropdown('Income source', answer);
+  /**
+   * Answer all income-related questions
+   * Each method handles one specific question using standardized patterns
+   */
+  private async answerAllIncomeQuestions(): Promise<void> {
+    await this.answerOtherIncomeSourceQuestion('No');
+    await this.answerEarnerTypeQuestion('Joint');
+    await this.selectIncomeSourceOption('Employed Salary');
+    await this.fillGrossAnnualIncomeField('£90,000');
   }
 
-  private async fillGrossAnnualIncomeValue(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) {
-      this.logInfo(`${label} not present, skipping`);
-      return;
-    }
+  /**
+   * Answer: "Do you have any other income source?"
+   * Uses the standardized radio question pattern
+   */
+  private async answerOtherIncomeSourceQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionIfExists(
+      'Do you have any other income source?',
+      answer
+    );
+  }
 
-    await this.action.fillInputByLabel(label, value);
-    this.logInfo(`✓ Filled ${label} value: ${value}`);
+  /**
+   * Answer: "Earner" question
+   * Uses the standardized radio question pattern
+   */
+  private async answerEarnerTypeQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionIfExists('Earner', answer);
+  }
+
+  /**
+   * Select income source from dropdown
+   * Uses the standardized dropdown selection pattern
+   */
+  private async selectIncomeSourceOption(answer: string): Promise<void> {
+    await this.selectDropdownIfExists('Income source', answer);
+  }
+
+  /**
+   * Fill gross annual income field
+   * Uses the standardized input filling pattern
+   */
+  private async fillGrossAnnualIncomeField(value: string): Promise<void> {
+    await this.fillInputIfExists('Gross annual income', value);
   }
 }

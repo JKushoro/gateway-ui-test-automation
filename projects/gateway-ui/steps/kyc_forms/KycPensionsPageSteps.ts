@@ -1,63 +1,81 @@
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { FrameworkConfig } from '@/framework/src';
 
-
+/**
+ * KYC Pensions Page Steps - handles all pension-related questions
+ * Refactored to follow DRY principles and standardized patterns
+ * Uses the enhanced BaseKYCSteps for consistent behavior
+ */
 export class KycPensionsPageSteps extends BaseKYCSteps {
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
   }
 
-  /* -------------------- Verification -------------------- */
-  /** Verify the Pensions heading is visible */
-  public async verifyPensionsHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=pensions');
-
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Pensions');
-  }
-
-  /* -------------------- Main Flow  -------------------- */
-  /** Complete the KYC Pensions section */
+  /**
+   * Main method to complete the entire Pensions page
+   * Uses the standardized KYC page completion flow
+   */
   public async completeKYC_Pensions(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyPensionsHeading();
-    await this.answerPensionQuestions();
-    await this.action.clickButtonByText('Save & Continue');
-  }
-
-  private async answerPensionQuestions(): Promise<void> {
-    await this.answerWorkplacePension('No');
-    await this.answerPensionsFromPreviousEmployment('No');
-    await this.answerOtherPensions('No');
-    await this.answerRequestedStatePensionForecast('No');
-  }
-
-  /* -------------------- Questions (split into methods) -------------------- */
-
-  //Are you an active member of a workplace pension scheme?
-
-  private async answerWorkplacePension(answer?: string): Promise<void> {
-    if (await this.elementNotExists('Are you an active member of a workplace pension scheme?'))
-      return;
-    this.logInfo(
-      `✓ Answered an active member of a workplace pension question: ${await this.action.setRadioByQuestion('Are you an active member of a workplace pension scheme?', answer)}`
+    await this.completeKYCPageStandard(
+      'page=pensions',
+      'Pensions',
+      () => this.answerAllPensionQuestions()
     );
   }
 
-  private async answerPensionsFromPreviousEmployment(answer?: string): Promise<void> {
-    await this.action.setRadioByQuestion('Do you have any pensions from previous employment?', answer);
-    this.logInfo(`✓ Answered pensions from previous employment: ${answer}`);
+  /**
+   * Answer all pension-related questions
+   * Each method handles one specific question using standardized patterns
+   */
+  private async answerAllPensionQuestions(): Promise<void> {
+    await this.answerWorkplacePensionQuestion('No');
+    await this.answerPreviousEmploymentPensionsQuestion('No');
+    await this.answerOtherPensionsQuestion('No');
+    await this.answerStatePensionForecastQuestion('No');
   }
 
-  private async answerOtherPensions(answer?: string): Promise<void> {
-    await this.action.setRadioByQuestion('Do you have any other pensions?', answer);
-    this.logInfo(`✓ Answered other pensions: ${answer}`);
+  /**
+   * Answer: "Are you an active member of a workplace pension scheme?"
+   * Uses the standardized radio question pattern with verification
+   */
+  private async answerWorkplacePensionQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Are you an active member of a workplace pension scheme?',
+      answer
+    );
   }
 
-  private async answerRequestedStatePensionForecast(answer?: string): Promise<void> {
-    await this.action.setRadioByQuestion('Have you requested a state pension forecast?', answer);
-    this.logInfo(`✓ Answered state pension forecast requested: ${answer}`);
+  /**
+   * Answer: "Do you have any pensions from previous employment?"
+   * Uses the standardized radio question pattern with verification
+   */
+  private async answerPreviousEmploymentPensionsQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Do you have any pensions from previous employment?',
+      answer
+    );
+  }
+
+  /**
+   * Answer: "Do you have any other pensions?"
+   * Uses the standardized radio question pattern with verification
+   */
+  private async answerOtherPensionsQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Do you have any other pensions?',
+      answer
+    );
+  }
+
+  /**
+   * Answer: "Have you requested a state pension forecast?"
+   * Uses the standardized radio question pattern with verification
+   */
+  private async answerStatePensionForecastQuestion(answer?: string): Promise<void> {
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Have you requested a state pension forecast?',
+      answer
+    );
   }
 }

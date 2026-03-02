@@ -1,7 +1,7 @@
 // projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts
 import { test, Page, expect } from '@playwright/test';
 
-import { GatewaySetup } from '@setup/GatewaySetup';
+import { LoginSteps } from '@steps/LoginSteps';
 import { FactFindCreationSteps } from '@steps/clients/fact_find/FactFindCreationSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
@@ -42,7 +42,7 @@ test.describe.serial('Create Fact Find', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await GatewaySetup.setupForEnvironment(page, 'qa');
+    await LoginSteps.setupForEnvironment(page, 'qa');
 
     factFindCreationSteps = new FactFindCreationSteps(page);
     sideNav = new SideNavService(page);

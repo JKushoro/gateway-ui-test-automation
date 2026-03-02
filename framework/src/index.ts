@@ -7,9 +7,9 @@ export { AlertService } from '../../projects/gateway-ui/steps/components/AlertSe
 // Helper exports
 export { ActionHelper } from './helpers/ActionHelper';
 export { AssertionHelper } from './helpers/AssertionHelper';
-export { ElementHelper } from './helpers/ElementHelper';
 export { LocatorHelper } from './helpers/LocatorHelper';
 export { TextHelper } from './helpers/TextHelper';
+export { TableHelper } from './helpers/TableHelper';
 export { WaitHelper } from './helpers/WaitHelper';
 
 // Configuration exports

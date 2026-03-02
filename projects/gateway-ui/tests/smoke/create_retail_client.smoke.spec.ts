@@ -1,6 +1,6 @@
 //projects/gateway-ui/tests/smoke/create_retail_client.smoke.spec.ts
 import { test, Page } from '@playwright/test';
-import { GatewaySetup } from '@setup/GatewaySetup';
+import { LoginSteps } from '@steps/LoginSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { RetailClientCreationSteps } from '@steps/clients/RetailClientCreationSteps';
 import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
@@ -13,7 +13,7 @@ test.describe('Create a Retail Client', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await GatewaySetup.setupForEnvironment(page, 'qa');
+    await LoginSteps.setupForEnvironment(page, 'qa');
 
     // Initialize services once - eliminates duplication
     sideNav = new SideNavService(page);

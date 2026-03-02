@@ -68,16 +68,20 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /* -------------------- Question Methods -------------------- */
 
   private async selectEmploymentStatus(answer?: string): Promise<string> {
-    return await this.action.chooseFromQuestionReactSelectDropdown(
-      'What is your current employment status?',
-      answer
-    );
+    try {
+      return this.action.chooseFromQuestionReactSelectDropdown(
+        'What is your current employment status?',
+        answer
+      );
+    } catch (error) {
+      throw new Error(`Failed to select employment status: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   private async selectEmploymentContract(answer?: string): Promise<string> {
     if (await this.elementNotExists('What type of employment contract do you have?')) return '';
 
-    return await this.action.chooseFromQuestionReactSelectDropdown(
+    return this.action.chooseFromQuestionReactSelectDropdown(
       'What type of employment contract do you have?',
       answer
     );
@@ -85,9 +89,8 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
 
   private async answerRetirementAndAge(answer?: string): Promise<void> {
     const question = 'Do you plan to retire at this age?';
-    if (!(await this.page.getByText(question, { exact: false }).count())) return;
-
-    await this.action.setRadioByQuestion(question, answer);
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(question, answer);
   }
 
   private async fillRetirementAge(label: string, value: string): Promise<void> {
@@ -120,7 +123,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
 
     if (!(await this.page.getByText(question, { exact: false }).count())) return '';
 
-    return await this.action.chooseFromQuestionReactSelectDropdown(question);
+    return this.action.chooseFromQuestionReactSelectDropdown(question);
   }
 
   private async selectOverallHealth(): Promise<void> {
@@ -131,32 +134,29 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
 
   private async answerMedicalConditions(answer: string = 'No'): Promise<void> {
     const question = 'Do you have any known medical conditions?';
-    if (!(await this.page.getByText(question, { exact: false }).count())) return;
-
-    await this.action.setRadioByQuestion(question, answer);
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(question, answer);
   }
 
   private async answerSmoking12Months(answer: string = 'Yes'): Promise<void> {
     const question = 'Do you smoke or vape, or have you done so in the past 12 months?';
-
-    if (!(await this.page.getByText(question, { exact: false }).count())) return;
-
-    await this.action.setRadioByQuestion(question, answer);
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(question, answer);
   }
 
   private async answerWillQuestion(answer?: string): Promise<void> {
-    if (await this.elementNotExists('Do you have an up to date Will that reflects your current wishes?')
-    )
-      return;
-    this.logInfo(
-      `✓ Answered to up to date Will question: ${await this.action.setRadioByQuestion('Do you have an up to date Will that reflects your current wishes?', answer)}`
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Do you have an up to date Will that reflects your current wishes?',
+      answer
     );
   }
 
   private async answerPowerOfAttorney(answer?: string): Promise<void> {
-    if (await this.elementNotExists('Do you have a Power of Attorney in place?')) return;
-    this.logInfo(
-      `✓ Answered to Power of Attorney question: ${await this.action.setRadioByQuestion('Do you have a Power of Attorney in place?', answer)}`
+    // Use verification method to ensure selection is successful
+    await this.answerRadioQuestionWithVerificationIfPresent(
+      'Do you have a Power of Attorney in place?',
+      answer
     );
   }
 

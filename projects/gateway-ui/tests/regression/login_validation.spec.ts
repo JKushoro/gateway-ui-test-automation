@@ -1,101 +1,107 @@
 // projects/gateway-ui/tests/regression/login_validation.spec.ts
 import { test, Page } from '@playwright/test';
-import { GatewaySetup } from '@setup/GatewaySetup';
 import { LoginSteps } from '@steps/LoginSteps';
 import { DashboardSteps } from '@steps/DashboardSteps';
+import { LoginValidationSteps } from '@steps/LoginValidationSteps';
 
 test.describe('Login Tests', () => {
   let page: Page;
   let loginSteps: LoginSteps;
+  let loginTestSteps: LoginValidationSteps;
   let dashboardSteps: DashboardSteps;
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
-    
-    // Initialize services once - eliminates duplication
+
     loginSteps = new LoginSteps(page);
+    loginTestSteps = new LoginValidationSteps(page);
     dashboardSteps = new DashboardSteps(page);
   });
 
-  // Positive Login Tests
-  test('Login with valid credentials from environment', async () => {
-    await GatewaySetup.setupForEnvironment(page, 'qa');
-  });
+  /* -------------------- Positive Login Tests -------------------- */
 
-  test('Verify dashboard is accessible after login', async () => {
-    await GatewaySetup.setupForEnvironment(page, 'qa');
+  test('Login with valid credentials from environment (via LoginSteps)', async () => {
+    await loginSteps.performValidLogin();
     await dashboardSteps.verifyDashboard();
   });
 
-  test('Perform valid login using environment credentials', async () => {
-    await loginSteps.performValidLogin();
+  test('Verify dashboard is accessible after login (via GatewaySetup)', async () => {
+    await LoginSteps.setupForEnvironment(page, 'qa');
+    await dashboardSteps.verifyDashboard();
   });
 
-  // UI Validation Tests
+  /* -------------------- UI Validation Tests -------------------- */
+
   test('Verify login button is present and clickable', async () => {
-    await loginSteps.verifyLoginButtonPresent();
+    await loginTestSteps.verifyLoginButtonPresent();
   });
 
   test('Verify redirect to Microsoft login', async () => {
-    await loginSteps.verifyRedirectToMicrosoftLogin();
+    await loginTestSteps.verifyRedirectToMicrosoftLogin();
   });
 
-  // Negative Login Tests - Invalid Credentials
+  /* -------------------- Negative Login Tests - Invalid Credentials -------------------- */
+
   test('Attempt login with invalid username', async () => {
-    await loginSteps.attemptLoginWithInvalidUsername();
+    await loginTestSteps.attemptLoginWithInvalidUsername();
   });
 
   test('Attempt login with invalid password', async () => {
-    await loginSteps.attemptLoginWithInvalidPassword();
+    await loginTestSteps.attemptLoginWithInvalidPassword();
   });
 
-  // Negative Login Tests - Empty Fields
+  /* -------------------- Negative Login Tests - Empty Fields -------------------- */
+
   test('Attempt login with empty username', async () => {
-    await loginSteps.attemptLoginWithEmptyUsername();
+    await loginTestSteps.attemptLoginWithEmptyUsername();
   });
 
   test('Attempt login with empty password', async () => {
-    await loginSteps.attemptLoginWithEmptyPassword();
+    await loginTestSteps.attemptLoginWithEmptyPassword();
   });
 
-  // Negative Login Tests - Malformed Input
+  /* -------------------- Negative Login Tests - Malformed Input -------------------- */
+
   test('Attempt login with malformed email', async () => {
-    await loginSteps.attemptLoginWithMalformedEmail();
+    await loginTestSteps.attemptLoginWithMalformedEmail();
   });
 
-  // Security Tests
+  /* -------------------- Security Tests -------------------- */
+
   test('Attempt login with SQL injection in username', async () => {
-    await loginSteps.attemptLoginWithSQLInjection();
+    await loginTestSteps.attemptLoginWithSQLInjection();
   });
 
   test('Attempt login with XSS payload in username', async () => {
-    await loginSteps.attemptLoginWithXSSPayload();
+    await loginTestSteps.attemptLoginWithXSSPayload();
   });
 
-  // Edge Case Tests
+  /* -------------------- Edge Case Tests -------------------- */
+
   test('Attempt login with very long username', async () => {
-    await loginSteps.attemptLoginWithLongUsername();
+    await loginTestSteps.attemptLoginWithLongUsername();
   });
 
   test('Attempt login with special characters in username', async () => {
-    await loginSteps.attemptLoginWithSpecialCharacters();
+    await loginTestSteps.attemptLoginWithSpecialCharacters();
   });
 
   test('Attempt login with whitespace only username', async () => {
-    await loginSteps.attemptLoginWithWhitespaceUsername();
+    await loginTestSteps.attemptLoginWithWhitespaceUsername();
   });
 
   test('Attempt login with whitespace only password', async () => {
-    await loginSteps.attemptLoginWithWhitespacePassword();
+    await loginTestSteps.attemptLoginWithWhitespacePassword();
   });
 
-  // Browser Behavior Tests
+  /* -------------------- Browser Behavior Tests -------------------- */
+
   test('Verify login form elements are properly focused', async () => {
-    await loginSteps.verifyLoginFormFocus();
+    await loginTestSteps.verifyLoginFormFocus();
   });
 
   test('Verify login form handles browser back button', async () => {
-    await loginSteps.verifyBrowserBackButton();
+    await loginTestSteps.verifyBrowserBackButton();
   });
 
   test.afterEach(async () => {
