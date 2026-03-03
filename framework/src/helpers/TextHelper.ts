@@ -137,6 +137,54 @@ export class TextHelper {
     throw new Error(`Element did not have expected text "${expectedText}" within ${timeout}ms`);
   }
 
+  public static normalizeWhitespace(text: string): string {
+    return (text ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  /**
+   * Validate "2 March 2026 at 20:30"
+   */
+  public static isGatewayDateTime(text: string): boolean {
+    const t = this.normalizeWhitespace(text);
+    return /^\d{1,2}\s+[A-Za-z]+\s+\d{4}\s+at\s+\d{2}:\d{2}$/.test(t);
+  }
+
+  /**
+   * Parse "2 March 2026 at 20:30" -> Date (seconds assumed 00)
+   */
+  public static parseGatewayDateTime(text: string): Date {
+    const t = this.normalizeWhitespace(text);
+
+    const m = t.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s+at\s+(\d{2}):(\d{2})$/);
+    if (!m) throw new Error(`Unable to parse gateway datetime: "${text}"`);
+
+    const day = Number(m[1]);
+    const monthName = m[2].toLowerCase();
+    const year = Number(m[3]);
+    const hh = Number(m[4]);
+    const mm = Number(m[5]);
+
+    const monthMap: Record<string, number> = {
+      january: 0,
+      february: 1,
+      march: 2,
+      april: 3,
+      may: 4,
+      june: 5,
+      july: 6,
+      august: 7,
+      september: 8,
+      october: 9,
+      november: 10,
+      december: 11,
+    };
+
+    const month = monthMap[monthName];
+    if (month === undefined) throw new Error(`Unknown month "${m[2]}" in "${text}"`);
+
+    return new Date(year, month, day, hh, mm, 0, 0);
+  }
+
   /**
    * Wait for element to contain specific text
    */
