@@ -21,28 +21,18 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     this.locators = new KycInvestmentKnowledgeAndPreferencesPageLocators(page);
   }
 
-  /* -------------------- Verification -------------------- */
-
-  /**
-   * Verify we are on the correct page and the main heading is correct.
-   */
-  public async verifyInvestmentKnowledgeAndPreferencesHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=investment-knowledge-and-preferences');
-
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Investment Knowledge & Preferences');
-  }
-
   /* -------------------- Main Flow -------------------- */
 
   /**
    * Complete the entire Investment Knowledge & Preferences page
-   * and verify the success screen.
+   * Uses the standardized KYC page completion flow with custom submit button
    */
   public async completeKYC_InvestmentKnowledgeAndPreferences(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyInvestmentKnowledgeAndPreferencesHeading();
+    await this.verifyKYCPageHeading(
+      'page=investment-knowledge-and-preferences',
+      'Investment Knowledge & Preferences'
+    );
     await this.answerInvestmentKnowledgeAndPreferencesQuestions();
     await this.verifyFactFindCompleted();
   }

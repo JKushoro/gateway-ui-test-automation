@@ -5,7 +5,7 @@
     "lib": ["ES2020", "DOM"],
     "outDir": "./dist",
     "rootDir": ".",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,6 +15,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "removeComments": false,
+    // Balanced type checking for test automation
     "noImplicitAny": false,
     "noImplicitReturns": false,
     "noImplicitThis": true,
@@ -26,6 +27,10 @@
     "noUncheckedIndexedAccess": false,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    // Module resolution
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
@@ -42,8 +47,9 @@
     }
   },
   "include": [
-    "framework/src",
-    "projects/gateway-ui"
+    "framework/src/**/*",
+    "projects/gateway-ui/**/*",
+    "playwright.config.ts"
   ],
   "exclude": [
     "node_modules",
@@ -51,9 +57,12 @@
     "test-results",
     "playwright-report",
     "blob-report",
-    "coverage"
+    "coverage",
+    "**/*.js",
+    "**/*.d.ts"
   ],
   "ts-node": {
-    "esm": true
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   }
 }

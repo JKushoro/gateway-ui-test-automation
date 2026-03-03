@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { Environment } from '../types/Environment';
+import { logger } from '../utils/Logger';
 
 export interface EnvironmentConfig {
   baseUrl: string;
@@ -51,7 +52,8 @@ export class EnvManager {
     for (const envPath of possiblePaths) {
       try {
         dotenv.config({ path: envPath });
-        console.log(`Loaded environment config from: ${envPath}`);
+        // use framework logger instead of console to satisfy lint
+        logger.info(`Loaded environment config from: ${envPath}`);
         break;
       } catch (error) {
         // Continue to next path
@@ -92,4 +94,4 @@ export class EnvManager {
 }
 
 // Export function to get instance for convenience
-export const getEnvManager = (environment: Environment) => EnvManager.getInstance(environment);
+export const getEnvManager = (environment: Environment): EnvManager => EnvManager.getInstance(environment);

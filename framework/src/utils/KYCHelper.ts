@@ -54,8 +54,8 @@ export class KYCHelper {
     timeout: number = UI_SELECTORS.DEFAULTS.TIMEOUT
   ): Promise<void> {
     await this.assert.assertPageURLContains(urlFragment);
-    await expect(this.heading).toBeVisible({ timeout });
-    await expect(this.heading).toHaveText(expectedHeading);
+    // use helper which falls back to text if testid not present
+    await this.assert.assertHeadingVisible(expectedHeading, timeout);
   }
 
   /**

@@ -129,4 +129,4 @@ export class EnvironmentManager {
 }
 
 // Export convenience function
-export const getEnvironmentManager = () => EnvironmentManager.getInstance();
+export const getEnvironmentManager = (): EnvironmentManager => EnvironmentManager.getInstance();

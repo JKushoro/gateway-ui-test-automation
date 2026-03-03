@@ -14,23 +14,18 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.datePicker = new KYCDatePickerService(page);
   }
 
-  /* -------------------- Verification -------------------- */
-
-  public async verifyLiabilitiesAndExpendituresHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=liabilities-and-expenditures');
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Liabilities & Expenditures');
-  }
-
   /* -------------------- Main Flow -------------------- */
 
+  /**
+   * Main method to complete the entire Liabilities & Expenditures page
+   * Uses the standardized KYC page completion flow
+   */
   public async completeKYC_LiabilitiesAndExpenditures(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyLiabilitiesAndExpendituresHeading();
-    await this.answerLiabilitiesAndExpendituresQuestions();
-
-    await this.action.clickButtonByText('Save & Continue');
+    await this.completeKYCPageStandard(
+      'page=liabilities-and-expenditures',
+      'Liabilities & Expenditures',
+      () => this.answerLiabilitiesAndExpendituresQuestions()
+    );
   }
 
   private async answerLiabilitiesAndExpendituresQuestions(): Promise<void> {

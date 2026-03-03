@@ -6,7 +6,7 @@ import { FrameworkConfig } from '../types';
 import { Page } from '@playwright/test';
 import { createLogger, ILogger } from '../utils/Logger';
 import { TableHelper } from '@framework/helpers/TableHelper';
-import { TextHelper } from '@framework/helpers/TextHelper';
+// TextHelper was imported but unused; removed to satisfy lint
 
 /**
  * Unified Base Page Class

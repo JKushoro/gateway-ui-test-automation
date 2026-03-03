@@ -1,5 +1,5 @@
 //projects/gateway-ui/steps/kyc_forms/KycPropertyAndAssetsSteps.ts
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { dataStore, FrameworkConfig } from '@/framework/src';
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
 import { KYCDatePickerService } from '@steps/components/KYCDatePickerService';
@@ -13,29 +13,24 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
     this.purchaseHomeDatePicker = new KYCDatePickerService(page);
   }
 
-  /* -------------------- Verification -------------------- */
-  /** Verify the Property & Assets heading is visible */
-  public async verifyPropertyAndAssetsHeading(): Promise<void> {
-    await this.assert.assertPageURLContains('page=property-and-assets');
-
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Property & assets');
-  }
-
   /* -------------------- Main Flow  -------------------- */
-  /** Complete the KYC Property & Assets section */
+  
+  /**
+   * Main method to complete the entire Property & Assets page
+   * Uses the standardized KYC page completion flow
+   */
   public async completeKYC_PropertyAndAssets(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.verifyPropertyAndAssetsHeading();
-    await this.answerPropertyAndAssetQuestions();
-    await this.action.clickButtonByText('Save & Continue');
+    await this.completeKYCPageStandard(
+      'page=property-and-assets',
+      'Property & assets',
+      () => this.answerPropertyAndAssetQuestions()
+    );
   }
 
   private async answerPropertyAndAssetQuestions(): Promise<void> {
     await this.answerOwnOrRentPropertyQuestion('Owner');
     await this.answerAssetOwnerQuestion();
-    await this.fillPropertyValue();
+    await this.fillPropertyValue('£250,000');
     await this.fillPurchaseHomeDate();
     await this.answerOtherPropertiesOrAssets();
   }
@@ -61,9 +56,8 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
   }
 
   /** ---- (3) Fill the current property value field */
-  private async fillPropertyValue(): Promise<void> {
+  private async fillPropertyValue(value: string): Promise<void> {
     const label = 'Current property value';
-    const value = '£250,000';
 
     if (await this.elementNotExists(label)) {
       this.logInfo('Property value field not present, skipping');

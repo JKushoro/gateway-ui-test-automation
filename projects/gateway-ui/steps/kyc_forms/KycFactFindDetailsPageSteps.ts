@@ -26,23 +26,20 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
   }
 
   /* ======================================================================================
-   * Verification
-   * ====================================================================================== */
-
-  public async verifyFactFindDetailsHeading(): Promise<void> {
-    await expect(this.heading).toBeVisible({ timeout: 15_000 });
-    await expect(this.heading).toHaveText('Fact Find Details');
-  }
-
-  /* ======================================================================================
    * Main Flow
    * ====================================================================================== */
 
+  /**
+   * Main method to complete the entire Fact Find Details page
+   * Uses standardized verification with custom button handling
+   */
   public async completeKYCFactFindDetails(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-    await this.verifyFactFindDetailsHeading();
+    
+    // Use assertion helper which handles missing testid or alternative headings
+    await this.assert.assertHeadingVisible('Fact Find Details', 15_000);
+    
     await this.answerFactFindDetailsQuestions();
-
     this.logInfo('✓ Completed all KYC Fact Find Details questions');
   }
 

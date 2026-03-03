@@ -30,7 +30,11 @@ export class GatewayFactFindSteps extends BasePage {
     for (const l of locators) {
       if ((await l.count()) > 0) return l;
     }
-    return locators[0];
+    // Return first locator if none exist (for consistency)
+    if (locators.length === 0) {
+      throw new Error('No locators provided to firstExisting method');
+    }
+    return locators[0]!; // Non-null assertion since we checked length above
   }
 
   private async readCellValue(cell: Locator): Promise<string> {
@@ -97,8 +101,7 @@ export class GatewayFactFindSteps extends BasePage {
   private async verifyLatestFactFindClientNameMatchesKyc(): Promise<void> {
     const kycName = this.getDisplayedKycFullName();
 
-    const section = this.factFindLocators.gatewaySectionByTitle('Fact Find History');
-    const table = this.factFindLocators.factFindTableInSection(section);
+    const table = this.factFindLocators.factFindHistoryTable;
     await expect(table).toBeVisible({ timeout: 30000 });
 
     const rows = await this.table.getRows(table);
@@ -117,8 +120,7 @@ export class GatewayFactFindSteps extends BasePage {
   private async verifyLatestFactFindStatusIsCompleteForKycClient(): Promise<void> {
     const kycName = this.getDisplayedKycFullName();
 
-    const section = this.factFindLocators.gatewaySectionByTitle('Fact Find History');
-    const table = this.factFindLocators.factFindTableInSection(section);
+    const table = this.factFindLocators.factFindHistoryTable;
     await expect(table).toBeVisible({ timeout: 30000 });
 
     const status = await this.table.getCellTextForRowByHeader(table, kycName, 'Status');

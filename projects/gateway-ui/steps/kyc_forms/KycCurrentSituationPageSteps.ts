@@ -1,6 +1,6 @@
 // projects/gateway-ui/steps/kyc_forms/KycCurrentSituationPageSteps.ts
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { FrameworkConfig, TestDataGenerator } from '@/framework/src';
 import { dataStore } from '@framework/utils/DataStore';
 
