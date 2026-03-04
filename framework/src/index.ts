@@ -16,7 +16,7 @@ export { TableHelper } from './helpers/TableHelper';
 export { WaitHelper } from './helpers/WaitHelper';
 
 // Configuration exports
-export { EnvManager } from './config/EnvManager';
+// Note: Using EnvironmentManager from projects/gateway-ui/utils/EnvironmentManager
 
 // Utility exports
 export { dataStore, DataStore } from './utils/DataStore';

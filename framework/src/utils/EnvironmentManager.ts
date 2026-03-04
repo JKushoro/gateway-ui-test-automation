@@ -1,6 +1,6 @@
 // projects/gateway-ui/utils/EnvironmentManager.ts
 
-import { Environment } from '@framework/types/Environment';
+import { Environment } from '../types/Environment';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -35,7 +35,7 @@ export class EnvironmentManager {
       return;
     }
 
-    const envFile = path.join(__dirname, '..', 'environments', `.env.${environment}`);
+    const envFile = path.join(__dirname, '..', '..', '..', 'projects', 'gateway-ui', 'environments', `.env.${environment}`);
 
     if (!fs.existsSync(envFile)) {
       throw new Error(`Environment file not found: .env.${environment}`);

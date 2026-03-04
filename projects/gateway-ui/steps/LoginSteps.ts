@@ -1,14 +1,16 @@
 // projects/gateway-ui/steps/LoginSteps.ts
 
-import { Page } from '@playwright/test';
+import {
+  Page,
+  BasePage,
+  FrameworkConfig,
+  Environment,
+  AuthenticationService,
+  AuthenticationOptions,
+  getEnvironmentManager
+} from '../shared/SharedImports';
 import { LoginPageLocators } from '@pages/LoginPageLocators';
-import { BasePage } from '@framework/core/BasePage';
-import { FrameworkConfig } from '@framework/types';
-import { Environment } from '@framework/types/Environment';
 import { DashboardSteps } from '@steps/DashboardSteps';
-import { getEnvironmentManager } from '@utils/EnvironmentManager';
-import { AuthenticationService } from '@/framework/src';
-import { AuthenticationOptions } from '@/framework/src';
 
 type Credentials = { username: string; password: string };
 

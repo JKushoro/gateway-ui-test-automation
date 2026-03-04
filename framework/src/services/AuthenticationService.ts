@@ -24,7 +24,7 @@ export class AuthenticationService extends BasePage {
    * Get authentication configuration using EnvironmentManager
    */
   public getAuthConfig(environment: Environment = 'qa'): AuthConfig {
-    const { getEnvironmentManager } = require('../../../projects/gateway-ui/utils/EnvironmentManager');
+    const { getEnvironmentManager } = require('../utils/EnvironmentManager');
     return getEnvironmentManager().getAuthConfig(environment);
   }
 

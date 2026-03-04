@@ -62,7 +62,7 @@ export { SideNavService } from '@steps/components/SideNav';
 // ==========================================
 // PROJECT-SPECIFIC UTILITIES
 // ==========================================
-export { getEnvironmentManager, EnvironmentManager } from '@utils/EnvironmentManager';
+export { getEnvironmentManager, EnvironmentManager } from '@framework/utils/EnvironmentManager';
 
 // ==========================================
 // COMMONLY USED PAGE LOCATORS

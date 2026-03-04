@@ -1,13 +1,15 @@
 // projects/gateway-ui/steps/LoginValidationSteps.ts
 
-import { Page } from '@playwright/test';
+import {
+  Page,
+  BasePage,
+  FrameworkConfig,
+  Environment,
+  AuthenticationService,
+  getEnvironmentManager
+} from '../shared/SharedImports';
 import { LoginPageLocators } from '@pages/LoginPageLocators';
-import { BasePage } from '@framework/core/BasePage';
-import { FrameworkConfig } from '@framework/types';
-import { Environment } from '@framework/types/Environment';
 import { LoginSteps } from './LoginSteps';
-import { getEnvironmentManager } from '../utils/EnvironmentManager';
-import { AuthenticationService } from '../../../framework/src/services/AuthenticationService';
 
 /**
  * LoginValidationSteps - LOGIN TESTS / VALIDATIONS ONLY
