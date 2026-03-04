@@ -1,8 +1,8 @@
 // projects/gateway-ui/tests/regression/login_validation.spec.ts
 import { test, Page } from '@playwright/test';
-import { LoginSteps } from '@steps/LoginSteps';
-import { DashboardSteps } from '@steps/DashboardSteps';
-import { LoginValidationSteps } from '@steps/LoginValidationSteps';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
+import { DashboardSteps } from '@steps/gateway/DashboardSteps';
+import { LoginValidationSteps } from '@steps/gateway/LoginValidationSteps';
 
 test.describe('Login Tests', () => {
   let page: Page;

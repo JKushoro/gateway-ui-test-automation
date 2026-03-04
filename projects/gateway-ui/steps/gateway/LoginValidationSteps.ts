@@ -7,8 +7,8 @@ import {
   Environment,
   AuthenticationService,
   getEnvironmentManager
-} from '../shared/SharedImports';
-import { LoginPageLocators } from '@pages/LoginPageLocators';
+} from '../../shared/SharedImports';
+import { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
 import { LoginSteps } from './LoginSteps';
 
 /**

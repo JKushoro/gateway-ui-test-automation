@@ -67,7 +67,7 @@ export { getEnvironmentManager, EnvironmentManager } from '@framework/utils/Envi
 // ==========================================
 // COMMONLY USED PAGE LOCATORS
 // ==========================================
-export { LoginPageLocators } from '@pages/LoginPageLocators';
+export { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
 export { KYCDatePickerLocators } from '@pages/componentsLocator/KYCDatePickerLocators';
 
 // ==========================================

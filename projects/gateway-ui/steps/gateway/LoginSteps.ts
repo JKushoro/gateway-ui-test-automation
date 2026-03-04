@@ -8,9 +8,9 @@ import {
   AuthenticationService,
   AuthenticationOptions,
   getEnvironmentManager
-} from '../shared/SharedImports';
-import { LoginPageLocators } from '@pages/LoginPageLocators';
-import { DashboardSteps } from '@steps/DashboardSteps';
+} from '../../shared/SharedImports';
+import { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
+import { DashboardSteps } from '@steps/gateway/DashboardSteps';
 
 type Credentials = { username: string; password: string };
 

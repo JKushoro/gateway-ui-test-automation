@@ -4,7 +4,7 @@ import { Page, expect } from '@playwright/test';
 import { FormsService, GatewaySearchFormData } from '@steps/components/Forms';
 import { SideNavService } from '@steps/components/SideNav';
 import { FrameworkConfig } from '@framework/types';
-import { SearchClientPage } from '@pages/clients/SearchClientsPageLocators';
+import { SearchClientPage } from '@pages/gatewayElementLocators/SearchClientsPageLocators';
 import { dataStore } from '@framework/utils/DataStore';
 import { TextHelper } from '@framework/helpers/TextHelper';
 

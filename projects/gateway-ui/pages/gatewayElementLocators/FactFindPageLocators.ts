@@ -92,18 +92,4 @@ export class FactFindPageLocators extends BasePage {
   public get enableNewFactFindCheckbox(): Locator {
     return this.checkboxByLabel('Enable new fact find for this client');
   }
-
-  public get chooseFactFindTypeDropdown(): Locator {
-    // Most reliable: label-based (your ActionHelper uses label anyway)
-    // Here we return the select/input container near the label.
-    return this.page.locator('label:has-text("Choose Fact Find Type")').first();
-  }
-
-  public get createFactFindButton(): Locator {
-    return this.page.getByRole('button', { name: /Create Fact Find/i }).first();
-  }
-
-  public get confirmAndMigrateLink(): Locator {
-    return this.page.getByRole('link', { name: /Confirm\s*&\s*Migrate/i }).first();
-  }
 }

@@ -1,8 +1,8 @@
 // projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts
 import { test, Page, expect } from '@playwright/test';
 
-import { LoginSteps } from '@steps/LoginSteps';
-import { FactFindCreationSteps } from '@steps/clients/fact_find/FactFindCreationSteps';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
+import { FactFindCreationSteps } from '@steps/gateway/fact_find/FactFindCreationSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
 
@@ -18,7 +18,7 @@ import { KycLiabilitiesAndExpendituresPageSteps } from '@steps/kyc_forms/KycLiab
 import {
   KycInvestmentKnowledgeAndPreferencesPageSteps
 } from '@steps/kyc_forms/KycInvestmentKnowledgeAndPreferencesPageSteps';
-import { GatewayFactFindSteps } from '@steps/clients/fact_find/GatewayFactFindSteps';
+import { GatewayFactFindSteps } from '@steps/gateway/fact_find/GatewayFactFindSteps';
 
 test.describe.serial('Create Fact Find', () => {
   let page: Page;

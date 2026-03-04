@@ -76,7 +76,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
   ): Promise<string | undefined> {
     const input = this.locators.mortgageTermEndDate;
 
-    if (!(await this.action.ensureVisibleOrSkip(input, 'Mortgage Term End Date'))) return;
+    if (!(await this.action.ensureVisibleOrSkip(input, 'Mortgage Term End Date'))) return undefined;
     const { month, year } = this.datePicker.generateRandomFutureMonthYear(
       minYearsAhead,
       maxYearsAhead
@@ -189,7 +189,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     const label = 'Product start date';
     const input = this.page.getByLabel(label, { exact: false });
 
-    if (!(await this.action.ensureVisibleOrSkip(input, label))) return;
+    if (!(await this.action.ensureVisibleOrSkip(input, label))) return undefined;
 
     const date = this.datePicker.generateRandomPastDate(minYearsAgo, maxYearsAgo);
 
@@ -329,8 +329,8 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
 
   private async fillCommittedExpenditures(): Promise<void> {
     const items: Array<{ name: string; monthly: number }> = [
-
       { name: 'Buildings insurance', monthly: TestDataGenerator.randomNumber() },
+      { name: 'Ground rent and service charge', monthly: TestDataGenerator.randomNumber() },
       {
         name: 'Essential travel (including to work or school)',
         monthly: TestDataGenerator.randomNumber(),
@@ -340,7 +340,6 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
       { name: 'Council tax', monthly: TestDataGenerator.randomNumber() },
       { name: 'Housekeeping (food and washing)', monthly: TestDataGenerator.randomNumber() },
       { name: 'Gas, electricity, and other heating', monthly: TestDataGenerator.randomNumber() },
-
     ];
 
     let expectedMonthlyTotal = 0;

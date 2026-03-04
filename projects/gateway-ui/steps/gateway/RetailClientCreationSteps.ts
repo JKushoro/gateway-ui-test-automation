@@ -1,9 +1,9 @@
-// projects/gateway-ui/steps/clients/RetailClientCreationSteps.ts
+// projects/gateway-ui/steps/gateway/RetailClientCreationSteps.ts
 import { Page, expect } from '@playwright/test';
 import { BasePage } from '@framework/core/BasePage';
 import { FrameworkConfig } from '@framework/types';
 import { SideNavService } from '@steps/components/SideNav';
-import { ClientCreationPageLocators } from '@pages/clients/ClientCreationPageLocators';
+import { ClientCreationPageLocators } from '@pages/gatewayElementLocators/ClientCreationPageLocators';
 import { AlertService } from '@steps/components/AlertService';
 import { DatePickerService } from '@steps/components/DatePicker';
 import { FormsComponent } from '@pages/componentsLocator/FormsLocators';
@@ -46,6 +46,8 @@ export class RetailClientCreationSteps extends BasePage {
     await this.action.clickButtonByText('Save Details', false);
     await this.alert.handleClientCreationSuccessAlert('OK');
 
+    // Store client data in the expected location for search operations
+    dataStore.setValue('gateway.clientData.complete', selectedGatewayClient);
     dataStore.setValue('selected.gatewayClient', selectedGatewayClient);
 
     return selectedGatewayClient;

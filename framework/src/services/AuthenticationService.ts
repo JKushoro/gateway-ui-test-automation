@@ -16,7 +16,7 @@ export class AuthenticationService extends BasePage {
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
-    const { MicrosoftLoginPageLocators } = require('../../../projects/gateway-ui/pages/MicrosoftLoginPageLocators');
+    const { MicrosoftLoginPageLocators } = require('@gateway/pages/gatewayElementLocators/MicrosoftLoginPageLocators');
     this.microsoftLoginPage = new MicrosoftLoginPageLocators(page, config);
   }
 

@@ -6,9 +6,6 @@
  * Following the Single Responsibility Principle - each constant has one clear purpose
  */
 export const UI_SELECTORS = {
-  // Form elements
-  FORM_HEADING: 'definition-form-active-page-title',
-  SAVE_CONTINUE: 'Save & Continue',
   
   // Default values
   DEFAULTS: {

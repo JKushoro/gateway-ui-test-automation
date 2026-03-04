@@ -1,9 +1,9 @@
 //projects/gateway-ui/tests/smoke/create_retail_client.smoke.spec.ts
 import { test, Page } from '@playwright/test';
-import { LoginSteps } from '@steps/LoginSteps';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
 import { SideNavService } from '@steps/components/SideNav';
-import { RetailClientCreationSteps } from '@steps/clients/RetailClientCreationSteps';
-import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
+import { RetailClientCreationSteps } from '@steps/gateway/RetailClientCreationSteps';
+import { ClientsSearchSteps } from '@steps/gateway/ClientsSearchSteps';
 
 test.describe('Create a Retail Client', () => {
   let page: Page;

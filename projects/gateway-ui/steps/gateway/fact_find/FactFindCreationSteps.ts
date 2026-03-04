@@ -1,16 +1,16 @@
-//projects/gateway-ui/steps/clients/fact_find/FactFindCreationSteps.ts
+//projects/gateway-ui/steps/gateway/fact_find/FactFindCreationSteps.ts
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from '@framework/core/BasePage';
 import { FrameworkConfig } from '@framework/types';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
-import { RetailClientCreationSteps } from '@steps/clients/RetailClientCreationSteps';
+import { RetailClientCreationSteps } from '@steps/gateway/RetailClientCreationSteps';
 import type {
   RetailClientData,
   RetailClientFormResult,
-} from '@steps/clients/fact_find/types/RetailClientCreation.types';
+} from '@steps/gateway/fact_find/types/RetailClientCreation.types';
 
-import { FactFindPageLocators } from '@pages/clients/clientFiles/FactFindPageLocators';
+import { FactFindPageLocators } from '@pages/gatewayElementLocators/FactFindPageLocators';
 import { AlertService } from '@steps/components/AlertService';
 import { TextHelper } from '@framework/helpers/TextHelper';
 
@@ -356,4 +356,28 @@ export class FactFindCreationSteps extends BasePage {
     await expect(kycPage).toHaveTitle('KYC', { timeout });
     return kycPage;
   }
+
+  /**
+   * Execute the complete flow to create a Core Fact Find
+   * This method creates a fact find without launching the KYC form
+   */
+  public async executeCreateCoreFactFind(): Promise<void> {
+    await this.selectEnableNewFactFindCheckBox();
+    await this.clickConfirmAndMigrateButton();
+    await this.confirmEnableClientForNewFactFind();
+    await this.chooseFactFindType();
+    await this.clickFactFindButton();
+    await this.waitForFactFindHistoryTable();
+  }
+
+  /**
+   * Execute the complete flow to add client and navigate to fact find tab
+   */
+  public async executeAddClientAndNavigateToFactFindTab(
+    sideNav: SideNavService,
+    navBar: NavBarService
+  ): Promise<void> {
+    await this.addClientAndNavigateToFactFindTab(sideNav, navBar);
+  }
+
 }

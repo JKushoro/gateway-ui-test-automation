@@ -92,4 +92,33 @@ export class AlertComponent {
   get errorMessage(): Locator {
     return this.container.locator('.sweet-alert .sa-error-container p:visible');
   }
+
+  // =============================
+  // ABANDON FACT FIND MODAL
+  // =============================
+
+  /** Abandon Fact Find modal container */
+  get abandonFactFindModal(): Locator {
+    return this.page.locator('.modal-content:has(.modal-title:has-text("Abandon Fact Find"))').first();
+  }
+
+  /** Abandon Fact Find modal title */
+  get abandonFactFindTitle(): Locator {
+    return this.abandonFactFindModal.locator('.modal-title');
+  }
+
+  /** Abandon Fact Find warning message */
+  get abandonFactFindWarning(): Locator {
+    return this.abandonFactFindModal.locator('.alert-danger');
+  }
+
+  /** Close button in abandon modal */
+  get abandonModalCloseButton(): Locator {
+    return this.abandonFactFindModal.locator('button.btn-white:has-text("Close")');
+  }
+
+  /** Abandon confirmation button (red button) */
+  get abandonConfirmButton(): Locator {
+    return this.abandonFactFindModal.locator('button.btn-danger:has-text("Abandon")');
+  }
 }

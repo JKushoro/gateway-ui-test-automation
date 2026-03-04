@@ -1,6 +1,6 @@
 //projects/gateway-ui/tests/smoke/create_corporate_client.smoke.spec.ts
 import { test, Page } from '@playwright/test';
-import { LoginSteps } from '@steps/LoginSteps';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { AddCorporateClientSteps } from '@steps/clients/CorporateClientCreationSteps';
 import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
