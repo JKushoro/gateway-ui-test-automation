@@ -1,6 +1,9 @@
 // Core exports
 export { BasePage } from './core/BasePage';
 
+// Service exports
+export { AuthenticationService } from './services/AuthenticationService';
+
 // Component exports
 export { AlertService } from '../../projects/gateway-ui/steps/components/AlertService';
 
@@ -29,6 +32,12 @@ export type * from './types';
 export type { Environment } from './types/Environment';
 export type { FrameworkConfig, ActionOptions, ClickOptions, WaitOptions, SelectOptions } from './types';
 export type { Address, Dependent, ThirdParty } from './types/KYCTypes';
+export type {
+  AuthConfig,
+  AuthenticationOptions,
+  AuthenticationResult,
+  OtpConfig
+} from './types/AuthTypes';
 
 // Constants exports
 export * from './constants/CommonConstants';

@@ -7,6 +7,8 @@ import { FrameworkConfig } from '@framework/types';
 import { Environment } from '@framework/types/Environment';
 import { DashboardSteps } from '@steps/DashboardSteps';
 import { getEnvironmentManager } from '@utils/EnvironmentManager';
+import { AuthenticationService } from '@/framework/src';
+import { AuthenticationOptions } from '@/framework/src';
 
 type Credentials = { username: string; password: string };
 
@@ -14,18 +16,20 @@ type Credentials = { username: string; password: string };
  * LoginSteps - Complete Login Engine and Setup
  * - Loads environment settings
  * - Resolves BASE_URL
- * - Performs Microsoft login flow (AAD)
+ * - Performs Microsoft login flow (AAD) with OTP support
  * - Provides complete setup functionality (replaces GatewaySetup)
  */
 export class LoginSteps extends BasePage {
   private readonly loginPage: LoginPageLocators;
   private readonly dashboardSteps: DashboardSteps;
   private readonly envManager = getEnvironmentManager();
+  private readonly authService: AuthenticationService;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
     this.loginPage = new LoginPageLocators(page, config);
     this.dashboardSteps = new DashboardSteps(page);
+    this.authService = new AuthenticationService(page, config);
   }
 
   /* -------------------- Environment Management -------------------- */
@@ -51,9 +55,7 @@ export class LoginSteps extends BasePage {
    * Navigate to Gateway application landing page.
    */
   public async navigateToApplication(environment: Environment = 'qa'): Promise<void> {
-    const baseUrl = this.getBaseUrl(environment);
-    await this.page.goto(baseUrl);
-    await this.wait.waitForLoadingToComplete();
+    await this.authService.navigateToApplication(environment);
   }
 
   /* -------------------- Login Flow -------------------- */
@@ -62,43 +64,53 @@ export class LoginSteps extends BasePage {
    * Start AAD login flow by clicking app login button.
    */
   public async startMicrosoftLogin(): Promise<void> {
-    await this.action.clickLocator(this.loginPage.loginButton);
-    // URL-based wait is less flaky than waiting for network idle on AAD pages
-    await this.page.waitForURL(/login\.microsoftonline\.com/);
-    await this.wait.waitForDOMContentLoaded();
+    await this.authService.startMicrosoftLogin();
   }
 
   /**
-   * Perform a full login.
+   * Perform a full login with OTP support.
    * If username/password not provided, uses env credentials.
    */
   public async login(username?: string, password?: string, environment: Environment = 'qa'): Promise<void> {
-    await this.startMicrosoftLogin();
+    const options: AuthenticationOptions = {
+      environment,
+      customCredentials: username && password ? { username, password } : undefined
+    };
 
-    const creds = (!username || !password) ? this.getCredentials(environment) : undefined;
-    const loginUsername = username ?? creds!.username;
-    const loginPassword = password ?? creds!.password;
-
-    // Username -> Next
-    await this.loginPage.usernameInput.fill(loginUsername);
-    await this.action.clickLocator(this.loginPage.nextButton);
-    await this.wait.waitForDOMContentLoaded();
-
-    // Password -> Sign in
-    await this.loginPage.passwordInput.fill(loginPassword);
-    await this.action.clickLocator(this.loginPage.signInButton);
-
-    // Let redirect complete
-    await this.wait.waitForDOMContentLoaded();
-    await this.wait.waitForNetworkIdle();
+    await this.authService.performLogin(options);
   }
 
   /**
-   * Convenience: Navigate + login using env credentials.
+   * Convenience: Navigate + login using env credentials with OTP support.
    */
   public async performValidLogin(environment: Environment = 'qa'): Promise<void> {
-    await this.navigateToApplication(environment);
-    await this.login(undefined, undefined, environment);
+    await this.authService.authenticateUser({ environment });
+  }
+
+  /**
+   * Login with OTP support
+   */
+  public async loginWithOtp(username?: string, password?: string, environment: Environment = 'qa'): Promise<void> {
+    const options: AuthenticationOptions = {
+      environment,
+      skipOtp: false,
+      customCredentials: username && password ? { username, password } : undefined
+    };
+
+    await this.authService.performLogin(options);
+  }
+
+  /**
+   * Login without OTP (skip OTP step)
+   */
+  public async loginWithoutOtp(username?: string, password?: string, environment: Environment = 'qa'): Promise<void> {
+    const options: AuthenticationOptions = {
+      environment,
+      skipOtp: true,
+      customCredentials: username && password ? { username, password } : undefined
+    };
+
+    await this.authService.performLogin(options);
   }
 
   /* -------------------- Complete Setup (replaces GatewaySetup) -------------------- */

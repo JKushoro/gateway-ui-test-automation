@@ -7,6 +7,7 @@ import { FrameworkConfig } from '@framework/types';
 import { Environment } from '@framework/types/Environment';
 import { LoginSteps } from './LoginSteps';
 import { getEnvironmentManager } from '../utils/EnvironmentManager';
+import { AuthenticationService } from '../../../framework/src/services/AuthenticationService';
 
 /**
  * LoginValidationSteps - LOGIN TESTS / VALIDATIONS ONLY
@@ -14,17 +15,19 @@ import { getEnvironmentManager } from '../utils/EnvironmentManager';
  * - Security payload tests
  * - Focus / back button behaviour
  *
- * Uses LoginSteps as the engine.
+ * Uses AuthenticationService for consistent behavior.
  */
 export class LoginValidationSteps extends BasePage {
   private readonly login: LoginSteps;
   private readonly loginPage: LoginPageLocators;
   private readonly envManager = getEnvironmentManager();
+  private readonly authService: AuthenticationService;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
     this.login = new LoginSteps(page, config);
     this.loginPage = new LoginPageLocators(page, config);
+    this.authService = new AuthenticationService(page, config);
   }
 
   /* -------------------- Small shared helpers -------------------- */
@@ -33,8 +36,8 @@ export class LoginValidationSteps extends BasePage {
    * Navigate + open Microsoft login page.
    */
   private async openMicrosoftLogin(): Promise<void> {
-    await this.login.navigateToApplication();
-    await this.login.startMicrosoftLogin();
+    await this.authService.navigateToApplication();
+    await this.authService.startMicrosoftLogin();
   }
 
   /**
@@ -42,10 +45,11 @@ export class LoginValidationSteps extends BasePage {
    */
   private async submitUsername(username?: string): Promise<void> {
     if (username !== undefined) {
-      await this.loginPage.usernameInput.fill(username);
+      await this.authService.submitUsername(username);
+    } else {
+      // Submit empty username
+      await this.authService.submitUsername('');
     }
-    await this.action.clickLocator(this.loginPage.nextButton);
-    await this.wait.waitForDOMContentLoaded();
   }
 
   /**
@@ -53,10 +57,11 @@ export class LoginValidationSteps extends BasePage {
    */
   private async submitPassword(password?: string): Promise<void> {
     if (password !== undefined) {
-      await this.loginPage.passwordInput.fill(password);
+      await this.authService.submitPassword(password);
+    } else {
+      // Submit empty password
+      await this.authService.submitPassword('');
     }
-    await this.action.clickLocator(this.loginPage.signInButton);
-    await this.wait.waitForDOMContentLoaded();
   }
 
   /**

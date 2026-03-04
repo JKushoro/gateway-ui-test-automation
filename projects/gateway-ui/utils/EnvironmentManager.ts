@@ -103,6 +103,30 @@ export class EnvironmentManager {
   }
 
   /**
+   * Get OTP secret for environment
+   */
+  public getOtpSecret(environment: Environment = 'qa'): string | undefined {
+    return this.getEnvValue('ADVISOR_OTP_SECRET', environment);
+  }
+
+  /**
+   * Get complete authentication configuration
+   */
+  public getAuthConfig(environment: Environment = 'qa'): {
+    baseUrl: string;
+    username: string;
+    password: string;
+    otpSecret?: string;
+  } {
+    return {
+      baseUrl: this.getBaseUrl(environment),
+      username: this.getEnvValueOrThrow('ADVISOR_EMAIL', environment),
+      password: this.getEnvValueOrThrow('ADVISOR_PASSWORD', environment),
+      otpSecret: this.getOtpSecret(environment),
+    };
+  }
+
+  /**
    * Get advisor email for environment
    */
   public getAdvisorEmail(environment: Environment = 'qa'): string {

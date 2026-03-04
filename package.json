@@ -28,9 +28,10 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
-    "@fairstone/ui-automation-framework": "file:./framework",
     "@axe-core/playwright": "^4.10.2",
-    "axe-playwright": "^2.1.0"
+    "@fairstone/ui-automation-framework": "file:./framework",
+    "axe-playwright": "^2.1.0",
+    "otpauth": "^9.5.0"
   },
   "keywords": [
     "playwright",
