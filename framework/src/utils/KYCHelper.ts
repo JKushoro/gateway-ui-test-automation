@@ -35,12 +35,13 @@ export class KYCHelper {
     }
   }
 
-  /**
-   * Get the common KYC page heading locator
-   */
-  public get heading(): Locator {
-    return this.page.getByTestId(UI_SELECTORS.FORM_HEADING);
-  }
+  // /**
+  //  * Get the common KYC page heading locator
+  //  * Includes all headings including Fact Find related ones
+  //  */
+  // public get heading(): Locator {
+  //   return this.page.locator('h1, h2, .form-heading, .page-title');
+  // }
 
   /**
    * Verify KYC page heading with URL and text validation
@@ -69,7 +70,7 @@ export class KYCHelper {
     urlFragment: string,
     headingText: string,
     questionsHandler: () => Promise<void>,
-    continueButtonText: string = UI_SELECTORS.SAVE_CONTINUE
+    continueButtonText: string = 'Save & Continue'
   ): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
     await this.verifyKYCPageHeading(urlFragment, headingText);

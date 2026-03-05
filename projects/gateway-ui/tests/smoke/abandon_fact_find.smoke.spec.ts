@@ -1,10 +1,11 @@
 // projects/gateway-ui/tests/smoke/abandon_fact_find.smoke.spec.ts
 import { test, Page } from '@playwright/test';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindCreationSteps } from '@steps/gateway/fact_find/FactFindCreationSteps';
+import { FactFindCreationSteps } from '@steps/gateway/FactFindCreationSteps';
 import { FactFindAbandonmentSteps } from '@steps/gateway/FactFindAbandonmentSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
+import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 /**
  * Abandon Fact Find Test Suite
@@ -26,7 +27,7 @@ test.describe.serial('Abandon Fact Find', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    
+
     // Setup authentication for test environment
     await LoginSteps.setupForEnvironment(page, 'qa');
 
@@ -62,6 +63,7 @@ test.describe.serial('Abandon Fact Find', () => {
   });
 
   test.afterAll(async () => {
+    await cleanupClient1FactFinds();
     await page?.close();
   });
 });

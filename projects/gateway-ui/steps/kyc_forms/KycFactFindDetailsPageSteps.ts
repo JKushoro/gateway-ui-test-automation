@@ -35,12 +35,14 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
    */
   public async completeKYCFactFindDetails(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-    
+
     // Use assertion helper which handles missing testid or alternative headings
     await this.assert.assertHeadingVisible('Fact Find Details', 15_000);
-    
+
     await this.answerFactFindDetailsQuestions();
     this.logInfo('✓ Completed all KYC Fact Find Details questions');
+
+    await this.action.clickButtonByText('Proceed to Personal Details');
   }
 
   private async answerFactFindDetailsQuestions(): Promise<void> {
@@ -57,7 +59,6 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     await this.selectPresentAtMeeting('Yes');
     await this.fillNotesIfPresent();
     await this.selectIf3rdPartyPowerOfAttorney('No');
-    await this.action.clickButtonByText('Proceed to Personal Details');
   }
 
   /* ======================================================================================
@@ -73,7 +74,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     minYearsAgo: number,
     maxYearsAgo: number
   ): Promise<string | undefined> {
-    if (await this.elementNotExists(labelText)) return;
+    if (await this.elementNotExists(labelText)) return undefined;
 
     const date = this.datePicker.generateRandomPastDate(minYearsAgo, maxYearsAgo);
 
@@ -101,7 +102,10 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
   }
 
   private async requireA3rdPartyToBePresent(answer?: string): Promise<void> {
-    await this.answerRadioQuestionIfExists('Does the client require a 3rd party to be present', answer);
+    await this.answerRadioQuestionIfExists(
+      'Does the client require a 3rd party to be present',
+      answer
+    );
   }
 
   public async clickAddThirdPartyButton(): Promise<void> {

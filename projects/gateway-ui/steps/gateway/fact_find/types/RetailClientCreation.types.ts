@@ -29,4 +29,5 @@ export type RetailClientFormResult = {
   sourceOfEnquiry: string;
   specificSource?: string | undefined;
   niNumber?: string | undefined;
+  clientId?: string;
 };

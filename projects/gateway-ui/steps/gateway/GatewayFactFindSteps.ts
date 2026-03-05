@@ -1,8 +1,8 @@
 import { BasePage, dataStore } from '@/framework/src';
 import { expect, Locator, Page } from '@playwright/test';
-import { ClientDetailsPageLocators } from '@pages/clients/clientFiles/ClientDetailsPageLocators';
+import { ClientDetailsPageLocators } from '@pages/gatewayElementLocators/ClientDetailsPageLocators';
 import { NavBarService } from '@steps/components/NavBar';
-import { FactFindPageLocators } from '@pages/clients/clientFiles/FactFindPageLocators';
+import { FactFindPageLocators } from '@pages/gatewayElementLocators/FactFindPageLocators';
 
 export class GatewayFactFindSteps extends BasePage {
   private readonly clientDetailsPageLocators: ClientDetailsPageLocators;

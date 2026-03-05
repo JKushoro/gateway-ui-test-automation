@@ -2,9 +2,10 @@
 import { test, Page, expect } from '@playwright/test';
 
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindCreationSteps } from '@steps/gateway/fact_find/FactFindCreationSteps';
+import { FactFindCreationSteps } from '@steps/gateway/FactFindCreationSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
+import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 import { KycFactFindDetailsPageSteps } from '@steps/kyc_forms/KycFactFindDetailsPageSteps';
 import { KycPersonalDetailsPageSteps } from '@steps/kyc_forms/KycPersonalDetailsPageSteps';
@@ -18,7 +19,7 @@ import { KycLiabilitiesAndExpendituresPageSteps } from '@steps/kyc_forms/KycLiab
 import {
   KycInvestmentKnowledgeAndPreferencesPageSteps
 } from '@steps/kyc_forms/KycInvestmentKnowledgeAndPreferencesPageSteps';
-import { GatewayFactFindSteps } from '@steps/gateway/fact_find/GatewayFactFindSteps';
+import { GatewayFactFindSteps } from '@steps/gateway/GatewayFactFindSteps';
 
 test.describe.serial('Create Fact Find', () => {
   let page: Page;
@@ -115,6 +116,7 @@ test.describe.serial('Create Fact Find', () => {
   });
 
   test.afterAll(async () => {
+    await cleanupClient1FactFinds();
     await kycPage?.close().catch(() => {});
     if (page && page !== kycPage) await page.close().catch(() => {});
   });

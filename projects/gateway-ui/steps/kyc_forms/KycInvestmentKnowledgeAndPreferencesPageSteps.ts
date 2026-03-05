@@ -29,11 +29,15 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    */
   public async completeKYC_InvestmentKnowledgeAndPreferences(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-    await this.verifyKYCPageHeading(
-      'page=investment-knowledge-and-preferences',
-      'Investment Knowledge & Preferences'
-    );
+
+    await this.assert.assertPageURLContains('page=investment-knowledge-and-preferences');
+    await this.assert.assertHeadingVisible('Investment Knowledge & Preferences', 15_000);
+
+
     await this.answerInvestmentKnowledgeAndPreferencesQuestions();
+    this.logInfo('✓ Completed all KYC Investment Knowledge & Preferences questions');
+
+    await this.action.clickButtonByText('Save and Submit');
     await this.verifyFactFindCompleted();
   }
 
@@ -59,8 +63,6 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     await this.answerNegativeScreens('Yes');
     await this.selectNegativeScreens();
     await this.answerSustainableInvestmentStatement();
-
-    await this.action.clickButtonByText('Save and Submit');
   }
 
   /* -------------------- Questions -------------------- */

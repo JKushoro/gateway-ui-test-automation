@@ -12,14 +12,13 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /* -------------------- Main Flow -------------------- */
 
   public async completeKYCCurrentSituation(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=current-situation',
-      'Current situation',
-      async () => {
-        await this.answerCurrentSituationQuestions();
-        this.logInfo('✓ Completed all KYC Current Situation questions');
-      }
-    );
+    await this.assert.assertPageURLContains('page=current-situation');
+    await this.assert.assertHeadingVisible('Current situation', 15_000);
+
+    await this.answerCurrentSituationQuestions();
+    this.logInfo('✓ Completed all KYC Current Situation questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   private async answerCurrentSituationQuestions(): Promise<void> {
@@ -56,6 +55,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
       occupation,
       currentEmployer,
     });
+
   }
 
   /* -------------------- Question Methods -------------------- */

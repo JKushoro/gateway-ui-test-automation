@@ -17,11 +17,13 @@ export class KycProtectionPageSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_Protection(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=protection',
-      'Protection',
-      () => this.answerAllProtectionQuestions()
-    );
+    await this.assert.assertPageURLContains('page=protection');
+    await this.assert.assertHeadingVisible('Protection', 15_000);
+
+    await this.answerAllProtectionQuestions();
+    this.logInfo('✓ Completed all KYC Protection questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   /**

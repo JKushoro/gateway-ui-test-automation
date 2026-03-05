@@ -17,11 +17,13 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_Income(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=income',
-      'Income',
-      () => this.answerAllIncomeQuestions()
-    );
+    await this.assert.assertPageURLContains('page=income');
+    await this.assert.assertHeadingVisible('Income', 15_000);
+
+    await this.answerAllIncomeQuestions();
+    this.logInfo('✓ Completed all KYC Income questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   /**

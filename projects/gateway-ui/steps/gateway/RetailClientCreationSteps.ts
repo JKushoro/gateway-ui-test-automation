@@ -10,6 +10,9 @@ import { FormsComponent } from '@pages/componentsLocator/FormsLocators';
 import { TestDataGenerator } from '@framework/utils/TestDataGenerator';
 import { dataStore } from '@framework/utils/DataStore';
 import type { RetailClientData, RetailClientFormResult } from './fact_find/types/RetailClientCreation.types';
+import { client1 } from '@framework/data/clientData';
+import fs from 'fs';
+import path from 'path';
 
 export class RetailClientCreationSteps extends BasePage {
   /* -------------------- Dependencies -------------------- */
@@ -46,6 +49,27 @@ export class RetailClientCreationSteps extends BasePage {
     await this.action.clickButtonByText('Save Details', false);
     await this.alert.handleClientCreationSuccessAlert('OK');
 
+    // Wait for navigation to client details page and extract clientId
+    await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
+    const url = this.page.url();
+    console.log('Current URL after client creation:', url);
+    const clientIdMatch = url.match(/\/clientfiles\/details\/([^/?]+)/);
+    if (clientIdMatch) {
+      selectedGatewayClient.clientId = clientIdMatch[1];
+      console.log('Extracted new clientId from URL:', selectedGatewayClient.clientId);
+      
+      // Save clientId to JSON file
+      const clientJsonPath = path.resolve('playwright/currentClient1.json');
+      try {
+        fs.writeFileSync(clientJsonPath, JSON.stringify({ clientId: selectedGatewayClient.clientId }, null, 2));
+        console.log('Saved clientId to JSON file:', clientJsonPath);
+      } catch (error) {
+        console.warn('Failed to save clientId to JSON file:', error);
+      }
+    } else {
+      console.warn('Could not extract clientId from URL:', url);
+    }
+
     // Store client data in the expected location for search operations
     dataStore.setValue('gateway.clientData.complete', selectedGatewayClient);
     dataStore.setValue('selected.gatewayClient', selectedGatewayClient);
@@ -54,30 +78,46 @@ export class RetailClientCreationSteps extends BasePage {
   }
 
   public async completeRetailClientForm(
-    data: RetailClientData = {}
+    data: RetailClientData = {},
+    useClient1Defaults: boolean = true
   ): Promise<RetailClientFormResult> {
-    const names = TestDataGenerator.personName(data.forename, data.surname);
+    const names = useClient1Defaults
+      ? TestDataGenerator.personName(
+          (data.forename ?? client1.forename).trim(),
+          (data.surname ?? client1.surname).trim()
+        )
+      : TestDataGenerator.personName(data.forename, data.surname);
 
-    // Select2 / fallback dropdowns
     const adviserLabel = await this.selectAdviser();
     const title = await this.selectTitle();
     const sourceOfEnquiry = await this.selectSourceOfEnquiry();
 
-    // Required fields
     await this.fillForename(names.forename);
     await this.fillSurname(names.surname);
 
-    // Optional fields (each has its own method now)
     await this.fillOptionalContactFields(data);
 
-    // Standard dropdowns (non-select2)
     const gender = await this.selectGender(data.gender);
     const maritalStatus = await this.selectMaritalStatus(data.maritalStatus);
     const activePlan = await this.selectActivePlan(data.activePlan);
 
-    // DOB
     const dob = data.dob ?? this.datePicker.generateRandomDOB();
     await this.selectDOB(dob);
+
+    // Load clientId from JSON file if it exists
+    let clientId: string | undefined;
+    const clientJsonPath = path.resolve('playwright/currentClient1.json');
+    if (fs.existsSync(clientJsonPath)) {
+      try {
+        const clientData = JSON.parse(fs.readFileSync(clientJsonPath, 'utf-8'));
+        clientId = clientData.clientId;
+        console.log('Loaded clientId from JSON:', clientId);
+      } catch (error) {
+        console.warn('Failed to load clientId from JSON file:', error);
+      }
+    } else {
+      console.log('No existing clientId JSON file found');
+    }
 
     return {
       adviserLabel,
@@ -92,6 +132,7 @@ export class RetailClientCreationSteps extends BasePage {
       sourceOfEnquiry,
       specificSource: data.specificSource,
       niNumber: data.niNumber,
+      clientId,
     };
   }
 
@@ -205,16 +246,5 @@ export class RetailClientCreationSteps extends BasePage {
   }
 
   /* -------------------- Helpers -------------------- */
-
-
 }
-
-
-
-
-
-
-
-
-
 

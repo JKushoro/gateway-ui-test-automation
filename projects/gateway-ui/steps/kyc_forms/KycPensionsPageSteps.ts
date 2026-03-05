@@ -17,11 +17,13 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_Pensions(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=pensions',
-      'Pensions',
-      () => this.answerAllPensionQuestions()
-    );
+    await this.assert.assertPageURLContains('page=pensions');
+    await this.assert.assertHeadingVisible('Pensions', 15_000);
+
+    await this.answerAllPensionQuestions();
+    this.logInfo('✓ Completed all KYC Pensions questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   /**

@@ -21,11 +21,13 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_LiabilitiesAndExpenditures(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=liabilities-and-expenditures',
-      'Liabilities & Expenditures',
-      () => this.answerLiabilitiesAndExpendituresQuestions()
-    );
+    await this.assert.assertPageURLContains('page=liabilities-and-expenditures');
+    await this.assert.assertHeadingVisible('Liabilities & Expenditures', 15_000);
+
+    await this.answerLiabilitiesAndExpendituresQuestions();
+    this.logInfo('✓ Completed all KYC Liabilities & Expenditures questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   private async answerLiabilitiesAndExpendituresQuestions(): Promise<void> {

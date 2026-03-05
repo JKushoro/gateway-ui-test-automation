@@ -20,11 +20,13 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_PropertyAndAssets(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=property-and-assets',
-      'Property & assets',
-      () => this.answerPropertyAndAssetQuestions()
-    );
+    await this.assert.assertPageURLContains('page=property-and-assets');
+    await this.assert.assertHeadingVisible('Property & assets', 15_000);
+
+    await this.answerPropertyAndAssetQuestions()
+    this.logInfo('✓ Completed all KYC Property & assets questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   private async answerPropertyAndAssetQuestions(): Promise<void> {

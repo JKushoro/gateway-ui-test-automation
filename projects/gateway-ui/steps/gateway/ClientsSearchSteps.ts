@@ -26,8 +26,7 @@ export class ClientsSearchSteps extends BasePage {
   }
 
   async searchClients(): Promise<void> {
-    //await this.action.clickLocator(this.searchClientPage.searchClientButton);
-    await this.action.clickButtonByText('Search clients', false);
+    await this.action.clickLocator(this.searchClientPage.searchClientButton);
   }
 
   async searchForStoredClient(

@@ -98,10 +98,9 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // Verification
   // =====================================================
   public async verifyPersonalDetailsHeading(): Promise<void> {
+    // Now verify we're on the correct page
     await this.assert.assertPageURLContains('page=personal-details');
-
-    await this.assert.assertElementVisible(this.heading);
-    await this.assert.assertElementHasText(this.heading, 'Personal details');
+    await this.assert.assertHeadingVisible('Personal details', 15_000);
   }
 
   // =====================================================
@@ -610,7 +609,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
 
     if (!(await input.count())) {
       this.logInfo('↷ Skipped dependant 1 DOB (not displayed)');
-      return;
+      return undefined;
     }
 
     const date = this.datePicker.generateRandomPastDate(minYearsAgo, maxYearsAgo);
@@ -652,7 +651,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
 
     if (!(await input.count())) {
       this.logInfo('↷ Skipped dependant 1 Dependant until (not displayed)');
-      return;
+      return undefined;
     }
 
     const date = this.datePicker.generateRandomFutureDate(minYearsAhead, maxYearsAhead);

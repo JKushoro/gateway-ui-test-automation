@@ -17,11 +17,13 @@ export class KycSavingsAndInvestmentsPageSteps extends BaseKYCSteps {
    * Uses the standardized KYC page completion flow
    */
   public async completeKYC_SavingsAndInvestments(): Promise<void> {
-    await this.completeKYCPageStandard(
-      'page=savings-and-investments',
-      'Savings & Investments',
-      () => this.answerAllSavingsAndInvestmentsQuestions()
-    );
+    await this.assert.assertPageURLContains('page=savings-and-investments');
+    await this.assert.assertHeadingVisible('Savings & Investments', 15_000);
+
+    await this.answerAllSavingsAndInvestmentsQuestions();
+    this.logInfo('✓ Completed all KYC Savings & Investments questions');
+
+    await this.action.clickButtonByText('Save & Continue');
   }
 
   /**
