@@ -1,15 +1,14 @@
-
 import { Page } from '@playwright/test';
 import { BasePage } from '@framework/core/BasePage';
 import { FrameworkConfig } from '@framework/types';
-import { AlertComponent } from '@components/AlertServiceLocator';
+import { AlertServiceLocator } from '@components/AlertServiceLocator';
 
 export class AlertService extends BasePage {
-  private readonly alert: AlertComponent;
+  private readonly alert: AlertServiceLocator;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
-    this.alert = new AlertComponent(page);
+    this.alert = new AlertServiceLocator(page);
   }
 
   /**
@@ -28,11 +27,11 @@ export class AlertService extends BasePage {
 
     // Optional assertions
     if (expectedTitle) {
-      await this.assert.assertElementHasText(this.alert.title, expectedTitle);
+      await this.assert.assertElementHasText(this.alert.alertTitle, expectedTitle);
     }
+
     if (expectedMessage) {
-      // Single assertion is enough — it auto-waits
-      await this.assert.assertElementContainsText(this.alert.message, expectedMessage);
+      await this.assert.assertElementContainsText(this.alert.alertMessage, expectedMessage);
     }
 
     // Click and wait for dismissal

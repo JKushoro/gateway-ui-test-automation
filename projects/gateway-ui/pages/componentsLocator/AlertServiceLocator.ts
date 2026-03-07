@@ -1,32 +1,48 @@
 import { Locator, Page } from '@playwright/test';
 
 /**
- * Alert Component Locators
- * Pure element selectors only — no logic or filtering.
+ * Alert / Modal Component Locators
+ * Pure element selectors only.
  */
-export class AlertComponent {
+export class AlertServiceLocator {
   constructor(private readonly page: Page) {}
 
-  // =============================
-  // CONTAINERS
-  // =============================
+  // ==========================================================
+  // GENERIC ALERT CONTAINER
+  // ==========================================================
 
   /** Visible alert or modal container */
   get container(): Locator {
     return this.page
       .locator(
         '.swal2-container:visible, ' +
-        '.sweet-alert.showSweetAlert.visible, ' +
-        'section[role="dialog"]:visible, ' +
-        'div[role="dialog"]:visible, ' +
-        '.modal:visible'
+          '.sweet-alert.showSweetAlert.visible, ' +
+          'section[role="dialog"]:visible, ' +
+          'div[role="dialog"]:visible, ' +
+          '.modal:visible'
       )
       .first();
   }
 
-  // =============================
-  // ICONS
-  // =============================
+  // ==========================================================
+  // GENERIC ALERT CONTENT
+  // ==========================================================
+
+  get alertTitle(): Locator {
+    return this.container
+      .locator('.swal2-title:visible, .sweet-alert h2:visible, h1:visible, h2:visible, h3:visible')
+      .first();
+  }
+
+  get alertMessage(): Locator {
+    return this.container
+      .locator('.swal2-html-container:visible, .sweet-alert p:visible, p:visible')
+      .first();
+  }
+
+  // ==========================================================
+  // ALERT ICONS
+  // ==========================================================
 
   get successIcon(): Locator {
     return this.container.locator('.swal2-success:visible, .sa-icon.sa-success:visible');
@@ -44,42 +60,97 @@ export class AlertComponent {
     return this.container.locator('.swal2-info:visible, .sa-icon.sa-info:visible');
   }
 
-  // =============================
-  // TEXT CONTENT
-  // =============================
-
-  get title(): Locator {
-    return this.container
-      .locator('.swal2-title:visible, .sweet-alert h2:visible, h1:visible, h2:visible, h3:visible')
-      .first();
-  }
-
-  get message(): Locator {
-    return this.container
-      .locator('.swal2-html-container:visible, .sweet-alert p:visible, p:visible')
-      .first();
-  }
-
-  // =============================
-  // BUTTONS
-  // =============================
+  // ==========================================================
+  // ALERT BUTTONS
+  // ==========================================================
 
   get allButtons(): Locator {
     return this.container.locator('button:visible');
   }
 
-  /** Optional convenience, keep if you actually need these: */
   get okButton(): Locator {
-    return this.container.locator('.swal2-confirm:visible, .sweet-alert .confirm:visible, button:has-text("OK"):visible');
+    return this.container.locator(
+      '.swal2-confirm:visible, .sweet-alert .confirm:visible, button:has-text("OK"):visible'
+    );
   }
 
   get cancelButton(): Locator {
-    return this.container.locator('.swal2-cancel:visible, .sweet-alert .cancel:visible, button:has-text("Cancel"):visible');
+    return this.container.locator(
+      '.swal2-cancel:visible, .sweet-alert .cancel:visible, button:has-text("Cancel"):visible'
+    );
   }
 
-  // =============================
-  // MISC (legacy SweetAlert)
-  // =============================
+  // ==========================================================
+  // FACT FIND ABANDON MODAL
+  // ==========================================================
+
+  get abandonModal(): Locator {
+    return this.getModalByTitle('Abandon Fact Find');
+  }
+
+  get abandonModalTitle(): Locator {
+    return this.getModalTitle(this.abandonModal);
+  }
+
+  get abandonModalWarning(): Locator {
+    return this.getModalWarning(this.abandonModal);
+  }
+
+  get abandonModalCloseButton(): Locator {
+    return this.getModalCloseButton(this.abandonModal);
+  }
+
+  get abandonModalButton(): Locator {
+    return this.getModalActionButton(this.abandonModal, 'Abandon');
+  }
+
+  // ==========================================================
+  // FACT FIND ADD NAME MODAL
+  // ==========================================================
+
+  get addNameModal(): Locator {
+    return this.getModalByTitle('Add Fact Find Name');
+  }
+
+  get addNameModalTitle(): Locator {
+    return this.getModalTitle(this.addNameModal);
+  }
+
+  get addNameModalCloseButton(): Locator {
+    return this.getModalCloseButton(this.addNameModal);
+  }
+
+  get addNameModalSaveButton(): Locator {
+    return this.getModalActionButton(this.addNameModal, 'Save Name');
+  }
+
+  get nameModalInput(): Locator {
+    return this.addNameModal.locator('#txtName');
+  }
+
+  // ==========================================================
+  // FACT FIND EDIT NAME MODAL
+  // ==========================================================
+
+  get editNameModal(): Locator {
+    return this.getModalByTitle('Edit Fact Find Name');
+  }
+
+  get editNameModalTitle(): Locator {
+    return this.getModalTitle(this.editNameModal);
+  }
+
+  get editNameModalSaveButton(): Locator {
+    return this.getModalActionButton(this.editNameModal, 'Save Name');
+  }
+
+  get nameEditModalInput(): Locator {
+    return this.editNameModal.locator('#txtName_2');
+  }
+
+  // ==========================================================
+  // LEGACY SWEET ALERT ELEMENTS
+  // ==========================================================
 
   get fieldset(): Locator {
     return this.container.locator('.sweet-alert fieldset:visible');
@@ -93,32 +164,37 @@ export class AlertComponent {
     return this.container.locator('.sweet-alert .sa-error-container p:visible');
   }
 
-  // =============================
-  // ABANDON FACT FIND MODAL
-  // =============================
+  // ==========================================================
+  // PRIVATE HELPER FUNCTIONS
+  // ==========================================================
 
-  /** Abandon Fact Find modal container */
-  get abandonFactFindModal(): Locator {
-    return this.page.locator('.modal-content:has(.modal-title:has-text("Abandon Fact Find"))').first();
+  /** Returns a modal container by modal title */
+  private getModalByTitle(title: string): Locator {
+    return this.page
+      .locator('.modal-content')
+      .filter({
+        has: this.page.locator('.modal-title', { hasText: title }),
+      })
+      .first();
   }
 
-  /** Abandon Fact Find modal title */
-  get abandonFactFindTitle(): Locator {
-    return this.abandonFactFindModal.locator('.modal-title');
+  /** Returns the title element inside a modal */
+  private getModalTitle(modal: Locator): Locator {
+    return modal.locator('.modal-title');
   }
 
-  /** Abandon Fact Find warning message */
-  get abandonFactFindWarning(): Locator {
-    return this.abandonFactFindModal.locator('.alert-danger');
+  /** Returns the warning message inside a modal */
+  private getModalWarning(modal: Locator): Locator {
+    return modal.locator('.alert-danger');
   }
 
-  /** Close button in abandon modal */
-  get abandonModalCloseButton(): Locator {
-    return this.abandonFactFindModal.locator('button.btn-white:has-text("Close")');
+  /** Returns the Close button inside a modal */
+  private getModalCloseButton(modal: Locator): Locator {
+    return modal.locator('button.btn-white:has-text("Close")');
   }
 
-  /** Abandon confirmation button (red button) */
-  get abandonConfirmButton(): Locator {
-    return this.abandonFactFindModal.locator('button.btn-danger:has-text("Abandon")');
+  /** Returns the main action button inside a modal */
+  private getModalActionButton(modal: Locator, buttonText: string): Locator {
+    return modal.locator(`button:has-text("${buttonText}")`);
   }
 }

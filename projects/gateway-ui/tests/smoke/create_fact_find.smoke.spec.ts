@@ -2,7 +2,7 @@
 import { test, Page, expect } from '@playwright/test';
 
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindCreationSteps } from '@steps/gateway/FactFindCreationSteps';
+import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
@@ -25,7 +25,7 @@ test.describe.serial('Create Fact Find', () => {
   let page: Page;
   let kycPage: Page;
 
-  let factFindCreationSteps: FactFindCreationSteps;
+  let factFindCreationSteps: FactFindManagementSteps;
   let sideNav: SideNavService;
   let navBar: NavBarService;
 
@@ -45,7 +45,7 @@ test.describe.serial('Create Fact Find', () => {
     page = await browser.newPage();
     await LoginSteps.setupForEnvironment(page, 'qa');
 
-    factFindCreationSteps = new FactFindCreationSteps(page);
+    factFindCreationSteps = new FactFindManagementSteps(page);
     sideNav = new SideNavService(page);
     navBar = new NavBarService(page);
     gatewayFactFindSteps = new GatewayFactFindSteps(page);

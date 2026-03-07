@@ -65,6 +65,10 @@ export class FactFindPageLocators extends BasePage {
     return this.factFindHistoryFirstRow.getByRole('button', { name: /Add Name/i });
   }
 
+  public get editNameButtonFirstRow(): Locator {
+    return this.factFindHistoryFirstRow.getByRole('button', { name: /Edit Name/i });
+  }
+
   public get addNoteButtonFirstRow(): Locator {
     return this.factFindHistoryFirstRow.getByRole('button', { name: /Add Note/i });
   }

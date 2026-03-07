@@ -1,8 +1,8 @@
 // projects/gateway-ui/tests/smoke/abandon_fact_find.smoke.spec.ts
 import { test, Page } from '@playwright/test';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindCreationSteps } from '@steps/gateway/FactFindCreationSteps';
-import { FactFindAbandonmentSteps } from '@steps/gateway/FactFindAbandonmentSteps';
+import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
+//import { FactFindAbandonmentSteps } from '@steps/gateway/FactFindAbandonmentSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
@@ -20,8 +20,7 @@ import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
  */
 test.describe.serial('Abandon Fact Find', () => {
   let page: Page;
-  let factFindCreationSteps: FactFindCreationSteps;
-  let factFindAbandonmentSteps: FactFindAbandonmentSteps;
+  let factFindManagementSteps: FactFindManagementSteps;
   let sideNav: SideNavService;
   let navBar: NavBarService;
 
@@ -32,34 +31,33 @@ test.describe.serial('Abandon Fact Find', () => {
     await LoginSteps.setupForEnvironment(page, 'qa');
 
     // Initialize services once for efficiency
-    factFindCreationSteps = new FactFindCreationSteps(page);
-    factFindAbandonmentSteps = new FactFindAbandonmentSteps(page);
+    factFindManagementSteps = new FactFindManagementSteps(page);
     sideNav = new SideNavService(page);
     navBar = new NavBarService(page);
   });
 
   test('Create retail client and navigate to Fact Find tab', async () => {
-    await factFindCreationSteps.executeAddClientAndNavigateToFactFindTab(sideNav, navBar);
+    await factFindManagementSteps.executeAddClientAndNavigateToFactFindTab(sideNav, navBar);
   });
 
   test('Create Core Fact Find', async () => {
-    await factFindCreationSteps.executeCreateCoreFactFind();
+    await factFindManagementSteps.executeCreateCoreFactFind();
   });
 
   test('Abandon Fact Find with status verification', async () => {
-    await factFindAbandonmentSteps.executeAbandonFactFind();
+    await factFindManagementSteps.executeAbandonFirstRowFactFind();
   });
 
   test('Verify abandoned Fact Find cannot be launched', async () => {
-    await factFindAbandonmentSteps.executeVerifyAbandonedFactFindCannotBeLaunched();
+    await factFindManagementSteps.executeVerifyFirstRowAbandonedFactFindCannotBeLaunched();
   });
 
   test('Verify abandonment status persists after page reload', async () => {
-    await factFindAbandonmentSteps.executeVerifyAbandonmentStatusMaintained();
+    await factFindManagementSteps.executeVerifyFirstRowAbandonmentStatusMaintained();
   });
 
   test('Verify system response for abandoned Fact Find', async () => {
-    await factFindAbandonmentSteps.executeVerifySystemResponseForAbandonedFactFind();
+    await factFindManagementSteps.executeVerifySystemResponseForFirstRowAbandonedFactFind();
   });
 
   test.afterAll(async () => {
