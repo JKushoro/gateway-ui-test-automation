@@ -151,7 +151,7 @@ export class FactFindCreationSteps extends BasePage {
 
     const createDateText = await this.getRowCreateDateText(rowIndex);
     await this.assertCreateDateFormat(createDateText);
-    await this.assertCreateDateWithinTolerance(createDateText, args.createClickedAt);
+    await this.assertCreateDateIsValidAndRecent(createDateText, args.createClickedAt);
   }
 
   // ---------------------------------------------------------------------------
@@ -245,7 +245,7 @@ export class FactFindCreationSteps extends BasePage {
     }
   }
 
-  private async assertCreateDateWithinTolerance(
+  private async assertCreateDateIsValidAndRecent(
     createDateText: string,
     createClickedAt: Date
   ): Promise<void> {
@@ -255,12 +255,10 @@ export class FactFindCreationSteps extends BasePage {
     if (diffMs > FactFindCreationSteps.CREATE_DATE_TOLERANCE_MS) {
       throw new Error(
         [
-          `Create Date not within ${FactFindCreationSteps.CREATE_DATE_TOLERANCE_MS}ms (${FactFindCreationSteps.CREATE_DATE_TOLERANCE_MS / 1000}s) of Create Fact Find click time.`,
+          `Create Date was not within ${FactFindCreationSteps.CREATE_DATE_TOLERANCE_MS / 1000}s of Create Fact Find click time.`,
           `Displayed: "${createDateText}" -> ${displayed.toISOString()}`,
           `ClickedAt: ${createClickedAt.toISOString()}`,
           `DiffMs: ${diffMs} (${(diffMs / 1000).toFixed(1)}s)`,
-          `NOTE: UI shows minute precision; seconds assumed as ":00".`,
-          `This timing difference may be due to network latency, server processing, or UI refresh delays.`,
         ].join('\n')
       );
     }
@@ -379,5 +377,4 @@ export class FactFindCreationSteps extends BasePage {
   ): Promise<void> {
     await this.addClientAndNavigateToFactFindTab(sideNav, navBar);
   }
-
 }
