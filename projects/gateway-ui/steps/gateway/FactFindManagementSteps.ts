@@ -326,27 +326,23 @@ export class FactFindManagementSteps extends BasePage {
    */
   public async executeAddNameToAbandonedFactFind(): Promise<void> {
     const factFindName = `Fact Find Name ${Date.now()}`;
-
     await this.clickAddNameButton();
 
     await expect(this.alertServiceLocator.addNameModal).toBeVisible({ timeout: 15000 });
     await expect(this.alertServiceLocator.addNameModalTitle).toContainText('Add Fact Find Name');
 
     await this.enterFactFindNameInAddModal(factFindName);
-
     await this.action.clickLocator(this.alertServiceLocator.addNameModalSaveButton);
 
     await expect(this.alertServiceLocator.addNameModal).not.toBeVisible({ timeout: 15000 });
-
     await this.verifyFirstRowNameValue(factFindName);
   }
 
   /**
-   * Add a note to the abandoned Fact Find and verify the Note column is populated.
+   * Add a note to the abandoned Fact Find and verify the Note value is displayed.
    */
   public async executeAddNoteToAbandonedFactFind(): Promise<void> {
-    const factFindNote = `Fact Find Name ${Date.now()}`;
-
+    const factFindNote = `Fact Find Note ${Date.now()}`;
     await this.clickAddNoteButton();
 
     await expect(this.alertServiceLocator.addNoteModal).toBeVisible({ timeout: 15000 });
@@ -362,11 +358,52 @@ export class FactFindManagementSteps extends BasePage {
   }
 
   /**
-   * Verify the name remains saved against the abandoned Fact Find after page reload.
+   * Verify the note remains saved against the abandoned Fact Find after page reload.
    */
   public async executeVerifyNoteSavedAgainstAbandonedFactFind(): Promise<void> {
     await this.reloadPageAndWait();
-    await expect(this.getFirstRowNoteValueCell()).toHaveText(/^\s*$/, { timeout: 15000 });
+    await this.clickGatewayTableCollapseButton();
+    await expect(this.getFirstRowNoteValueCell()).not.toHaveText(/^\s*$/, { timeout: 15000 });
+  }
+
+  /**
+   * Click the Edit Note button for the first Fact Find row.
+   */
+  public async clickEditNoteButtonFirstRow(): Promise<void> {
+    await this.action.clickLocator(this.factFindLocators.editNoteButtonFirstRow);
+  }
+
+  /**
+   * Enter a Fact Find note in the Add Note modal input field.
+   */
+  public async enterFactFindNoteInEditModal(name: string): Promise<void> {
+    await this.alertServiceLocator.editNoteModalInput.fill(name);
+  }
+
+  /**
+   * Edit the note on the abandoned Fact Find and verify the updated value is displayed.
+   */
+  public async executeEditNoteOnAbandonedFactFind(): Promise<string> {
+    const currentNote = (await this.getFirstRowNoteValueCell().textContent())?.trim() ?? '';
+    const updatedNote = `Updated Fact Find Note ${Date.now()}`;
+
+    await this.clickEditNoteButtonFirstRow();
+
+    await expect(this.alertServiceLocator.editNoteModal).toBeVisible({ timeout: 15000 });
+    await expect(this.alertServiceLocator.editNoteModalTitle).toContainText('Edit Fact Find Note');
+
+    await this.alertServiceLocator.editNoteModalInput.clear();
+    await this.enterFactFindNoteInEditModal(updatedNote);
+
+    await this.action.clickLocator(this.alertServiceLocator.editNoteModalSaveButton);
+    await expect(this.alertServiceLocator.editNoteModal).not.toBeVisible({ timeout: 15000 });
+
+    await this.clickGatewayTableCollapseButton();
+
+    await this.verifyFirstRowNameValue(updatedNote);
+    expect(currentNote).not.toBe(updatedNote);
+
+    return updatedNote;
   }
 
   /**
@@ -374,7 +411,7 @@ export class FactFindManagementSteps extends BasePage {
    */
   public async executeVerifyNameSavedAgainstAbandonedFactFind(): Promise<void> {
     await this.reloadPageAndWait();
-    await expect(this.getFirstRowNameCell()).toHaveText(/^\s*$/, { timeout: 15000 });
+    await expect(this.getFirstRowNameCell()).not.toHaveText(/^\s*$/, { timeout: 15000 });
   }
 
   /**

@@ -81,6 +81,10 @@ export class FactFindPageLocators extends BasePage {
     return this.factFindHistoryFirstRow.getByRole('link', { name: /Launch Fact Find/i });
   }
 
+  public get editNoteButtonFirstRow(): Locator {
+    return this.firstRowNoteHistoryFirstRow.getByRole('button', { name: /Edit Note/i });
+  }
+
   /**
    * Expanded detail row shown under the first Fact Find row.
    */

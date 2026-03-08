@@ -57,10 +57,10 @@ test.describe.serial('Verify a note can be added to an abandoned KYC Fact Find',
     await factFindManagementSteps.executeVerifyNoteSavedAgainstAbandonedFactFind();
   });
 
-  // test('Edit name on abandoned Fact Find', async () => {
-  //   await factFindManagementSteps.executeEditNameOnAbandonedFactFind();
-  // });
-  //
+  test('Edit note on abandoned Fact Find', async () => {
+    await factFindManagementSteps.executeEditNoteOnAbandonedFactFind();
+  });
+
   // test('Verify updated name is saved and persisted', async () => {
   //   await factFindManagementSteps.executeVerifyUpdatedNameSavedAndPersisted();
   // });

@@ -173,6 +173,26 @@ export class AlertServiceLocator {
   }
 
   // ==========================================================
+  // FACT FIND ADD NOTE MODAL
+  // ==========================================================
+
+  get editNoteModal(): Locator {
+    return this.getModalByTitle('Edit Fact Find Note');
+  }
+
+  get editNoteModalTitle(): Locator {
+    return this.editNoteModal.locator('.modal-header .modal-title');
+  }
+
+  get editNoteModalSaveButton(): Locator {
+    return this.getModalActionButton(this.editNoteModal, 'Save Note');
+  }
+
+  get editNoteModalInput(): Locator {
+    return this.editNoteModal.locator('.note-editable[contenteditable="true"]');
+  }
+
+  // ==========================================================
   // LEGACY SWEET ALERT ELEMENTS
   // ==========================================================
 
