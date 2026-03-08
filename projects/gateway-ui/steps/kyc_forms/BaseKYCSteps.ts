@@ -9,6 +9,9 @@ import { FrameworkConfig } from '@framework/types';
  * Follows SOLID principles and DRY patterns
  */
 export class BaseKYCSteps extends KYCHelper {
+  
+  /** Common heading locator for KYC pages */
+  protected readonly heading = this.page.locator('h1, h2, .heading, [data-testid="page-heading"]').first();
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     // Initialize with a logger to prevent undefined errors

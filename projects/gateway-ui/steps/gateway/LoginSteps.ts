@@ -9,7 +9,7 @@ import {
   AuthenticationOptions,
   getEnvironmentManager
 } from '../../shared/SharedImports';
-import { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
+import { LoginPage } from '@pages/gatewayElementLocators/LoginPageLocators';
 import { DashboardSteps } from '@steps/gateway/DashboardSteps';
 
 type Credentials = { username: string; password: string };
@@ -22,14 +22,14 @@ type Credentials = { username: string; password: string };
  * - Provides complete setup functionality (replaces GatewaySetup)
  */
 export class LoginSteps extends BasePage {
-  private readonly loginPage: LoginPageLocators;
+  private readonly loginPage: LoginPage;
   private readonly dashboardSteps: DashboardSteps;
   private readonly envManager = getEnvironmentManager();
   private readonly authService: AuthenticationService;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
-    this.loginPage = new LoginPageLocators(page, config);
+    this.loginPage = new LoginPage(page, config);
     this.dashboardSteps = new DashboardSteps(page);
     this.authService = new AuthenticationService(page, config);
   }

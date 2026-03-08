@@ -8,7 +8,7 @@ import {
   AuthenticationService,
   getEnvironmentManager
 } from '../../shared/SharedImports';
-import { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
+import { LoginPage } from '@pages/gatewayElementLocators/LoginPageLocators';
 import { LoginSteps } from './LoginSteps';
 
 /**
@@ -21,14 +21,14 @@ import { LoginSteps } from './LoginSteps';
  */
 export class LoginValidationSteps extends BasePage {
   private readonly login: LoginSteps;
-  private readonly loginPage: LoginPageLocators;
+  private readonly loginPage: LoginPage;
   private readonly envManager = getEnvironmentManager();
   private readonly authService: AuthenticationService;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
     this.login = new LoginSteps(page, config);
-    this.loginPage = new LoginPageLocators(page, config);
+    this.loginPage = new LoginPage(page, config);
     this.authService = new AuthenticationService(page, config);
   }
 
@@ -85,13 +85,13 @@ export class LoginValidationSteps extends BasePage {
 
   public async verifyLoginButtonPresent(): Promise<void> {
     await this.login.navigateToApplication();
-    await this.assert.assertElementVisible(this.loginPage.loginButton);
-    await this.assert.assertElementEnabled(this.loginPage.loginButton);
+    await this.assert.assertElementVisible(this.loginPage.loginButtonElement);
+    await this.assert.assertElementEnabled(this.loginPage.loginButtonElement);
   }
 
   public async verifyRedirectToMicrosoftLogin(): Promise<void> {
     await this.login.navigateToApplication();
-    await this.action.clickLocator(this.loginPage.loginButton);
+    await this.action.clickLocator(this.loginPage.loginButtonElement);
     await this.page.waitForURL(/login\.microsoftonline\.com/);
   }
 
@@ -208,9 +208,9 @@ export class LoginValidationSteps extends BasePage {
   public async verifyLoginFormFocus(): Promise<void> {
     await this.openMicrosoftLogin();
 
-    await this.assert.assertElementVisible(this.loginPage.usernameInput);
+    await this.assert.assertElementVisible(this.loginPage.usernameInputElement);
 
-    const isFocused = await this.loginPage.usernameInput.evaluate(
+    const isFocused = await this.loginPage.usernameInputElement.evaluate(
       (el) => el === document.activeElement
     );
 
@@ -250,6 +250,6 @@ export class LoginValidationSteps extends BasePage {
     await this.page.waitForURL((url) => !url.toString().includes('login.microsoftonline.com'), { timeout: 10000 });
 
     // Verify we're back to main app
-    await this.assert.assertElementVisible(this.loginPage.loginButton);
+    await this.assert.assertElementVisible(this.loginPage.loginButtonElement);
   }
 }
