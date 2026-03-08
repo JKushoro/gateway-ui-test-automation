@@ -81,6 +81,34 @@ export class FactFindPageLocators extends BasePage {
     return this.factFindHistoryFirstRow.getByRole('link', { name: /Launch Fact Find/i });
   }
 
+  /**
+   * Expanded detail row shown under the first Fact Find row.
+   */
+  public get factFindHistoryFirstRowDetail(): Locator {
+    return this.factFindHistoryTable.locator('tbody tr.footable-row-detail').first();
+  }
+
+  /**
+   * Note history table inside the expanded first Fact Find row.
+   */
+  public get firstRowNoteHistoryTable(): Locator {
+    return this.factFindHistoryFirstRowDetail.locator('table.gatewaytable').first();
+  }
+
+  /**
+   * First row in the inner note history table.
+   */
+  public get firstRowNoteHistoryFirstRow(): Locator {
+    return this.firstRowNoteHistoryTable.locator('tbody tr').first();
+  }
+
+  /**
+   * Cells for the first row in the inner note history table.
+   */
+  public get firstRowNoteHistoryFirstRowCells(): Locator {
+    return this.firstRowNoteHistoryFirstRow.locator('td');
+  }
+
   // ----------------------------------------------------------
   // Create Fact Find controls (page-level)
   // ----------------------------------------------------------
@@ -95,5 +123,9 @@ export class FactFindPageLocators extends BasePage {
 
   public get enableNewFactFindCheckbox(): Locator {
     return this.checkboxByLabel('Enable new fact find for this client');
+  }
+
+  get expandFirstRowDetailsButton(): Locator {
+    return this.factFindHistoryFirstRow.locator('i.gatewaytable-collapse');
   }
 }

@@ -111,6 +111,22 @@ export class FactFindManagementSteps extends BasePage {
     await navBar.clickNavItem('Fact Find');
   }
 
+  /**
+   * Verify the Add Note action is available for the first Fact Find row.
+   */
+  public async verifyFirstRowAddNoteButtonIsVisible(): Promise<void> {
+    await expect(this.factFindLocators.addNoteButtonFirstRow).toBeVisible({ timeout: 15000 });
+  }
+
+  /**
+   * Verify the Fact Find History table does not contain a Note header.
+   */
+  public async verifyFactFindHistoryHasNoNoteHeader(): Promise<void> {
+    const headers = await this.factFindLocators.factFindHistoryHeaderCells.allInnerTexts();
+
+    expect(headers.map(h => h.trim().toLowerCase())).not.toContain('note');
+  }
+
   // ==========================================================
   // 2. FACT FIND HISTORY SECTION
   // ==========================================================
@@ -131,6 +147,17 @@ export class FactFindManagementSteps extends BasePage {
    */
   private getFirstRowNameCell(): Locator {
     return this.factFindLocators.factFindHistoryFirstRowCells.nth(2);
+  }
+
+  /**
+   * Get the Note cell for the specified row.
+   */
+  private async getRowNoteCell(rowIndex: number): Promise<Locator> {
+    return await this.table.getCellByHeader(
+      this.factFindLocators.factFindHistoryTable,
+      'Note',
+      rowIndex
+    );
   }
 
   // ----------------------------------------------------------
@@ -184,6 +211,14 @@ export class FactFindManagementSteps extends BasePage {
    */
   public async verifyFirstRowNameValue(expectedName: string): Promise<void> {
     await expect(this.getFirstRowNameCell()).toContainText(expectedName, { timeout: 15000 });
+  }
+
+  /**
+   * Verify the Note column is blank for the first Fact Find row.
+   */
+  public async verifyFirstRowNoteIsBlank(): Promise<void> {
+    const noteCell = await this.getRowNoteCell(0);
+    await expect(noteCell).not.toHaveText(/^\s*$/, { timeout: 15000 });
   }
 
   // ----------------------------------------------------------
@@ -244,10 +279,46 @@ export class FactFindManagementSteps extends BasePage {
   }
 
   /**
+   * Enter a Fact Find note in the Add Note modal input field.
+   */
+  public async enterFactFindNoteInAddModal(name: string): Promise<void> {
+    await this.alertServiceLocator.addNoteModalInput.fill(name);
+  }
+
+  /**
    * Click the Edit Name button for the first Fact Find row.
    */
   public async clickEditNameButton(): Promise<void> {
     await this.action.clickLocator(this.factFindLocators.editNameButtonFirstRow);
+  }
+
+  /**
+   * Click the gatewaytable-collapse button for the first Fact Find row.
+   */
+  public async clickGatewayTableCollapseButton(): Promise<void> {
+    await this.action.clickLocator(this.factFindLocators.expandFirstRowDetailsButton);
+  }
+
+  /**
+   * Click the Add Note button for the first Fact Find row.
+   */
+  public async clickAddNoteButton(): Promise<void> {
+    await this.action.clickLocator(this.factFindLocators.addNoteButtonFirstRow);
+  }
+
+  /**
+   * Get the Note cell from the first row of the expanded note history table.
+   */
+  private getFirstRowNoteValueCell(): Locator {
+    return this.factFindLocators.firstRowNoteHistoryFirstRowCells.nth(1);
+  }
+
+  /**
+   * Verify the saved note value for the first Fact Find row.
+   */
+  public async verifyFirstRowNoteValue(expectedNote: string): Promise<void> {
+    await expect(this.factFindLocators.firstRowNoteHistoryTable).toBeVisible({ timeout: 15000 });
+    await expect(this.getFirstRowNoteValueCell()).toContainText(expectedNote, { timeout: 15000 });
   }
 
   /**
@@ -271,11 +342,39 @@ export class FactFindManagementSteps extends BasePage {
   }
 
   /**
+   * Add a note to the abandoned Fact Find and verify the Note column is populated.
+   */
+  public async executeAddNoteToAbandonedFactFind(): Promise<void> {
+    const factFindNote = `Fact Find Name ${Date.now()}`;
+
+    await this.clickAddNoteButton();
+
+    await expect(this.alertServiceLocator.addNoteModal).toBeVisible({ timeout: 15000 });
+    await expect(this.alertServiceLocator.addNoteModalTitle).toContainText('Fact Find Notes');
+
+    await this.enterFactFindNoteInAddModal(factFindNote);
+    await this.action.clickLocator(this.alertServiceLocator.addNoteModalSaveButton);
+
+    await expect(this.alertServiceLocator.addNoteModal).not.toBeVisible({ timeout: 15000 });
+    await this.clickGatewayTableCollapseButton();
+
+    await this.verifyFirstRowNoteValue(factFindNote);
+  }
+
+  /**
+   * Verify the name remains saved against the abandoned Fact Find after page reload.
+   */
+  public async executeVerifyNoteSavedAgainstAbandonedFactFind(): Promise<void> {
+    await this.reloadPageAndWait();
+    await expect(this.getFirstRowNoteValueCell()).toHaveText(/^\s*$/, { timeout: 15000 });
+  }
+
+  /**
    * Verify the name remains saved against the abandoned Fact Find after page reload.
    */
   public async executeVerifyNameSavedAgainstAbandonedFactFind(): Promise<void> {
     await this.reloadPageAndWait();
-    await expect(this.getFirstRowNameCell()).not.toHaveText(/^\s*$/, { timeout: 15000 });
+    await expect(this.getFirstRowNameCell()).toHaveText(/^\s*$/, { timeout: 15000 });
   }
 
   /**
