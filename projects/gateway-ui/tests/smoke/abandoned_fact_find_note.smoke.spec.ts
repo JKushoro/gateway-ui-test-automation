@@ -1,9 +1,6 @@
 // projects/gateway-ui/tests/smoke/abandoned_fact_find_note.smoke.spec.ts
-import { test, Page } from '@playwright/test';
-import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
-import { SideNavService } from '@steps/components/SideNav';
-import { NavBarService } from '@steps/components/NavBar';
+import { test } from '@playwright/test';
+import { BaseTest } from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 /**
@@ -20,53 +17,44 @@ import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
  * CI-CD Pipeline Ready: Robust assertions and reliable persistence checks
  */
 test.describe.serial('Verify a note can be added to an abandoned KYC Fact Find', () => {
-  let page: Page;
-  let factFindManagementSteps: FactFindManagementSteps;
-  let sideNav: SideNavService;
-  let navBar: NavBarService;
+  let testBase: BaseTest;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-
-    await LoginSteps.setupForEnvironment(page, 'qa');
-
-    factFindManagementSteps = new FactFindManagementSteps(page);
-    sideNav = new SideNavService(page);
-    navBar = new NavBarService(page);
+    testBase = await BaseTest.create(browser, 'qa');
   });
 
   test('Create and Abandon Create Core Fact Find', async () => {
-    await factFindManagementSteps.createAndAbandonFactFind(sideNav, navBar);
+    await testBase.factFindSteps.createAndAbandonFactFind(testBase.sideNav, testBase.navBar);
   });
 
   test('Verify Add Note action is available after abandoning the Fact Find', async () => {
-    await factFindManagementSteps.verifyFirstRowAddNoteButtonIsVisible();
+    await testBase.factFindSteps.verifyFirstRowAddNoteButtonIsVisible();
   });
 
   test('Verify the Note column is blank after abandoning the Fact Find', async () => {
-    await factFindManagementSteps.verifyFactFindHistoryHasNoNoteHeader();
+    await testBase.factFindSteps.verifyFactFindHistoryHasNoNoteHeader();
   });
 
 
 
   test('Verify a note can be added to an abandoned Fact Find and the Note column is populated', async () => {
-    await factFindManagementSteps.executeAddNoteToAbandonedFactFind();
+    await testBase.factFindSteps.executeAddNoteToAbandonedFactFind();
   });
 
   test('Verify note remains saved after page reload', async () => {
-    await factFindManagementSteps.executeVerifyNoteSavedAgainstAbandonedFactFind();
+    await testBase.factFindSteps.executeVerifyNoteSavedAgainstAbandonedFactFind();
   });
 
   test('Edit note on abandoned Fact Find', async () => {
-    await factFindManagementSteps.executeEditNoteOnAbandonedFactFind();
+    await testBase.factFindSteps.executeEditNoteOnAbandonedFactFind();
   });
 
   test('Verify updated note is saved and persisted', async () => {
-    await factFindManagementSteps.executeVerifyUpdatedNoteSavedAndPersisted();
+    await testBase.factFindSteps.executeVerifyUpdatedNoteSavedAndPersisted();
   });
 
   test.afterAll(async () => {
     await cleanupClient1FactFinds();
-    await page?.close();
+    await testBase.cleanup();
   });
 });

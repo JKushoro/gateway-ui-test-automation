@@ -65,6 +65,49 @@ export { SideNavService } from '@steps/components/SideNav';
 export { getEnvironmentManager, EnvironmentManager } from '@framework/utils/EnvironmentManager';
 
 // ==========================================
+// TEST SETUP UTILITIES
+// ==========================================
+import { Browser } from '@playwright/test';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
+import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
+import type { Environment } from '@framework/types/Environment';
+
+/**
+ * Common test setup interface to eliminate duplicated code
+ */
+export interface TestSetup {
+  page: import('@playwright/test').Page;
+  factFindManagementSteps: FactFindManagementSteps;
+  sideNav: import('@steps/components/SideNav').SideNavService;
+  navBar: import('@steps/components/NavBar').NavBarService;
+}
+
+/**
+ * Creates a standardized test setup to eliminate code duplication across test files
+ * @param browser - Playwright browser instance
+ * @param environment - Test environment (default: 'qa')
+ * @returns Promise<TestSetup> - Configured test setup with common services
+ */
+export async function createTestSetup(browser: Browser, environment: Environment = 'qa'): Promise<TestSetup> {
+  const page = await browser.newPage();
+  
+  // Setup authentication for test environment
+  await LoginSteps.setupForEnvironment(page, environment);
+  
+  // Initialize common services
+  const factFindManagementSteps = new FactFindManagementSteps(page);
+  const sideNav = new (await import('@steps/components/SideNav')).SideNavService(page);
+  const navBar = new (await import('@steps/components/NavBar')).NavBarService(page);
+  
+  return {
+    page,
+    factFindManagementSteps,
+    sideNav,
+    navBar
+  };
+}
+
+// ==========================================
 // COMMONLY USED PAGE LOCATORS
 // ==========================================
 export { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';

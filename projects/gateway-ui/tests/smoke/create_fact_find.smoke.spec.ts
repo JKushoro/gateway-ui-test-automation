@@ -1,10 +1,6 @@
 // projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts
 import { test, Page, expect } from '@playwright/test';
-
-import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
-import { SideNavService } from '@steps/components/SideNav';
-import { NavBarService } from '@steps/components/NavBar';
+import { BaseTest } from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 import { KycFactFindDetailsPageSteps } from '@steps/kyc_forms/KycFactFindDetailsPageSteps';
@@ -22,12 +18,8 @@ import {
 import { GatewayFactFindSteps } from '@steps/gateway/GatewayFactFindSteps';
 
 test.describe.serial('Create Fact Find', () => {
-  let page: Page;
+  let testBase: BaseTest;
   let kycPage: Page;
-
-  let factFindCreationSteps: FactFindManagementSteps;
-  let sideNav: SideNavService;
-  let navBar: NavBarService;
 
   let kycFactFindDetailsPageSteps: KycFactFindDetailsPageSteps;
   let kycPersonalDetailsPageSteps: KycPersonalDetailsPageSteps;
@@ -42,17 +34,12 @@ test.describe.serial('Create Fact Find', () => {
   let gatewayFactFindSteps: GatewayFactFindSteps;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-    await LoginSteps.setupForEnvironment(page, 'qa');
-
-    factFindCreationSteps = new FactFindManagementSteps(page);
-    sideNav = new SideNavService(page);
-    navBar = new NavBarService(page);
-    gatewayFactFindSteps = new GatewayFactFindSteps(page);
+    testBase = await BaseTest.create(browser, 'qa');
+    gatewayFactFindSteps = new GatewayFactFindSteps(testBase.page);
 
     // Get to Fact Find then launch KYC (KYC opens in a new tab)
-    await factFindCreationSteps.addClientAndNavigateToFactFindTab(sideNav, navBar);
-    kycPage = await factFindCreationSteps.createAndLaunchNewFactFind();
+    await testBase.factFindSteps.addClientAndNavigateToFactFindTab(testBase.sideNav, testBase.navBar);
+    kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind();
 
     // Sanity check that we really are on KYC
     await expect(kycPage).toHaveTitle('KYC');
@@ -118,6 +105,6 @@ test.describe.serial('Create Fact Find', () => {
   test.afterAll(async () => {
     await cleanupClient1FactFinds();
     await kycPage?.close().catch(() => {});
-    if (page && page !== kycPage) await page.close().catch(() => {});
+    await testBase.cleanup();
   });
 });

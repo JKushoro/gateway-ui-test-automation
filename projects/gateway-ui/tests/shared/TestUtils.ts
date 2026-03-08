@@ -1,0 +1,48 @@
+// projects/gateway-ui/tests/shared/TestUtils.ts
+import { Browser, Page } from '@playwright/test';
+import { LoginSteps } from '@steps/gateway/LoginSteps';
+import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
+import { SideNavService } from '@steps/components/SideNav';
+import { NavBarService } from '@steps/components/NavBar';
+
+/**
+ * Base test class to eliminate all duplicated code patterns
+ * Usage: class MyTest extends BaseTest { ... }
+ */
+export class BaseTest {
+  public page: Page;
+  public factFindSteps: FactFindManagementSteps;
+  public sideNav: SideNavService;
+  public navBar: NavBarService;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.factFindSteps = new FactFindManagementSteps(page);
+    this.sideNav = new SideNavService(page);
+    this.navBar = new NavBarService(page);
+  }
+
+  static async create(browser: Browser, environment: 'qa' | 'dev' = 'qa'): Promise<BaseTest> {
+    const page = await browser.newPage();
+    await LoginSteps.setupForEnvironment(page, environment);
+    return new BaseTest(page);
+  }
+
+  async cleanup(): Promise<void> {
+    await this.page?.close();
+  }
+}
+
+/**
+ * Simple utility function (kept for backward compatibility)
+ */
+export async function setupTest(browser: Browser, environment: 'qa' | 'dev' = 'qa') {
+  const page = await browser.newPage();
+  await LoginSteps.setupForEnvironment(page, environment);
+  
+  const factFindSteps = new FactFindManagementSteps(page);
+  const sideNav = new SideNavService(page);
+  const navBar = new NavBarService(page);
+  
+  return { page, factFindSteps, sideNav, navBar };
+}

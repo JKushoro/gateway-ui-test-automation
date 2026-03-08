@@ -1,18 +1,21 @@
 // projects/gateway-ui/tests/regression/login_validation.spec.ts
-import { test, Page } from '@playwright/test';
+import { test } from '@playwright/test';
+import { setupTest } from '../shared/TestUtils';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
 import { DashboardSteps } from '@steps/gateway/DashboardSteps';
 import { LoginValidationSteps } from '@steps/gateway/LoginValidationSteps';
 
 test.describe('Login Tests', () => {
-  let page: Page;
+  let page: any;
   let loginSteps: LoginSteps;
   let loginTestSteps: LoginValidationSteps;
   let dashboardSteps: DashboardSteps;
 
   test.beforeEach(async ({ browser }) => {
-    page = await browser.newPage();
+    const setup = await setupTest(browser, 'qa');
+    page = setup.page;
 
+    // Initialize login-specific services
     loginSteps = new LoginSteps(page);
     loginTestSteps = new LoginValidationSteps(page);
     dashboardSteps = new DashboardSteps(page);

@@ -1,9 +1,6 @@
 // projects/gateway-ui/tests/smoke/abandoned_fact_find_name.smoke.spec.ts
-import { test, Page } from '@playwright/test';
-import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
-import { SideNavService } from '@steps/components/SideNav';
-import { NavBarService } from '@steps/components/NavBar';
+import { test } from '@playwright/test';
+import { BaseTest } from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 /**
@@ -20,47 +17,38 @@ import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
  * CI-CD Pipeline Ready: Robust assertions and reliable persistence checks
  */
 test.describe.serial('Verify a name can be added to an abandoned KYC Fact Find', () => {
-  let page: Page;
-  let factFindManagementSteps: FactFindManagementSteps;
-  let sideNav: SideNavService;
-  let navBar: NavBarService;
+  let testBase: BaseTest;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-
-    await LoginSteps.setupForEnvironment(page, 'qa');
-
-    factFindManagementSteps = new FactFindManagementSteps(page);
-    sideNav = new SideNavService(page);
-    navBar = new NavBarService(page);
+    testBase = await BaseTest.create(browser, 'qa');
   });
 
   test('Create and Abandon Create Core Fact Find', async () => {
-    await factFindManagementSteps.createAndAbandonFactFind(sideNav, navBar);
+    await testBase.factFindSteps.createAndAbandonFactFind(testBase.sideNav, testBase.navBar);
   });
 
   test('Verify the Name column is blank after abandoning the Fact Find', async () => {
-    await factFindManagementSteps.verifyFirstRowNameIsBlank();
+    await testBase.factFindSteps.verifyFirstRowNameIsBlank();
   });
 
   test('Verify a name can be added to an abandoned Fact Find and the Name column is populated', async () => {
-    await factFindManagementSteps.executeAddNameToAbandonedFactFind();
+    await testBase.factFindSteps.executeAddNameToAbandonedFactFind();
   });
 
   test('Verify name remains saved after page reload', async () => {
-    await factFindManagementSteps.executeVerifyNameSavedAgainstAbandonedFactFind();
+    await testBase.factFindSteps.executeVerifyNameSavedAgainstAbandonedFactFind();
   });
 
   test('Edit name on abandoned Fact Find', async () => {
-    await factFindManagementSteps.executeEditNameOnAbandonedFactFind();
+    await testBase.factFindSteps.executeEditNameOnAbandonedFactFind();
   });
 
   test('Verify updated name is saved and persisted', async () => {
-    await factFindManagementSteps.executeVerifyUpdatedNameSavedAndPersisted();
+    await testBase.factFindSteps.executeVerifyUpdatedNameSavedAndPersisted();
   });
 
   test.afterAll(async () => {
     await cleanupClient1FactFinds();
-    await page?.close();
+    await testBase.cleanup();
   });
 });
