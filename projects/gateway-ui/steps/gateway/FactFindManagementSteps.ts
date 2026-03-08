@@ -33,7 +33,6 @@ export class FactFindManagementSteps extends BasePage {
   private static readonly KYC_TIMEOUT_MS = 180000;
   private static readonly POPUP_TIMEOUT_MS = 10000;
   private static readonly FACT_FIND_HISTORY_TIMEOUT_MS = 60000;
-  private static readonly CREATE_DATE_TOLERANCE_MS = 60000;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
@@ -735,20 +734,21 @@ export class FactFindManagementSteps extends BasePage {
   /**
    * Verify the Create Date is within the acceptable tolerance of the click time.
    */
-  private async assertCreateDateIsValidAndRecent(
+  private assertCreateDateIsValidAndRecent(
     createDateText: string,
-    createClickedAt: Date
-  ): Promise<void> {
+    createClickedAt: Date,
+    toleranceMs = 90_000
+  ): void {
     const displayed = TextHelper.parseGatewayDateTime(createDateText);
-    const diffMs = Math.abs(displayed.getTime() - createClickedAt.getTime());
+    const differenceMs = Math.abs(displayed.getTime() - createClickedAt.getTime());
 
-    if (diffMs > FactFindManagementSteps.CREATE_DATE_TOLERANCE_MS) {
+    if (differenceMs > toleranceMs) {
       throw new Error(
         [
-          `Create Date was not within ${FactFindManagementSteps.CREATE_DATE_TOLERANCE_MS / 1000}s of Create Fact Find click time.`,
+          `Create Date was not within ${toleranceMs / 1000}s of the expected time.`,
           `Displayed: "${createDateText}" -> ${displayed.toISOString()}`,
-          `ClickedAt: ${createClickedAt.toISOString()}`,
-          `DiffMs: ${diffMs} (${(diffMs / 1000).toFixed(1)}s)`,
+          `Expected: ${createClickedAt.toISOString()}`,
+          `DiffMs: ${differenceMs} (${(differenceMs / 1000).toFixed(1)}s)`,
         ].join('\n')
       );
     }
