@@ -390,7 +390,7 @@ export class FactFindManagementSteps extends BasePage {
     await this.clickEditNoteButtonFirstRow();
 
     await expect(this.alertServiceLocator.editNoteModal).toBeVisible({ timeout: 15000 });
-    await expect(this.alertServiceLocator.editNoteModalTitle).toContainText('Edit Fact Find Note');
+    await expect(this.alertServiceLocator.editNoteModal).toContainText('Edit Fact Find Note');
 
     await this.alertServiceLocator.editNoteModalInput.clear();
     await this.enterFactFindNoteInEditModal(updatedNote);
@@ -400,10 +400,17 @@ export class FactFindManagementSteps extends BasePage {
 
     await this.clickGatewayTableCollapseButton();
 
-    await this.verifyFirstRowNameValue(updatedNote);
+    await this.verifyFirstRowNoteValue(updatedNote);
     expect(currentNote).not.toBe(updatedNote);
 
     return updatedNote;
+  }
+
+  public async executeVerifyUpdatedNoteSavedAndPersisted(): Promise<void> {
+    const updatedNote = await this.executeEditNoteOnAbandonedFactFind();
+    await this.reloadPageAndWait();
+    await this.clickGatewayTableCollapseButton();
+    await this.verifyFirstRowNoteValue(updatedNote);
   }
 
   /**
