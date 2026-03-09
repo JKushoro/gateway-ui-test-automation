@@ -13,6 +13,7 @@ import { FactFindPageLocators } from '@pages/gatewayElementLocators/FactFindPage
 import { AlertService } from '@steps/components/AlertService';
 import { AlertServiceLocator } from '@components/AlertServiceLocator';
 import { TextHelper } from '@framework/helpers/TextHelper';
+import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 /**
  * FactFindManagementSteps
@@ -792,6 +793,11 @@ export class FactFindManagementSteps extends BasePage {
     await this.verifyFirstRowLaunchFactFindNotAvailable();
   }
 
+  async refreshAfterFactFindCleanup(): Promise<void> {
+    await cleanupClient1FactFinds();
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
+  }
+
   /**
    * Create a client, create a Core Fact Find, and abandon the first row Fact Find.
    */
@@ -801,6 +807,6 @@ export class FactFindManagementSteps extends BasePage {
   ): Promise<void> {
     await this.executeAddClientAndNavigateToFactFindTab(sideNav, navBar);
     await this.executeCreateCoreFactFind();
-    await this.executeAbandonFirstRowFactFind();
+    await this.refreshAfterFactFindCleanup();
   }
 }
