@@ -385,7 +385,7 @@ export class FactFindManagementSteps extends BasePage {
    */
   public async executeEditNoteOnAbandonedFactFind(): Promise<string> {
     const currentNote = (await this.getFirstRowNoteValueCell().textContent())?.trim() ?? '';
-    const updatedNote = `Updated Fact Find Note ${Date.now()}`;
+    const updatedNote = `Updated Fact Find Note ${Date.now() + 1}`;
 
     await this.clickEditNoteButtonFirstRow();
 
