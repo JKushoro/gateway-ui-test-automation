@@ -4,39 +4,37 @@ import { BaseTest } from '../shared/TestUtils';
 import { AddCorporateClientSteps } from '@steps/clients/CorporateClientCreationSteps';
 import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
 import { ClientFilesSteps } from '@steps/clients/ClientFilesSteps';
+import { clearWorkerDataStore } from '@framework/utils/DataStore';
 
 test.describe('Create Corporate Client', () => {
-  let testBase: BaseTest;
-  let clientSteps: AddCorporateClientSteps;
-  let searchSteps: ClientsSearchSteps;
-  let clientFilesSteps: ClientFilesSteps;
-
-  test.beforeAll(async ({ browser }) => {
-    testBase = await BaseTest.create(browser, 'qa');
-
-    // Initialize additional services specific to this test
-    clientSteps = new AddCorporateClientSteps(testBase.page);
-    searchSteps = new ClientsSearchSteps(testBase.page);
-    clientFilesSteps = new ClientFilesSteps(testBase.page);
+  test.beforeEach(async () => {
+    // Clear any shared state before each test
+    clearWorkerDataStore();
   });
 
-  test('Navigate to Add Corporate Client page', async () => {
-    await clientSteps.executeNavigateToAddCorporateClient(testBase.sideNav);
-  });
+  test('Complete corporate client creation workflow', async ({ browser }) => {
+    const testBase = await BaseTest.create(browser, 'qa');
+    
+    try {
+      // Initialize services
+      const clientSteps = new AddCorporateClientSteps(testBase.page);
+      const searchSteps = new ClientsSearchSteps(testBase.page);
+      const clientFilesSteps = new ClientFilesSteps(testBase.page);
 
-  test('Create complete Corporate Client', async () => {
-    await clientSteps.executeCompleteClientCreation();
-  });
+      // Navigate to Add Corporate Client page
+      await clientSteps.executeNavigateToAddCorporateClient(testBase.sideNav);
 
-  test('Search for created client and verify company name matches', async () => {
-    await searchSteps.executeSearchAndVerifyStoredClient();
-  });
+      // Create complete Corporate Client
+      await clientSteps.executeCompleteClientCreation();
 
-  test('Verify all stored client data matches client details page', async () => {
-    await clientFilesSteps.executeStoredClientDataVerification();
-  });
+      // Search for created client and verify company name matches
+      await searchSteps.executeSearchAndVerifyStoredClient();
 
-  test.afterAll(async () => {
-    await testBase.cleanup();
+      // Verify all stored client data matches client details page
+      await clientFilesSteps.executeStoredClientDataVerification();
+
+    } finally {
+      await testBase.cleanup();
+    }
   });
 });

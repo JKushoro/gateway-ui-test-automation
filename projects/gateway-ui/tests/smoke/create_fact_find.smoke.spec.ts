@@ -2,6 +2,7 @@
 import { test, Page, expect } from '@playwright/test';
 import { BaseTest } from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
+import { clearWorkerDataStore } from '@framework/utils/DataStore';
 
 import { KycFactFindDetailsPageSteps } from '@steps/kyc_forms/KycFactFindDetailsPageSteps';
 import { KycPersonalDetailsPageSteps } from '@steps/kyc_forms/KycPersonalDetailsPageSteps';
@@ -17,94 +18,58 @@ import {
 } from '@steps/kyc_forms/KycInvestmentKnowledgeAndPreferencesPageSteps';
 import { GatewayFactFindSteps } from '@steps/gateway/GatewayFactFindSteps';
 
-test.describe.serial('Create Fact Find', () => {
-  let testBase: BaseTest;
-  let kycPage: Page;
-
-  let kycFactFindDetailsPageSteps: KycFactFindDetailsPageSteps;
-  let kycPersonalDetailsPageSteps: KycPersonalDetailsPageSteps;
-  let kycCurrentSituationPageSteps: KycCurrentSituationPageSteps;
-  let kycPropertyAndAssetsSteps: KycPropertyAndAssetsSteps;
-  let kycSavingsAndInvestmentsPageSteps: KycSavingsAndInvestmentsPageSteps;
-  let kycPensionsPageSteps: KycPensionsPageSteps;
-  let kycProtectionPageSteps: KycProtectionPageSteps;
-  let kycIncomePageSteps: KycIncomePageSteps;
-  let kycLiabilitiesAndExpendituresPageSteps: KycLiabilitiesAndExpendituresPageSteps;
-  let kycInvestmentKnowledgeAndPreferencesPageSteps: KycInvestmentKnowledgeAndPreferencesPageSteps;
-  let gatewayFactFindSteps: GatewayFactFindSteps;
-
-  test.beforeAll(async ({ browser }) => {
-    testBase = await BaseTest.create(browser, 'qa');
-    gatewayFactFindSteps = new GatewayFactFindSteps(testBase.page);
-
-    // Get to Fact Find then launch KYC (KYC opens in a new tab)
-    await testBase.factFindSteps.addClientAndNavigateToFactFindTab(testBase.sideNav, testBase.navBar);
-    kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind();
-
-    // Sanity check that we really are on KYC
-    await expect(kycPage).toHaveTitle('KYC');
-
-    // Initialise KYC step classes once (outside tests)
-    kycFactFindDetailsPageSteps = new KycFactFindDetailsPageSteps(kycPage);
-    kycPersonalDetailsPageSteps = new KycPersonalDetailsPageSteps(kycPage);
-    kycCurrentSituationPageSteps = new KycCurrentSituationPageSteps(kycPage);
-    kycPropertyAndAssetsSteps = new KycPropertyAndAssetsSteps(kycPage);
-    kycSavingsAndInvestmentsPageSteps = new KycSavingsAndInvestmentsPageSteps(kycPage);
-    kycPensionsPageSteps = new KycPensionsPageSteps(kycPage);
-    kycProtectionPageSteps = new KycProtectionPageSteps(kycPage);
-    kycIncomePageSteps = new KycIncomePageSteps(kycPage);
-    kycLiabilitiesAndExpendituresPageSteps = new KycLiabilitiesAndExpendituresPageSteps(kycPage);
-    kycInvestmentKnowledgeAndPreferencesPageSteps = new KycInvestmentKnowledgeAndPreferencesPageSteps(kycPage);
+test.describe('Create Fact Find', () => {
+  test.beforeEach(async () => {
+    // Clear any shared state before each test
+    clearWorkerDataStore();
   });
 
-  test('Fill in Fact Find Details section of the KYC application form', async () => {
-    await kycFactFindDetailsPageSteps.completeKYCFactFindDetails();
-  });
+  test('Complete fact find creation workflow', async ({ browser }) => {
+    const testBase = await BaseTest.create(browser, 'qa');
+    let kycPage: Page;
+    
+    try {
+      const gatewayFactFindSteps = new GatewayFactFindSteps(testBase.page);
 
-  test('Fill in Personal Details section of the KYC application form', async () => {
-    await kycPersonalDetailsPageSteps.completeKYCPersonalDetails();
-  });
+      // Get to Fact Find then launch KYC (KYC opens in a new tab)
+      await testBase.factFindSteps.addClientAndNavigateToFactFindTab(testBase.sideNav, testBase.navBar);
+      kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind();
 
-  test('Fill in Current Situation section of the KYC application form', async () => {
-    await kycCurrentSituationPageSteps.completeKYCCurrentSituation();
-  });
+      // Sanity check that we really are on KYC
+      await expect(kycPage).toHaveTitle('KYC');
 
-  test('Fill in Property and Assets section of the KYC application form', async () => {
-    await kycPropertyAndAssetsSteps.completeKYC_PropertyAndAssets();
-  });
+      // Initialize all KYC step classes
+      const kycFactFindDetailsPageSteps = new KycFactFindDetailsPageSteps(kycPage);
+      const kycPersonalDetailsPageSteps = new KycPersonalDetailsPageSteps(kycPage);
+      const kycCurrentSituationPageSteps = new KycCurrentSituationPageSteps(kycPage);
+      const kycPropertyAndAssetsSteps = new KycPropertyAndAssetsSteps(kycPage);
+      const kycSavingsAndInvestmentsPageSteps = new KycSavingsAndInvestmentsPageSteps(kycPage);
+      const kycPensionsPageSteps = new KycPensionsPageSteps(kycPage);
+      const kycProtectionPageSteps = new KycProtectionPageSteps(kycPage);
+      const kycIncomePageSteps = new KycIncomePageSteps(kycPage);
+      const kycLiabilitiesAndExpendituresPageSteps = new KycLiabilitiesAndExpendituresPageSteps(kycPage);
+      const kycInvestmentKnowledgeAndPreferencesPageSteps = new KycInvestmentKnowledgeAndPreferencesPageSteps(kycPage);
 
-  test('Fill in Savings and Investments section of the KYC application form', async () => {
-    await kycSavingsAndInvestmentsPageSteps.completeKYC_SavingsAndInvestments();
-  });
+      // Complete all KYC sections sequentially
+      await kycFactFindDetailsPageSteps.completeKYCFactFindDetails();
+      await kycPersonalDetailsPageSteps.completeKYCPersonalDetails();
+      await kycCurrentSituationPageSteps.completeKYCCurrentSituation();
+      await kycPropertyAndAssetsSteps.completeKYC_PropertyAndAssets();
+      await kycSavingsAndInvestmentsPageSteps.completeKYC_SavingsAndInvestments();
+      await kycPensionsPageSteps.completeKYC_Pensions();
+      await kycProtectionPageSteps.completeKYC_Protection();
+      await kycIncomePageSteps.completeKYC_Income();
+      await kycLiabilitiesAndExpendituresPageSteps.completeKYC_LiabilitiesAndExpenditures();
+      await kycInvestmentKnowledgeAndPreferencesPageSteps.completeKYC_InvestmentKnowledgeAndPreferences();
 
-  test('Fill in Pensions section of the KYC application form', async () => {
-    await kycPensionsPageSteps.completeKYC_Pensions();
-  });
+      // Validate Gateway fact find data
+      await gatewayFactFindSteps.validateGatewayFactFindData();
+      await kycPage.waitForTimeout(2000);
 
-  test('Fill in Protection section of the KYC application form', async () => {
-    await kycProtectionPageSteps.completeKYC_Protection();
-  });
-
-  test('Fill in Income section of the KYC application form', async () => {
-    await kycIncomePageSteps.completeKYC_Income();
-  });
-
-  test('Fill in Liabilities And Expenditures section of the KYC application form', async () => {
-    await kycLiabilitiesAndExpendituresPageSteps.completeKYC_LiabilitiesAndExpenditures();
-  });
-
-  test('Fill in Investment Knowledge And Preferences section of the KYC application form', async () => {
-    await kycInvestmentKnowledgeAndPreferencesPageSteps.completeKYC_InvestmentKnowledgeAndPreferences();
-  });
-
-  test('Should validate Gateway fact find data', async () => {
-    await gatewayFactFindSteps.validateGatewayFactFindData();
-    await kycPage.waitForTimeout(2000);
-  });
-
-  test.afterAll(async () => {
-    await cleanupClient1FactFinds();
-    await kycPage?.close().catch(() => {});
-    await testBase.cleanup();
+    } finally {
+      await cleanupClient1FactFinds();
+      await kycPage?.close().catch(() => {});
+      await testBase.cleanup();
+    }
   });
 });

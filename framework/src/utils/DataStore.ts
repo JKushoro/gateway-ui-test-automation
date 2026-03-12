@@ -95,9 +95,38 @@ class DataStore {
 }
 
 /**
- * Singleton instance of the data store
- * Use this instance throughout your tests
+ * Worker-isolated data store instances
+ * Each test worker gets its own isolated data store
  */
-const dataStore = new DataStore();
+const workerDataStores = new Map<string, DataStore>();
 
-export { dataStore, DataStore };
+/**
+ * Get or create a data store for the current test worker
+ * This ensures test isolation when running in parallel
+ */
+function getDataStore(): DataStore {
+  const workerId = process.env.TEST_WORKER_INDEX || 'default';
+  
+  if (!workerDataStores.has(workerId)) {
+    workerDataStores.set(workerId, new DataStore());
+  }
+  
+  return workerDataStores.get(workerId)!;
+}
+
+/**
+ * Clear the data store for the current worker
+ * Useful for test cleanup
+ */
+function clearWorkerDataStore(): void {
+  const workerId = process.env.TEST_WORKER_INDEX || 'default';
+  const store = workerDataStores.get(workerId);
+  if (store) {
+    store.clear();
+  }
+}
+
+// Export the worker-isolated data store
+const dataStore = getDataStore();
+
+export { dataStore, DataStore, getDataStore, clearWorkerDataStore };

@@ -609,6 +609,25 @@ export class FactFindManagementSteps extends BasePage {
   /**
    * Assert the Fact Find History row values for the created Fact Find.
    */
+  // public async assertFactFindHistoryRow(args: {
+  //   expectedType: string;
+  //   createClickedAt: Date;
+  //   expectedStatus?: string;
+  // }): Promise<void> {
+  //   const expectedStatus = args.expectedStatus ?? 'Open';
+  //
+  //   const rowIndex = await this.findCreatedFactFindRowIndex(args.expectedType, expectedStatus);
+  //
+  //   await this.assertFactFindHistoryHeadingVisible();
+  //   await this.assertRowCreatedByMatchesImpersonation(rowIndex);
+  //   await this.assertRowStatusIs(expectedStatus, rowIndex);
+  //   await this.assertRowTypeMatches(args.expectedType, rowIndex);
+  //
+  //   const createDateText = await this.getRowCreateDateText(rowIndex);
+  //   await this.assertCreateDateFormat(createDateText);
+  //   this.assertCreateDateIsValidAndRecent(createDateText, args.createClickedAt);
+  // }
+
   public async assertFactFindHistoryRow(args: {
     expectedType: string;
     createClickedAt: Date;
@@ -625,7 +644,7 @@ export class FactFindManagementSteps extends BasePage {
 
     const createDateText = await this.getRowCreateDateText(rowIndex);
     await this.assertCreateDateFormat(createDateText);
-    await this.assertCreateDateIsValidAndRecent(createDateText, args.createClickedAt);
+    this.assertCreateDateIsValidAndRecent(createDateText, args.createClickedAt);
   }
 
   /**

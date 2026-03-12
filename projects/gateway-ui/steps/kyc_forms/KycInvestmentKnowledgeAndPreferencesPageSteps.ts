@@ -49,7 +49,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     await this.answerClientClassification('Retail');
     await this.answerInvestmentExperience('Basic');
     await this.answerSustainabilityRequirements(
-      'They require a solution that has an objective to invest in assets that are environmentally and/or socially sustainable'
+      'Yes – relating to one and/or some of my objectives'
     );
 
     // Key refactor: we return awareness answer (true/false) or undefined (question not shown)

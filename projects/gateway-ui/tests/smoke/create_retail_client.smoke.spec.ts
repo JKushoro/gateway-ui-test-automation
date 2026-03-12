@@ -3,33 +3,32 @@ import { test } from '@playwright/test';
 import { BaseTest } from '../shared/TestUtils';
 import { RetailClientCreationSteps } from '@steps/gateway/RetailClientCreationSteps';
 import { ClientsSearchSteps } from '@steps/gateway/ClientsSearchSteps';
+import { clearWorkerDataStore } from '@framework/utils/DataStore';
 
 test.describe('Create a Retail Client', () => {
-  let testBase: BaseTest;
-  let clientSteps: RetailClientCreationSteps;
-  let searchSteps: ClientsSearchSteps;
-
-  test.beforeAll(async ({ browser }) => {
-    testBase = await BaseTest.create(browser, 'qa');
-
-    // Initialize additional services specific to this test
-    clientSteps = new RetailClientCreationSteps(testBase.page);
-    searchSteps = new ClientsSearchSteps(testBase.page);
+  test.beforeEach(async () => {
+    // Clear any shared state before each test
+    clearWorkerDataStore();
   });
 
-  test('Navigate to Add Client page', async () => {
-    await clientSteps.executeNavigateToAddClient(testBase.sideNav);
-  });
+  test('Complete retail client creation workflow', async ({ browser }) => {
+    const testBase = await BaseTest.create(browser, 'qa');
+    
+    try {
+      // Initialize services
+      const clientSteps = new RetailClientCreationSteps(testBase.page);
+      const searchSteps = new ClientsSearchSteps(testBase.page);
 
-  test('Create complete Client', async () => {
-    await clientSteps.createClient();
-  });
+      // Navigate to Add Client page
+      await clientSteps.executeNavigateToAddClient(testBase.sideNav);
 
-  test('Search for created client and verify Forename and Surname matches', async () => {
-    await searchSteps.executeSearchAndVerifyStoredIndividualClient();
-  });
+      // Create complete Client
+      await clientSteps.createClient();
 
-  test.afterAll(async () => {
-    await testBase.cleanup();
+      // Search for created client and verify Forename and Surname matches
+      await searchSteps.executeSearchAndVerifyStoredIndividualClient();
+    } finally {
+      await testBase.cleanup();
+    }
   });
 });

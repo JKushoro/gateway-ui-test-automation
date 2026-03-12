@@ -9,7 +9,7 @@ type ClientDataObject = {
 const client1: ClientDataObject = {
   forename: process.env.CLIENT_ONE_FORENAME || 'Test',
   middleName: process.env.CLIENT_ONE_MIDDLENAME || 'James',
-  surname: process.env.CLIENT_ONE_SURNAME || 'Client mMoJchjsOEbXeZCSHR',
+  surname: process.env.CLIENT_ONE_SURNAME || 'Client JKmMoJchjsOEbXeZCSHR',
   servicingTypeId: '11',
 
 };

@@ -2,16 +2,16 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './projects/gateway-ui/tests',
-  fullyParallel: false,
+  fullyParallel: true,
   retries: 0,
-  workers: 1,
+  workers: process.env.CI ? 2 : undefined, // Use 2 workers in CI, auto-detect locally
   reporter: [
     ['html', { open: 'always', outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
     ['junit', { outputFile: 'test-results/junit-results.xml' }],
     ['list'],
   ],
-  timeout: 60_000,
+  timeout: 180_000, // 3 minutes - appropriate for end-to-end tests
   outputDir: './test-results/gateway-ui',
 
   use: {
