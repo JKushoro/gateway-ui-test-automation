@@ -826,7 +826,8 @@ export class ActionHelper {
       for (let attempt = 0; attempt < 2; attempt++) {
         await label.click({ force: true });
         if (await input.isChecked()) break;
-        await this.waitHelper.waitForTimeout(80);
+        // Wait for checkbox state to update
+        await expect(input).toBeChecked({ timeout: 1000 }).catch(() => {});
       }
 
       await expect(input).toBeChecked({ timeout: 10_000 });
@@ -1286,7 +1287,6 @@ export class ActionHelper {
   ): Promise<void> {
     await this.waitHelper.waitForElement(this.page.locator(menuSelector), timeout);
     await this.waitHelper.waitForElement(this.page.locator(itemSelector).first(), 3_000);
-    await this.waitHelper.waitForTimeout(300);
   }
 
   /** Pick a random item from MUI menu list */
@@ -1593,18 +1593,14 @@ export class ActionHelper {
     fallbackIndex: number
   ): Promise<string> {
     await this.page.click(selector);
-    await this.waitHelper.waitForTimeout(300);
     await this.page.waitForSelector(`${selector}:not([disabled])`, { timeout: 5_000 });
 
     const ok = await this.selectDropdownOptionByJS(selector, optionText, fallbackIndex);
     if (!ok) throw new Error(`Failed to select option: ${optionText}`);
 
-    await this.waitHelper.waitForTimeout(500);
-
     const current = await this.getSelectedDropdownText(selector);
     if (current && current !== 'Select Address' && current !== optionText) return current;
 
-    await this.waitHelper.waitForTimeout(300);
     return optionText;
   }
 

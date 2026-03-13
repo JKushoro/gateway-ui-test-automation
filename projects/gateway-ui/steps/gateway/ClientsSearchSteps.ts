@@ -105,7 +105,7 @@ export class ClientsSearchSteps extends BasePage {
     if (this.page.url().includes('/clientfiles/details/')) {
       const baseUrl = this.page.url().split('/clientfiles')[0];
       await this.page.goto(`${baseUrl}/dashboard/developmentdash`);
-      await this.wait.waitForTimeout(500); // shorter & consistent
+      await this.page.waitForLoadState('domcontentloaded');
     }
 
     await this.sideNav.clickSideMenuItem('Clients', 'Search Clients');

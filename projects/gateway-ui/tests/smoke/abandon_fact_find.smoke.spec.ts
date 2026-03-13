@@ -1,6 +1,6 @@
 // projects/gateway-ui/tests/smoke/abandon_fact_find.smoke.spec.ts
 import { test } from '@playwright/test';
-import { BaseTest } from '../shared/TestUtils';
+import BaseTest from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';
 

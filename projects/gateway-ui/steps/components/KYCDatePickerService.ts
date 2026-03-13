@@ -241,7 +241,8 @@ export class KYCDatePickerService extends BasePage {
         await clickPrev();
       }
 
-      await this.page.waitForTimeout(50);
+      // Wait for year header to be updated after navigation instead of dropdown
+      await this.wait.waitForElement(yearHeader);
     }
 
     const finalText = (await yearHeader.textContent())?.trim() ?? '';

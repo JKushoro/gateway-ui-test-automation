@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect } from '@playwright/test';
 
 export class TextHelper {
   /**
@@ -118,15 +118,9 @@ export class TextHelper {
     timeout: number = 30000
   ): Promise<void> {
     await locator.waitFor({ state: 'visible', timeout });
-
-    const startTime = Date.now();
-    while (Date.now() - startTime < timeout) {
-      const currentText = await this.getTrimmedText(locator);
-      if (currentText === expectedText) return;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    throw new Error(`Element did not have expected text "${expectedText}" within ${timeout}ms`);
+    
+    // Use Playwright's built-in text waiting instead of manual polling
+    await expect(locator).toHaveText(expectedText, { timeout });
   }
 
   /**
@@ -138,15 +132,9 @@ export class TextHelper {
     timeout: number = 30000
   ): Promise<void> {
     await locator.waitFor({ state: 'visible', timeout });
-
-    const startTime = Date.now();
-    while (Date.now() - startTime < timeout) {
-      const currentText = await this.getTrimmedText(locator);
-      if (currentText.includes(expectedText)) return;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    throw new Error(`Element did not contain expected text "${expectedText}" within ${timeout}ms`);
+    
+    // Use Playwright's built-in text waiting instead of manual polling
+    await expect(locator).toContainText(expectedText, { timeout });
   }
 
   /**

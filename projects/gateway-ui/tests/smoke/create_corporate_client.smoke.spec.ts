@@ -1,6 +1,6 @@
 //projects/gateway-ui/tests/smoke/create_corporate_client.smoke.spec.ts
 import { test } from '@playwright/test';
-import { BaseTest } from '../shared/TestUtils';
+import BaseTest from '../shared/TestUtils';
 import { AddCorporateClientSteps } from '@steps/clients/CorporateClientCreationSteps';
 import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
 import { ClientFilesSteps } from '@steps/clients/ClientFilesSteps';

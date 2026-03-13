@@ -24,7 +24,7 @@ export class NavBarService extends BasePage {
     await this.action.clickLocator(navItem);
 
     // Wait for page navigation to complete
-    await this.wait.waitForTimeout(1000);
+    await this.page.waitForLoadState('networkidle');
   }
 
 

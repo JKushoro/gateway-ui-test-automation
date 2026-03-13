@@ -1,6 +1,6 @@
 // projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts
 import { test, Page, expect } from '@playwright/test';
-import { BaseTest } from '../shared/TestUtils';
+import BaseTest from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';
 
@@ -64,7 +64,7 @@ test.describe('Create Fact Find', () => {
 
       // Validate Gateway fact find data
       await gatewayFactFindSteps.validateGatewayFactFindData();
-      await kycPage.waitForTimeout(2000);
+      await kycPage.waitForLoadState('networkidle');
 
     } finally {
       await cleanupClient1FactFinds();

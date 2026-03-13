@@ -93,7 +93,7 @@ export class BasePage {
     };
 
     // Initialize logger
-    this.logger = createLogger(this.constructor.name)!;
+    this.logger = createLogger(this.constructor.name);
     
     // Initialize all helper services
     this.wait = new WaitHelper(page, this.config);

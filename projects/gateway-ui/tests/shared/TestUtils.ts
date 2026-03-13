@@ -9,7 +9,7 @@ import { NavBarService } from '@steps/components/NavBar';
  * Base test class to eliminate all duplicated code patterns
  * Usage: class MyTest extends BaseTest { ... }
  */
-export class BaseTest {
+export default class BaseTest {
   public page: Page;
   public factFindSteps: FactFindManagementSteps;
   public sideNav: SideNavService;

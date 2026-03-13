@@ -5,7 +5,7 @@ import path from 'path';
 
 import { AuthenticationService } from '../framework/src';
 
-const authFile = path.resolve('playwright/.auth/user.json');
+const authFile = path.resolve('playwright/xx/user.json');
 
 function ensureDir(filePath: string) {
   const dir = path.dirname(filePath);

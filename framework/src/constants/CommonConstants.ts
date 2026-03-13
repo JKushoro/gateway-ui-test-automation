@@ -6,13 +6,7 @@
  * Following the Single Responsibility Principle - each constant has one clear purpose
  */
 export const UI_SELECTORS = {
-  
-  // Default values
-  DEFAULTS: {
-    TIMEOUT: 15000,
-    WAIT_TIMEOUT: 5000,
-    GROSS_INCOME: '50000',
-  },
+  // Reserved for future UI selectors if needed
 } as const;
 
 /**

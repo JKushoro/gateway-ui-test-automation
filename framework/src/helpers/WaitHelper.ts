@@ -395,7 +395,7 @@ export class WaitHelper {
   public async waitForFormElementReady(locator: Locator, timeout?: number): Promise<void> {
     await this.waitForElement(locator, timeout);
     await expect(locator).toBeEnabled({ timeout: timeout || this.config.timeout });
-    await this.waitForTimeout(200); // Small delay for element stabilization
+    // Element is ready when visible and enabled - no additional delay needed
   }
 
   /**
@@ -405,7 +405,7 @@ export class WaitHelper {
     await this.waitForFormElementReady(locator, timeout);
     // Additional check for input-specific readiness
     await expect(locator).not.toHaveAttribute('readonly', { timeout: 1000 }).catch(() => {});
-    await this.waitForTimeout(100);
+    // Input is ready when visible, enabled, and not readonly
   }
 
   /**
@@ -434,7 +434,7 @@ export class WaitHelper {
       timeout || this.config.timeout
     );
     
-    await this.waitForTimeout(300); // Additional stabilization time
+    // Dropdown is ready when populated with minimum options
   }
 
   /**
@@ -461,7 +461,7 @@ export class WaitHelper {
       timeout || this.config.timeout
     );
     
-    await this.waitForTimeout(200);
+    // MUI dropdown is ready when visible, enabled, and not in loading state
   }
 
   /**
@@ -506,7 +506,8 @@ export class WaitHelper {
       if (await checkStability()) {
         return;
       }
-      await this.waitForTimeout(50);
+      // Small delay between stability checks
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
     throw new Error('Element did not stabilize within timeout');

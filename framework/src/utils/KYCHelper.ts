@@ -6,7 +6,6 @@ import { QuestionHelper } from './QuestionHelper';
 import { ActionHelper } from '../helpers/ActionHelper';
 import { AssertionHelper } from '../helpers/AssertionHelper';
 import { FrameworkConfig } from '../types';
-import { UI_SELECTORS } from '../constants/CommonConstants';
 import { WaitHelper } from '@framework/helpers/WaitHelper';
 
 export class KYCHelper {
@@ -18,7 +17,7 @@ export class KYCHelper {
   constructor(
     protected page: Page,
     protected logger?: ILogger,
-    config?: Partial<FrameworkConfig>
+    protected config?: Partial<FrameworkConfig>
   ) {
     this.questionHelper = new QuestionHelper(page, logger);
     this.action = new ActionHelper(page, config);
@@ -52,11 +51,12 @@ export class KYCHelper {
   public async verifyKYCPageHeading(
     urlFragment: string,
     expectedHeading: string,
-    timeout: number = UI_SELECTORS.DEFAULTS.TIMEOUT
+    timeout?: number
   ): Promise<void> {
+    const effectiveTimeout = timeout || this.config?.timeout || 30000;
     await this.assert.assertPageURLContains(urlFragment);
     // use helper which falls back to text if testid not present
-    await this.assert.assertHeadingVisible(expectedHeading, timeout);
+    await this.assert.assertHeadingVisible(expectedHeading, effectiveTimeout);
   }
 
   /**
