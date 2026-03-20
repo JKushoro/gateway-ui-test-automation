@@ -28,7 +28,11 @@ test.describe('Verify a note can be added to an abandoned KYC Fact Find', () => 
     
     try {
       // Create and Abandon Create Core Fact Find
-      await testBase.factFindSteps.createAndAbandonFactFind(testBase.sideNav, testBase.navBar);
+      await testBase.factFindSteps.createAndAbandonFactFind(
+        testBase.sideNav,
+        testBase.navBar,
+        'Core Fact Find'
+      );
 
       // Verify Add Note action is available after abandoning the Fact Find
       await testBase.factFindSteps.verifyFirstRowAddNoteButtonIsVisible();

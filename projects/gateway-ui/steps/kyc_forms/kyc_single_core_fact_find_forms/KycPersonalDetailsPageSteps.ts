@@ -7,9 +7,9 @@ import { dataStore } from '@framework/utils/DataStore';
 import { TestDataGenerator } from '@framework/utils/TestDataGenerator';
 import { PostcodeLookupService } from '@steps/components/PostcodeLookup';
 import { KYCDatePickerService } from '@steps/components/KYCDatePickerService';
-import { KYCDatePickerLocators } from '@pages/componentsLocator/KYCDatePickerLocators';
-import { BaseKYCSteps } from './BaseKYCSteps';
-import { KycPersonalDetailsPageLocators } from '@pages/kycElementLocators/KycPersonalDetailsPageLocators';
+import { KYCDatePickerLocators } from '@components/KYCDatePickerLocators';
+import { BaseKYCSteps } from '../BaseKYCSteps';
+import { KycPersonalDetailsPageLocators } from '@pages/kycElementLocators/kyc_core_fact_find_locators/KycPersonalDetailsPageLocators';
 
 /**
  * =====================================================

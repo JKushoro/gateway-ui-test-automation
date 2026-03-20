@@ -5,7 +5,7 @@
 I've successfully reviewed and fixed hard waits across your entire codebase. Here's a summary of the improvements made:
 
 ### Files Modified:
-1. **[`projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts`](projects/gateway-ui/tests/smoke/create_fact_find.smoke.spec.ts)** - Replaced 2000ms hard wait with `waitForLoadState('networkidle')`
+1. **[`projects/gateway-ui/tests/smoke/create_core_fact_find.smoke.spec.ts`](projects/gateway-ui/tests/smoke/create_core_fact_find.smoke.spec.ts)** - Replaced 2000ms hard wait with `waitForLoadState('networkidle')`
 2. **[`projects/gateway-ui/steps/components/PostcodeLookup.ts`](projects/gateway-ui/steps/components/PostcodeLookup.ts)** - Removed 3 hard waits (1000ms, 500ms, 200ms, 1000ms)
 3. **[`projects/gateway-ui/steps/components/NavBar.ts`](projects/gateway-ui/steps/components/NavBar.ts)** - Replaced 1000ms wait with `waitForLoadState('networkidle')`
 4. **[`projects/gateway-ui/steps/gateway/ClientsSearchSteps.ts`](projects/gateway-ui/steps/gateway/ClientsSearchSteps.ts)** - Replaced 500ms wait with `waitForLoadState('domcontentloaded')`

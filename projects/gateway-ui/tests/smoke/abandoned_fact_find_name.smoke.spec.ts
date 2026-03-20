@@ -28,7 +28,11 @@ test.describe('Verify a name can be added to an abandoned KYC Fact Find', () => 
     
     try {
       // Create and Abandon Create Core Fact Find
-      await testBase.factFindSteps.createAndAbandonFactFind(testBase.sideNav, testBase.navBar);
+      await testBase.factFindSteps.createAndAbandonFactFind(
+        testBase.sideNav,
+        testBase.navBar,
+        'Core Fact Find'
+      );
 
       // Verify the Name column is blank after abandoning the Fact Find
       await testBase.factFindSteps.verifyFirstRowNameIsBlank();

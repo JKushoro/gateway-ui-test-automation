@@ -529,11 +529,10 @@ export class FactFindManagementSteps extends BasePage {
   /**
    * Choose the Fact Find type from the dropdown.
    */
-  public async chooseFactFindType(): Promise<string> {
+  public async chooseFactFindType(value: string): Promise<string> {
     await this.wait.waitForNetworkIdle(FactFindManagementSteps.KYC_TIMEOUT_MS);
-    return await this.action.selectDropdownByLabel('Choose Fact Find Type', 'Core Fact Find');
+    return await this.action.selectDropdownByLabel('Choose Fact Find Type', value);
   }
-
   /**
    * Click the Create Fact Find button.
    */
@@ -541,30 +540,36 @@ export class FactFindManagementSteps extends BasePage {
     await this.action.clickButtonByText('Create Fact Find', false);
   }
 
-  /**
-   * Create a Core Fact Find without launching KYC.
-   */
-  public async executeCreateCoreFactFind(): Promise<void> {
+  private async createFactFind(factFindType: string): Promise<{
+    selectedType: string;
+    createClickedAt: Date;
+  }> {
     await this.selectEnableNewFactFindCheckBox();
     await this.clickConfirmAndMigrateButton();
     await this.confirmEnableClientForNewFactFind();
-    await this.chooseFactFindType();
+
+    const selectedType = await this.chooseFactFindType(factFindType);
+
+    const createClickedAt = new Date();
     await this.clickFactFindButton();
+
+    return { selectedType, createClickedAt };
+  }
+
+  /**
+   * Create a Fact Find without launching KYC.
+   */
+  public async executeCreateFactFind(factFindType: string): Promise<string> {
+    const { selectedType } = await this.createFactFind(factFindType);
     await this.waitForFactFindHistoryTable();
+    return selectedType;
   }
 
   /**
    * Create and launch a new Fact Find into the KYC page.
    */
-  public async createAndLaunchNewFactFind(): Promise<Page> {
-    await this.selectEnableNewFactFindCheckBox();
-    await this.clickConfirmAndMigrateButton();
-    await this.confirmEnableClientForNewFactFind();
-
-    const selectedType = await this.chooseFactFindType();
-
-    const createClickedAt = new Date();
-    await this.clickFactFindButton();
+  public async createAndLaunchNewFactFind(factFindType: string): Promise<Page> {
+    const { selectedType, createClickedAt } = await this.createFactFind(factFindType);
 
     await this.assertFactFindHistoryRow({
       expectedType: selectedType,
@@ -609,25 +614,6 @@ export class FactFindManagementSteps extends BasePage {
   /**
    * Assert the Fact Find History row values for the created Fact Find.
    */
-  // public async assertFactFindHistoryRow(args: {
-  //   expectedType: string;
-  //   createClickedAt: Date;
-  //   expectedStatus?: string;
-  // }): Promise<void> {
-  //   const expectedStatus = args.expectedStatus ?? 'Open';
-  //
-  //   const rowIndex = await this.findCreatedFactFindRowIndex(args.expectedType, expectedStatus);
-  //
-  //   await this.assertFactFindHistoryHeadingVisible();
-  //   await this.assertRowCreatedByMatchesImpersonation(rowIndex);
-  //   await this.assertRowStatusIs(expectedStatus, rowIndex);
-  //   await this.assertRowTypeMatches(args.expectedType, rowIndex);
-  //
-  //   const createDateText = await this.getRowCreateDateText(rowIndex);
-  //   await this.assertCreateDateFormat(createDateText);
-  //   this.assertCreateDateIsValidAndRecent(createDateText, args.createClickedAt);
-  // }
-
   public async assertFactFindHistoryRow(args: {
     expectedType: string;
     createClickedAt: Date;
@@ -818,14 +804,15 @@ export class FactFindManagementSteps extends BasePage {
   }
 
   /**
-   * Create a client, create a Core Fact Find, and abandon the first row Fact Find.
+   * Create a client, create a Fact Find, and abandon the first row Fact Find.
    */
   public async createAndAbandonFactFind(
     sideNav: SideNavService,
-    navBar: NavBarService
+    navBar: NavBarService,
+    factFindType: string
   ): Promise<void> {
     await this.executeAddClientAndNavigateToFactFindTab(sideNav, navBar);
-    await this.executeCreateCoreFactFind();
+    await this.createFactFind(factFindType);
     await this.refreshAfterFactFindCleanup();
   }
 }

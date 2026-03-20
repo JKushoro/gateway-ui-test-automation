@@ -29,7 +29,7 @@ test.describe('Abandon Fact Find', () => {
       await testBase.factFindSteps.executeAddClientAndNavigateToFactFindTab(testBase.sideNav, testBase.navBar);
 
       // Create Core Fact Find
-      await testBase.factFindSteps.executeCreateCoreFactFind();
+      await testBase.factFindSteps.executeCreateFactFind('Core Fact Find');
 
       // Abandon Fact Find with status verification
       await testBase.factFindSteps.executeAbandonFirstRowFactFind();

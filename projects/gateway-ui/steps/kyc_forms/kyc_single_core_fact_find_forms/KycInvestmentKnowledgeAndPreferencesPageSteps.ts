@@ -5,7 +5,7 @@ import { FrameworkConfig } from '@/framework/src';
 import { TextHelper } from '@framework/helpers/TextHelper';
 import {
   KycInvestmentKnowledgeAndPreferencesPageLocators
-} from '@pages/kycElementLocators/KycInvestmentKnowledgeAndPreferencesPageLocators';
+} from '@pages/kycElementLocators/kyc_core_fact_find_locators/KycInvestmentKnowledgeAndPreferencesPageLocators';
 
 /**
  * KycInvestmentKnowledgeAndPreferencesPageSteps
