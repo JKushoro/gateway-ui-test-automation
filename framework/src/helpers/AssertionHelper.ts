@@ -349,9 +349,11 @@ export class AssertionHelper {
     const t = timeout || this.config.timeout;
     await expect(locator).toBeVisible({ timeout: t });
 
+    // Get the value from the element - prefer inputValue for form elements
     const tagName = await locator.evaluate(el => el.tagName.toLowerCase());
-    const rawValue = tagName === 'input' || tagName === 'textarea' ? await locator.inputValue({ timeout: t })
-        : ((await locator.textContent({ timeout: t })) ?? '');
+    const rawValue = (tagName === 'input' || tagName === 'textarea')
+      ? await locator.inputValue({ timeout: t })
+      : (await locator.textContent({ timeout: t }) ?? '');
 
     const actualValue = this.parseFormattedNumber(rawValue);
     expect(actualValue, `Formatted number should equal ${expectedValue}, but got "${rawValue}" (parsed as ${actualValue})`).toBe(expectedValue);

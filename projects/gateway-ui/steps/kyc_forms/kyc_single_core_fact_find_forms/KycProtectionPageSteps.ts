@@ -1,6 +1,5 @@
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { Page } from '@playwright/test';
-import { FrameworkConfig } from '@/framework/src';
+import { Page, FrameworkConfig } from '@/framework/src';
 
 /**
  * KYC Protection Page Steps - handles all protection-related questions

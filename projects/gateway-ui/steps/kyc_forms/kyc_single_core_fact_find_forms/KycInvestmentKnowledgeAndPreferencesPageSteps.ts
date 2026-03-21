@@ -1,8 +1,6 @@
 // projects/gateway-ui/steps/kyc_forms/KycInvestmentKnowledgeAndPreferencesPageSteps.ts
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Page } from '@playwright/test';
-import { FrameworkConfig } from '@/framework/src';
-import { TextHelper } from '@framework/helpers/TextHelper';
+import { expect, Page, FrameworkConfig, TextHelper } from '@/framework/src';
 import {
   KycInvestmentKnowledgeAndPreferencesPageLocators
 } from '@pages/kycElementLocators/kyc_core_fact_find_locators/KycInvestmentKnowledgeAndPreferencesPageLocators';

@@ -1,5 +1,5 @@
 // projects/gateway-ui/tests/smoke/create_core_fact_find.smoke.spec.ts
-import { test, Page, expect } from '@playwright/test';
+import { test, Page, expect } from '@/framework/src';
 import BaseTest from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';

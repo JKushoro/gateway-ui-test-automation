@@ -1,6 +1,5 @@
 import { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
-import { expect, Locator, Page } from '@playwright/test';
-import { FrameworkConfig, TestDataGenerator } from '@/framework/src';
+import { expect, Locator, Page, FrameworkConfig, TestDataGenerator } from '@/framework/src';
 import { KycLiabilitiesAndExpendituresPageLocators } from '@pages/kycElementLocators/kyc_core_fact_find_locators/KycLiabilitiesAndExpendituresPageLocators';
 import { KYCDatePickerService } from '@steps/components/KYCDatePickerService';
 

@@ -1,11 +1,12 @@
+// ==========================================
+// FRAMEWORK EXPORTS
+// ==========================================
+
 // Core exports
 export { BasePage } from './core/BasePage';
 
 // Service exports
 export { AuthenticationService } from './services/AuthenticationService';
-
-// Component exports
-export { AlertService } from '../../projects/gateway-ui/steps/components/AlertService';
 
 // Helper exports
 export { ActionHelper } from './helpers/ActionHelper';
@@ -14,9 +15,6 @@ export { LocatorHelper } from './helpers/LocatorHelper';
 export { TextHelper } from './helpers/TextHelper';
 export { TableHelper } from './helpers/TableHelper';
 export { WaitHelper } from './helpers/WaitHelper';
-
-// Configuration exports
-// Note: Using EnvironmentManager from projects/gateway-ui/utils/EnvironmentManager
 
 // Utility exports
 export { dataStore, DataStore } from './utils/DataStore';
@@ -41,6 +39,9 @@ export type {
 
 // Constants exports
 export * from './constants/CommonConstants';
+
+// Common imports utility - re-export everything for convenience
+export * from './utils/CommonImports';
 
 // Re-export Playwright types directly for convenience
 export type { Page, Locator, Response, expect as ExpectType } from '@playwright/test';

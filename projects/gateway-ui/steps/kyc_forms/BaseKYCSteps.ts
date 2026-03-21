@@ -1,7 +1,5 @@
 //projects/gateway-ui/steps/kyc_forms/BaseKYCSteps.ts
-import { Page, expect } from '@playwright/test';
-import { KYCHelper, dataStore, createLogger } from '@/framework/src';
-import { FrameworkConfig } from '@framework/types';
+import { Page, expect, KYCHelper, dataStore, createLogger, FrameworkConfig } from '@/framework/src';
 import { BaseKYCPageLocators } from '@pages/kycElementLocators/BaseKYCPageLocators';
 
 /**
