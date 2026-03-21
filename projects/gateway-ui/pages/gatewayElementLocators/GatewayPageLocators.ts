@@ -1,7 +1,6 @@
 // GatewayPageLocators.ts
 import { BasePage, FrameworkConfig } from '@/framework/src';
 import { Locator, Page } from '@playwright/test';
-import { TextHelper } from '@framework/helpers/TextHelper';
 
 export class GatewayPageLocators extends BasePage {
   constructor(page: Page, config: Partial<FrameworkConfig> = {}) {
@@ -153,31 +152,23 @@ export class GatewayPageLocators extends BasePage {
   }
 
   /**
-   * Find the first existing locator from a list of locators
+   * Get the Status cell for the first Fact Find row (column 1)
    */
-  public async firstExisting(...locators: Locator[]): Promise<Locator> {
-    for (const l of locators) {
-      if ((await l.count()) > 0) return l;
-    }
-    // Return first locator if none exist (for consistency)
-    if (locators.length === 0) {
-      throw new Error('No locators provided to firstExisting method');
-    }
-    return locators[0]!; // Non-null assertion since we checked length above
+  public getFirstRowStatusCell(): Locator {
+    return this.factFindHistoryFirstRowCells.nth(1);
   }
 
   /**
-   * Read cell value handling different element types (links, spans, text)
+   * Get the Name cell for the first Fact Find row (column 2)
    */
-  public async readCellValue(cell: Locator): Promise<string> {
-    await this.wait.waitForElement(cell);
+  public getFirstRowNameCell(): Locator {
+    return this.factFindHistoryFirstRowCells.nth(2);
+  }
 
-    const link = this.getCellLink(cell);
-    if ((await link.count()) > 0) return TextHelper.normalizeWhitespace(await link.innerText());
-
-    const span = this.getCellSpan(cell);
-    if ((await span.count()) > 0) return TextHelper.normalizeWhitespace(await span.innerText());
-
-    return TextHelper.normalizeWhitespace(await cell.innerText());
+  /**
+   * Get the Note cell from the first row of the expanded note history table
+   */
+  public getFirstRowNoteValueCell(): Locator {
+    return this.firstRowNoteHistoryFirstRowCells.nth(1);
   }
 }

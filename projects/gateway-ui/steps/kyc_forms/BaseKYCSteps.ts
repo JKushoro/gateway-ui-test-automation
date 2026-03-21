@@ -2,6 +2,7 @@
 import { Page, expect } from '@playwright/test';
 import { KYCHelper, dataStore, createLogger } from '@/framework/src';
 import { FrameworkConfig } from '@framework/types';
+import { BaseKYCPageLocators } from '@pages/kycElementLocators/BaseKYCPageLocators';
 
 /**
  * Base class for KYC form steps with common functionality
@@ -9,15 +10,19 @@ import { FrameworkConfig } from '@framework/types';
  * Follows SOLID principles and DRY patterns
  */
 export class BaseKYCSteps extends KYCHelper {
+  /** KYC page locators */
+  protected readonly kycLocators: BaseKYCPageLocators;
+
   /** Common heading locator for KYC pages */
-  protected readonly heading = this.page
-    .locator('h1, h2, .heading, [data-testid="page-heading"]')
-    .first();
+  protected get heading() {
+    return this.kycLocators.pageHeading;
+  }
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     // Initialize with a logger to prevent undefined errors
     const logger = createLogger('BaseKYCSteps');
     super(page, logger, config);
+    this.kycLocators = new BaseKYCPageLocators(page, config);
   }
 
   /**
@@ -245,10 +250,7 @@ export class BaseKYCSteps extends KYCHelper {
       }
 
       // Check if the actual dropdown element exists
-      const dropdownElement = this.page
-        .locator('select')
-        .filter({ hasText: labelText })
-        .or(this.page.locator('[role="combobox"]').filter({ hasText: labelText }));
+      const dropdownElement = this.kycLocators.getDropdownByLabel(labelText);
 
       if ((await dropdownElement.count()) === 0) {
         this.logInfo(`ℹ Dropdown element not found, skipping: "${labelText}"`);

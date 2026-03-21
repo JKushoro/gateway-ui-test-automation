@@ -52,17 +52,17 @@ export class RetailClientCreationSteps extends BasePage {
     // Wait for navigation to client details page and extract clientId
     await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
     const url = this.page.url();
-    console.log('Current URL after client creation:', url);
+    this.logger.info?.('Current URL after client creation:', url);
     const clientIdMatch = url.match(/\/clientfiles\/details\/([^/?]+)/);
     if (clientIdMatch) {
       selectedGatewayClient.clientId = clientIdMatch[1];
-      console.log('Extracted new clientId from URL:', selectedGatewayClient.clientId);
+      this.logger.info?.('Extracted new clientId from URL:', selectedGatewayClient.clientId);
       
       // Save clientId to JSON file
       const clientJsonPath = path.resolve('playwright/currentClient1.json');
       try {
         fs.writeFileSync(clientJsonPath, JSON.stringify({ clientId: selectedGatewayClient.clientId }, null, 2));
-        console.log('Saved clientId to JSON file:', clientJsonPath);
+        this.logger.info?.('Saved clientId to JSON file:', clientJsonPath);
       } catch (error) {
         console.warn('Failed to save clientId to JSON file:', error);
       }
@@ -111,12 +111,12 @@ export class RetailClientCreationSteps extends BasePage {
       try {
         const clientData = JSON.parse(fs.readFileSync(clientJsonPath, 'utf-8'));
         clientId = clientData.clientId;
-        console.log('Loaded clientId from JSON:', clientId);
+        this.logger.info?.('Loaded clientId from JSON:', clientId);
       } catch (error) {
         console.warn('Failed to load clientId from JSON file:', error);
       }
     } else {
-      console.log('No existing clientId JSON file found');
+      this.logger.info?.('No existing clientId JSON file found');
     }
 
     return {

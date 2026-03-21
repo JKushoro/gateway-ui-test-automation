@@ -63,7 +63,7 @@ test.describe('Create Retirement Fact Find', () => {
       await kycAnnuityPageSteps.completeKYCAnnuity();
 
       // Validate Gateway fact find data
-      await gatewayFactFindSteps.validateGatewayFactFindTableData();
+      await gatewayFactFindSteps.verifyFirstFactFindStatusIsComplete();
     } finally {
       await cleanupClient1FactFinds();
       await testBase.cleanup();

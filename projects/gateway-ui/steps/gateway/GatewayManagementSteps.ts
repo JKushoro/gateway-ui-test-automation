@@ -61,14 +61,37 @@ export class GatewayManagementSteps extends BasePage {
   }
 
 
+  private async firstExisting(...locators: Locator[]): Promise<Locator> {
+    for (const l of locators) {
+      if ((await l.count()) > 0) return l;
+    }
+    // Return first locator if none exist (for consistency)
+    if (locators.length === 0) {
+      throw new Error('No locators provided to firstExisting method');
+    }
+    return locators[0]!; // Non-null assertion since we checked length above
+  }
+
+  private async readCellValue(cell: Locator): Promise<string> {
+    await this.wait.waitForElement(cell);
+
+    const link = this.factFindLocators.getCellLink(cell);
+    if ((await link.count()) > 0) return TextHelper.normalizeWhitespace(await link.innerText());
+
+    const span = this.factFindLocators.getCellSpan(cell);
+    if ((await span.count()) > 0) return TextHelper.normalizeWhitespace(await span.innerText());
+
+    return TextHelper.normalizeWhitespace(await cell.innerText());
+  }
+
   private async getGatewayValueByLabel(sectionTitle: string, labelText: string): Promise<string> {
-    const cell = await this.factFindLocators.firstExisting(
+    const cell = await this.firstExisting(
       this.clientDetailsPageLocators.gatewayBsCell(sectionTitle, labelText),
       this.clientDetailsPageLocators.summaryPanelCell(sectionTitle, labelText),
       this.clientDetailsPageLocators.summaryPanelCellAlt(sectionTitle, labelText)
     );
 
-    return this.factFindLocators.readCellValue(cell);
+    return this.readCellValue(cell);
   }
 
   /* -------------------- Store readers -------------------- */
@@ -191,14 +214,14 @@ export class GatewayManagementSteps extends BasePage {
    * Get the Status cell for the first Fact Find row.
    */
   private getFirstRowStatusCell(): Locator {
-    return this.factFindLocators.factFindHistoryFirstRowCells.nth(1);
+    return this.factFindLocators.getFirstRowStatusCell();
   }
 
   /**
    * Get the Name cell for the first Fact Find row.
    */
   private getFirstRowNameCell(): Locator {
-    return this.factFindLocators.factFindHistoryFirstRowCells.nth(2);
+    return this.factFindLocators.getFirstRowNameCell();
   }
 
   /**
@@ -362,7 +385,7 @@ export class GatewayManagementSteps extends BasePage {
    * Get the Note cell from the first row of the expanded note history table.
    */
   private getFirstRowNoteValueCell(): Locator {
-    return this.factFindLocators.firstRowNoteHistoryFirstRowCells.nth(1);
+    return this.factFindLocators.getFirstRowNoteValueCell();
   }
 
   /**
@@ -886,7 +909,11 @@ export class GatewayManagementSteps extends BasePage {
     await this.verifyGatewayContactDetailsMatchKyc();
   }
 
-  public async validateGatewayFactFindTableData(): Promise<void> {
+  /**
+   * Verifies that the first fact find row has 'Complete' status
+   * This is a specific validation for completed fact finds
+   */
+  public async verifyFirstFactFindStatusIsComplete(): Promise<void> {
     await this.page.bringToFront();
     await this.page.reload({ waitUntil: 'domcontentloaded' });
 
