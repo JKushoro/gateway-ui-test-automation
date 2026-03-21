@@ -1,5 +1,5 @@
 // projects/gateway-ui/tests/smoke/create_core_fact_find.smoke.spec.ts
-import { test, Page, expect } from '@/framework/src';
+import { test, expect } from '@/framework/src';
 import BaseTest from '../shared/TestUtils';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';
@@ -26,70 +26,67 @@ test.describe('Create core Fact Find', () => {
 
   test('Complete core fact find creation workflow', async ({ browser }) => {
     const testBase = await BaseTest.create(browser, 'qa');
-    let kycPage: Page;
-    
-    try {
-      const gatewayFactFindSteps = new GatewayManagementSteps(testBase.page);
+    const gatewayFactFindSteps = new GatewayManagementSteps(testBase.page);
 
-      // Get to Fact Find then launch KYC (KYC opens in a new tab)
-      await testBase.factFindSteps.addClientAndNavigateToFactFindTab(
-        testBase.sideNav,
-        testBase.navBar
-      );
-      kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind('Core Fact Find');
+    // Get to Fact Find then launch KYC (KYC opens in a new tab)
+    await testBase.factFindSteps.addClientAndNavigateToFactFindTab(
+      testBase.sideNav,
+      testBase.navBar
+    );
+    const kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind('Core Fact Find');
 
-      // Sanity check that we really are on KYC
-      await expect(kycPage).toHaveTitle('KYC');
+    // Sanity check that we really are on KYC
+    await expect(kycPage).toHaveTitle('KYC');
 
-      // Initialize all KYC step classes
-      const kycFactFindDetailsPageSteps = new KycFactFindDetailsPageSteps(kycPage);
-      const kycPersonalDetailsPageSteps = new KycPersonalDetailsPageSteps(kycPage);
-      const kycCurrentSituationPageSteps = new KycCurrentSituationPageSteps(kycPage);
-      const kycPropertyAndAssetsSteps = new KycPropertyAndAssetsSteps(kycPage);
-      const kycSavingsAndInvestmentsPageSteps = new KycSavingsAndInvestmentsPageSteps(kycPage);
-      const kycPensionsPageSteps = new KycPensionsPageSteps(kycPage);
-      const kycProtectionPageSteps = new KycProtectionPageSteps(kycPage);
-      const kycIncomePageSteps = new KycIncomePageSteps(kycPage);
-      const kycLiabilitiesAndExpendituresPageSteps = new KycLiabilitiesAndExpendituresPageSteps(kycPage);
-      const kycInvestmentKnowledgeAndPreferencesPageSteps = new KycInvestmentKnowledgeAndPreferencesPageSteps(kycPage);
+    // Initialize all KYC step classes
+    const kycFactFindDetailsPageSteps = new KycFactFindDetailsPageSteps(kycPage);
+    const kycPersonalDetailsPageSteps = new KycPersonalDetailsPageSteps(kycPage);
+    const kycCurrentSituationPageSteps = new KycCurrentSituationPageSteps(kycPage);
+    const kycPropertyAndAssetsSteps = new KycPropertyAndAssetsSteps(kycPage);
+    const kycSavingsAndInvestmentsPageSteps = new KycSavingsAndInvestmentsPageSteps(kycPage);
+    const kycPensionsPageSteps = new KycPensionsPageSteps(kycPage);
+    const kycProtectionPageSteps = new KycProtectionPageSteps(kycPage);
+    const kycIncomePageSteps = new KycIncomePageSteps(kycPage);
+    const kycLiabilitiesAndExpendituresPageSteps = new KycLiabilitiesAndExpendituresPageSteps(kycPage);
+    const kycInvestmentKnowledgeAndPreferencesPageSteps = new KycInvestmentKnowledgeAndPreferencesPageSteps(kycPage);
 
-      // Complete Fact Find Details
-      await kycFactFindDetailsPageSteps.completeKYCFactFindDetails();
+    // Complete Fact Find Details
+    await kycFactFindDetailsPageSteps.completeKYCFactFindDetails();
 
-      // Complete Personal Details
-      await kycPersonalDetailsPageSteps.completeKYCPersonalDetails();
+    // Complete Personal Details
+    await kycPersonalDetailsPageSteps.completeKYCPersonalDetails();
 
-      // Complete Current Situation
-      await kycCurrentSituationPageSteps.completeKYCCurrentSituation();
+    // Complete Current Situation
+    await kycCurrentSituationPageSteps.completeKYCCurrentSituation();
 
-      // Complete Property & Assets
-      await kycPropertyAndAssetsSteps.completeKYC_PropertyAndAssets();
+    // Complete Property & Assets
+    await kycPropertyAndAssetsSteps.completeKYC_PropertyAndAssets();
 
-      // Complete Savings & Investments
-      await kycSavingsAndInvestmentsPageSteps.completeKYC_SavingsAndInvestments();
+    // Complete Savings & Investments
+    await kycSavingsAndInvestmentsPageSteps.completeKYC_SavingsAndInvestments();
 
-      // Complete Pensions Details
-      await kycPensionsPageSteps.completeKYC_Pensions();
+    // Complete Pensions Details
+    await kycPensionsPageSteps.completeKYC_Pensions();
 
-      // Complete Protection Details
-      await kycProtectionPageSteps.completeKYC_Protection();
+    // Complete Protection Details
+    await kycProtectionPageSteps.completeKYC_Protection();
 
-      // Complete Income Details
-      await kycIncomePageSteps.completeKYC_Income();
+    // Complete Income Details
+    await kycIncomePageSteps.completeKYC_Income();
 
-      // Complete Liabilities & Expenditures
-      await kycLiabilitiesAndExpendituresPageSteps.completeKYC_LiabilitiesAndExpenditures();
+    // Complete Liabilities & Expenditures
+    await kycLiabilitiesAndExpendituresPageSteps.completeKYC_LiabilitiesAndExpenditures();
 
-      // Complete Investment Knowledge & Preferences
-      await kycInvestmentKnowledgeAndPreferencesPageSteps.completeKYC_InvestmentKnowledgeAndPreferences();
+    // Complete Investment Knowledge & Preferences
+    await kycInvestmentKnowledgeAndPreferencesPageSteps.completeKYC_InvestmentKnowledgeAndPreferences();
 
-      // Validate Gateway fact find data
-      await gatewayFactFindSteps.validateGatewayFactFindData();
-      await kycPage.waitForLoadState('networkidle');
-    } finally {
-      await cleanupClient1FactFinds();
-      await kycPage?.close().catch(() => {});
-      await testBase.cleanup();
-    }
+    // Validate Gateway fact find data
+    await gatewayFactFindSteps.validateGatewayFactFindData();
+    await kycPage.waitForLoadState('networkidle');
+
+    // Cleanup
+    await cleanupClient1FactFinds();
+    await kycPage.close();
+    await testBase.cleanup();
   });
 });

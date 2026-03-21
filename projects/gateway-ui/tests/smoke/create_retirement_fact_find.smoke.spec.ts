@@ -16,7 +16,7 @@ import {
 import { KycAnnuityPageSteps } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycAnnuityPageSteps';
 
 /**
- * 🎯 Retirement Fact Find Creation Tests
+ * Retirement Fact Find Creation Tests
  *
  * This test suite validates the complete workflow for creating a retirement fact find.
  * It covers the entire journey from client creation to fact find completion.
@@ -31,32 +31,32 @@ import { KycAnnuityPageSteps } from '@steps/kyc_forms/kyc_single_retirement_fact
  */
 test.describe('Create Retirement Fact Find', () => {
   test.beforeEach(async () => {
-    // 🧹 Clear any shared state before each test to ensure clean test environment
+    // Clear any shared state before each test to ensure clean test environment
     clearWorkerDataStore();
   });
 
   test('Complete Retirement fact find creation workflow', async ({ browser }) => {
-    // 🏗️ Test Setup Phase
+    // Test Setup Phase
     const testBase = await BaseTest.create(browser, 'qa');
     let kycPage: Page;
 
     try {
-      // 📋 Initialize Gateway management steps for fact find operations
+      // Initialize Gateway management steps for fact find operations
       const gatewayFactFindSteps = new GatewayManagementSteps(testBase.page);
 
-      // 🚀 Phase 1: Navigate to Fact Find section
+      // Phase 1: Navigate to Fact Find section
       await testBase.factFindSteps.addClientAndNavigateToFactFindTab(
         testBase.sideNav,
         testBase.navBar
       );
 
-      // 🆕 Phase 2: Create and launch new retirement fact find (opens in new tab)
+      // Phase 2: Create and launch new retirement fact find (opens in new tab)
       kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind('Retirement Fact Find');
 
-      // ✅ Phase 3: Validate KYC page is loaded correctly
+      // Phase 3: Validate KYC page is loaded correctly
       await expect(kycPage, 'KYC page should be loaded with correct title').toHaveTitle('KYC');
 
-      // 🏭 Phase 4: Initialize all KYC step classes for the workflow
+      // Phase 4: Initialize all KYC step classes for the workflow
       const kycSteps = {
         purpose: new KycPurposePageSteps(kycPage),
         contributions: new KycContributionsAndProtectionSteps(kycPage),
@@ -65,18 +65,18 @@ test.describe('Create Retirement Fact Find', () => {
         annuity: new KycAnnuityPageSteps(kycPage)
       };
 
-      // 📝 Phase 5: Complete KYC workflow in sequence
+      // Phase 5: Complete KYC workflow in sequence
       await kycSteps.purpose.completeKYCPurpose();
       await kycSteps.contributions.completeKycContributionsAllowancesAndProtection();
       await kycSteps.futurePlanning.completeKYCKycFuturePlanning();
       await kycSteps.lifeEvents.completeKYCKycLifeEventsAndBenefits();
       await kycSteps.annuity.completeKYCAnnuity();
 
-      // 🎯 Phase 6: Validate fact find completion in Gateway
+      // Phase 6: Validate fact find completion in Gateway
       await gatewayFactFindSteps.verifyFirstFactFindStatusIsComplete();
 
     } finally {
-      // 🧹 Cleanup Phase: Always clean up test data, even if test fails
+      // Cleanup Phase: Always clean up test data, even if test fails
       await cleanupClient1FactFinds();
       await testBase.cleanup();
     }
