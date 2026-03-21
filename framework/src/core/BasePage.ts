@@ -302,9 +302,9 @@ export class BasePage {
     const filename = name ? `${name}-${timestamp}.png` : `screenshot-${timestamp}.png`;
     
     try {
-      const path = await this.page.screenshot({ 
+      await this.page.screenshot({
         path: `screenshots/${filename}`,
-        fullPage: true 
+        fullPage: true
       });
       
       this.logger.debug(`Screenshot saved: ${filename}`);
