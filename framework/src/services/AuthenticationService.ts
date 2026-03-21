@@ -41,7 +41,16 @@ export class AuthenticationService extends BasePage {
    * Start Microsoft login flow
    */
   public async startMicrosoftLogin(): Promise<void> {
-    await expect(this.microsoftLoginPage.loginButton).toBeVisible();
+    // Check if already logged in by looking for dashboard elements
+    const hasDashboard = await this.page.locator('text=Dashboard').isVisible().catch(() => false);
+    const hasLogout = await this.page.locator('text=Log out').isVisible().catch(() => false);
+    
+    if (hasDashboard || hasLogout) {
+      this.logger.info('User already logged in, skipping login flow');
+      return;
+    }
+
+    await expect(this.microsoftLoginPage.loginButton).toBeVisible({ timeout: 10000 });
     await this.action.clickLocator(this.microsoftLoginPage.loginButton);
     await this.page.waitForURL(/login\.microsoftonline\.com/);
     await this.wait.waitForDOMContentLoaded();
@@ -110,6 +119,15 @@ export class AuthenticationService extends BasePage {
   public async performLogin(options: AuthenticationOptions = {}): Promise<void> {
     const environment = options.environment || 'qa';
     const authConfig = this.getAuthConfig(environment);
+    
+    // Check if already logged in first
+    const hasDashboard = await this.page.locator('text=Dashboard').isVisible().catch(() => false);
+    const hasLogout = await this.page.locator('text=Log out').isVisible().catch(() => false);
+    
+    if (hasDashboard || hasLogout) {
+      this.logger.info('User already logged in, skipping entire login flow');
+      return;
+    }
     
     await this.startMicrosoftLogin();
     

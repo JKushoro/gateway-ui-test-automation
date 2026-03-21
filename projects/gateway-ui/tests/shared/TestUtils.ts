@@ -1,5 +1,5 @@
 // projects/gateway-ui/tests/shared/TestUtils.ts
-import { Browser, Page } from '@playwright/test';
+import { Browser, BrowserContext, Page } from '@playwright/test';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
 import { GatewayManagementSteps } from '@steps/gateway/GatewayManagementSteps';
 import { SideNavService } from '@steps/components/SideNav';
@@ -36,13 +36,39 @@ export default class BaseTest {
 /**
  * Simple utility function (kept for backward compatibility)
  */
-export async function setupTest(browser: Browser, environment: 'qa' | 'dev' = 'qa') {
+type SetupTestResult = {
+  page: Page;
+  factFindSteps: GatewayManagementSteps;
+  sideNav: SideNavService;
+  navBar: NavBarService;
+};
+
+export async function setupTest(browser: Browser, environment: 'qa' | 'dev' = 'qa'
+): Promise<SetupTestResult> {
   const page = await browser.newPage();
   await LoginSteps.setupForEnvironment(page, environment);
-  
+
   const factFindSteps = new GatewayManagementSteps(page);
   const sideNav = new SideNavService(page);
   const navBar = new NavBarService(page);
-  
+
   return { page, factFindSteps, sideNav, navBar };
 }
+
+type SetupLoginValidationResult = {
+  context: BrowserContext;
+  page: Page;
+};
+
+export async function setupLoginValidationTest(browser: Browser,
+  _environment: 'qa' | 'dev' = 'qa'
+): Promise<SetupLoginValidationResult> {
+  const context = await browser.newContext({
+    storageState: undefined,
+  });
+
+  const page = await context.newPage();
+
+  return { context, page };
+}
+
