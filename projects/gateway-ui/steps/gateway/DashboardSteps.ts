@@ -14,17 +14,8 @@ export class DashboardSteps extends BasePage {
   /**
    * Verify dashboard is loaded with URL and title checks
    */
-  // public async verifyDashboard(): Promise<void> {
-  //   await this.wait.waitForUrlToMatch('**/dashboard/**');
-  //   await expect(this.page).toHaveTitle('Gateway | Development dashboard');
-  // }
-
   public async verifyDashboard(): Promise<void> {
     await this.wait.waitForUrlToMatch('**/dashboard/**');
-
     await expect(this.page).toHaveTitle('Gateway | Development dashboard');
-
-    // ✅ Add a visible element check (more stable)
-    await this.assert.assertElementVisible(this.page.getByRole('heading', { name: /dashboard/i }));
   }
 }

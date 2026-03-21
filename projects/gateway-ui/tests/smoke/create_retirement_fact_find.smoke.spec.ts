@@ -62,19 +62,28 @@ test.describe('Create Retirement Fact Find', () => {
         contributions: new KycContributionsAndProtectionSteps(kycPage),
         futurePlanning: new KycFuturePlanningPageSteps(kycPage),
         lifeEvents: new KycKycLifeEventsAndBenefitsPageSteps(kycPage),
-        annuity: new KycAnnuityPageSteps(kycPage)
+        annuity: new KycAnnuityPageSteps(kycPage),
       };
 
       // Phase 5: Complete KYC workflow in sequence
+
+      // Complete Purpose
       await kycSteps.purpose.completeKYCPurpose();
+
+      // Complete Contributions Allowances And Protection
       await kycSteps.contributions.completeKycContributionsAllowancesAndProtection();
+
+      // Complete Future Planning
       await kycSteps.futurePlanning.completeKYCKycFuturePlanning();
+
+      // Complete KycLife Events And Benefits
       await kycSteps.lifeEvents.completeKYCKycLifeEventsAndBenefits();
+
+      // Complete Annuity
       await kycSteps.annuity.completeKYCAnnuity();
 
       // Phase 6: Validate fact find completion in Gateway
       await gatewayFactFindSteps.verifyFirstFactFindStatusIsComplete();
-
     } finally {
       // Cleanup Phase: Always clean up test data, even if test fails
       await cleanupClient1FactFinds();
