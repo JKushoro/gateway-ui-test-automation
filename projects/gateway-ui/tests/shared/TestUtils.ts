@@ -1,7 +1,7 @@
 // projects/gateway-ui/tests/shared/TestUtils.ts
 import { Browser, Page } from '@playwright/test';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
+import { GatewayManagementSteps } from '@steps/gateway/GatewayManagementSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
 
@@ -11,13 +11,13 @@ import { NavBarService } from '@steps/components/NavBar';
  */
 export default class BaseTest {
   public page: Page;
-  public factFindSteps: FactFindManagementSteps;
+  public factFindSteps: GatewayManagementSteps;
   public sideNav: SideNavService;
   public navBar: NavBarService;
 
   constructor(page: Page) {
     this.page = page;
-    this.factFindSteps = new FactFindManagementSteps(page);
+    this.factFindSteps = new GatewayManagementSteps(page);
     this.sideNav = new SideNavService(page);
     this.navBar = new NavBarService(page);
   }
@@ -40,7 +40,7 @@ export async function setupTest(browser: Browser, environment: 'qa' | 'dev' = 'q
   const page = await browser.newPage();
   await LoginSteps.setupForEnvironment(page, environment);
   
-  const factFindSteps = new FactFindManagementSteps(page);
+  const factFindSteps = new GatewayManagementSteps(page);
   const sideNav = new SideNavService(page);
   const navBar = new NavBarService(page);
   

@@ -1,8 +1,9 @@
-// FactFindPageLocators.ts
+// GatewayPageLocators.ts
 import { BasePage, FrameworkConfig } from '@/framework/src';
 import { Locator, Page } from '@playwright/test';
+import { TextHelper } from '@framework/helpers/TextHelper';
 
-export class FactFindPageLocators extends BasePage {
+export class GatewayPageLocators extends BasePage {
   constructor(page: Page, config: Partial<FrameworkConfig> = {}) {
     super(page, config);
   }
@@ -131,5 +132,52 @@ export class FactFindPageLocators extends BasePage {
 
   get expandFirstRowDetailsButton(): Locator {
     return this.factFindHistoryFirstRow.locator('i.gatewaytable-collapse');
+  }
+
+  // ----------------------------------------------------------
+  // Cell content locators
+  // ----------------------------------------------------------
+
+  /**
+   * Get link element within a cell
+   */
+  public getCellLink(cell: Locator): Locator {
+    return cell.locator('a').first();
+  }
+
+  /**
+   * Get span element within a cell
+   */
+  public getCellSpan(cell: Locator): Locator {
+    return cell.locator('span').first();
+  }
+
+  /**
+   * Find the first existing locator from a list of locators
+   */
+  public async firstExisting(...locators: Locator[]): Promise<Locator> {
+    for (const l of locators) {
+      if ((await l.count()) > 0) return l;
+    }
+    // Return first locator if none exist (for consistency)
+    if (locators.length === 0) {
+      throw new Error('No locators provided to firstExisting method');
+    }
+    return locators[0]!; // Non-null assertion since we checked length above
+  }
+
+  /**
+   * Read cell value handling different element types (links, spans, text)
+   */
+  public async readCellValue(cell: Locator): Promise<string> {
+    await this.wait.waitForElement(cell);
+
+    const link = this.getCellLink(cell);
+    if ((await link.count()) > 0) return TextHelper.normalizeWhitespace(await link.innerText());
+
+    const span = this.getCellSpan(cell);
+    if ((await span.count()) > 0) return TextHelper.normalizeWhitespace(await span.innerText());
+
+    return TextHelper.normalizeWhitespace(await cell.innerText());
   }
 }

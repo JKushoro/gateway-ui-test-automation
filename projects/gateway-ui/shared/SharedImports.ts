@@ -69,7 +69,7 @@ export { getEnvironmentManager, EnvironmentManager } from '@framework/utils/Envi
 // ==========================================
 import { Browser } from '@playwright/test';
 import { LoginSteps } from '@steps/gateway/LoginSteps';
-import { FactFindManagementSteps } from '@steps/gateway/FactFindManagementSteps';
+import { GatewayManagementSteps } from '@steps/gateway/GatewayManagementSteps';
 import type { Environment } from '@framework/types/Environment';
 
 /**
@@ -77,7 +77,7 @@ import type { Environment } from '@framework/types/Environment';
  */
 export interface TestSetup {
   page: import('@playwright/test').Page;
-  factFindManagementSteps: FactFindManagementSteps;
+  factFindManagementSteps: GatewayManagementSteps;
   sideNav: import('@steps/components/SideNav').SideNavService;
   navBar: import('@steps/components/NavBar').NavBarService;
 }
@@ -95,7 +95,7 @@ export async function createTestSetup(browser: Browser, environment: Environment
   await LoginSteps.setupForEnvironment(page, environment);
   
   // Initialize common services
-  const factFindManagementSteps = new FactFindManagementSteps(page);
+  const factFindManagementSteps = new GatewayManagementSteps(page);
   const sideNav = new (await import('@steps/components/SideNav')).SideNavService(page);
   const navBar = new (await import('@steps/components/NavBar')).NavBarService(page);
   

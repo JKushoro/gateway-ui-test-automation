@@ -1,6 +1,6 @@
-// projects/gateway-ui/steps/gateway/fact_find/FactFindManagementSteps.ts
+// projects/gateway-ui/steps/gateway/GatewayManagementSteps.ts
 import { expect, Locator, Page } from '@playwright/test';
-import { BasePage } from '@framework/core/BasePage';
+import { BasePage, dataStore } from '@/framework/src';
 import { FrameworkConfig } from '@framework/types';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
@@ -9,27 +9,32 @@ import type {
   RetailClientData,
   RetailClientFormResult,
 } from '@steps/gateway/fact_find/types/RetailClientCreation.types';
-import { FactFindPageLocators } from '@pages/gatewayElementLocators/FactFindPageLocators';
+import { GatewayPageLocators } from '@pages/gatewayElementLocators/GatewayPageLocators';
+import { ClientDetailsPageLocators } from '@pages/gatewayElementLocators/ClientDetailsPageLocators';
 import { AlertService } from '@steps/components/AlertService';
 import { AlertServiceLocator } from '@components/AlertServiceLocator';
 import { TextHelper } from '@framework/helpers/TextHelper';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
 
 /**
- * FactFindManagementSteps
+ * GatewayManagementSteps
  *
+ * Combines fact find management and gateway fact find validation functionality.
  * Structured to match the page layout:
  * 1. Navigation / page load
  * 2. Fact Find History section
  * 3. Create New Fact Find section
  * 4. Shared history assertions
  * 5. High-level business flows
+ * 6. Gateway fact find validation
  */
-export class FactFindManagementSteps extends BasePage {
+export class GatewayManagementSteps extends BasePage {
   private readonly clientSteps: RetailClientCreationSteps;
-  private readonly factFindLocators: FactFindPageLocators;
+  private readonly factFindLocators: GatewayPageLocators;
+  private readonly clientDetailsPageLocators: ClientDetailsPageLocators;
   private readonly alertServiceLocator: AlertServiceLocator;
   private readonly alert: AlertService;
+  private readonly navBar: NavBarService;
 
   private static readonly KYC_TIMEOUT_MS = 180000;
   private static readonly POPUP_TIMEOUT_MS = 10000;
@@ -38,9 +43,56 @@ export class FactFindManagementSteps extends BasePage {
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
     this.clientSteps = new RetailClientCreationSteps(page, config);
-    this.factFindLocators = new FactFindPageLocators(page, config);
+    this.factFindLocators = new GatewayPageLocators(page, config);
+    this.clientDetailsPageLocators = new ClientDetailsPageLocators(page);
     this.alert = new AlertService(page, config);
     this.alertServiceLocator = new AlertServiceLocator(page);
+    this.navBar = new NavBarService(page);
+  }
+
+  // ==========================================================
+  // UTILITY METHODS (from GatewayFactFindSteps)
+  // ==========================================================
+
+  private normalizeName(value: unknown): string {
+    return String(value ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+
+  private async getGatewayValueByLabel(sectionTitle: string, labelText: string): Promise<string> {
+    const cell = await this.factFindLocators.firstExisting(
+      this.clientDetailsPageLocators.gatewayBsCell(sectionTitle, labelText),
+      this.clientDetailsPageLocators.summaryPanelCell(sectionTitle, labelText),
+      this.clientDetailsPageLocators.summaryPanelCellAlt(sectionTitle, labelText)
+    );
+
+    return this.factFindLocators.readCellValue(cell);
+  }
+
+  /* -------------------- Store readers -------------------- */
+
+  private getDisplayedKycFullName(): string {
+    const displayedKycClient = dataStore.getValue('displayed.kycClient') || {};
+    const fullName = this.normalizeName(displayedKycClient.fullName);
+
+    if (!fullName) {
+      throw new Error('Displayed KYC full name not found (displayed.kycClient.fullName)');
+    }
+    return fullName;
+  }
+
+  private getDisplayedKycMobile(): string {
+    const value = String(dataStore.getValue('displayed.kyc.contact.mobile') ?? '').trim();
+    if (!value) throw new Error('Displayed KYC mobile not found (displayed.kyc.contact.mobile)');
+    return value;
+  }
+
+  private getDisplayedKycEmail(): string {
+    const value = String(dataStore.getValue('displayed.kyc.contact.email') ?? '').trim();
+    if (!value) throw new Error('Displayed KYC email not found (displayed.kyc.contact.email)');
+    return value;
   }
 
   // ==========================================================
@@ -78,7 +130,7 @@ export class FactFindManagementSteps extends BasePage {
    */
   public async waitForFactFindHistoryTable(): Promise<void> {
     await expect(this.factFindLocators.factFindHistoryTable).toBeVisible({
-      timeout: FactFindManagementSteps.FACT_FIND_HISTORY_TIMEOUT_MS,
+      timeout: GatewayManagementSteps.FACT_FIND_HISTORY_TIMEOUT_MS,
     });
   }
 
@@ -466,7 +518,7 @@ export class FactFindManagementSteps extends BasePage {
    * Verify the KYC page is loaded successfully.
    */
   public async verifyKYCPage(kycPage: Page): Promise<Page> {
-    const timeout = FactFindManagementSteps.KYC_TIMEOUT_MS;
+    const timeout = GatewayManagementSteps.KYC_TIMEOUT_MS;
     await kycPage.waitForLoadState('domcontentloaded', { timeout }).catch(() => {});
     await kycPage.waitForURL('**/kyc-ff/*', { timeout });
     await expect(kycPage).toHaveTitle('KYC', { timeout });
@@ -479,7 +531,7 @@ export class FactFindManagementSteps extends BasePage {
   private async listenForPopup(): Promise<Page | null> {
     return this.page
       .context()
-      .waitForEvent('page', { timeout: FactFindManagementSteps.POPUP_TIMEOUT_MS })
+      .waitForEvent('page', { timeout: GatewayManagementSteps.POPUP_TIMEOUT_MS })
       .catch(() => null);
   }
 
@@ -530,7 +582,7 @@ export class FactFindManagementSteps extends BasePage {
    * Choose the Fact Find type from the dropdown.
    */
   public async chooseFactFindType(value: string): Promise<string> {
-    await this.wait.waitForNetworkIdle(FactFindManagementSteps.KYC_TIMEOUT_MS);
+    await this.wait.waitForNetworkIdle(GatewayManagementSteps.KYC_TIMEOUT_MS);
     return await this.action.selectDropdownByLabel('Choose Fact Find Type', value);
   }
   /**
@@ -814,5 +866,95 @@ export class FactFindManagementSteps extends BasePage {
     await this.executeAddClientAndNavigateToFactFindTab(sideNav, navBar);
     await this.createFactFind(factFindType);
     await this.refreshAfterFactFindCleanup();
+  }
+
+  // ==========================================================
+  // 6. GATEWAY FACT FIND VALIDATION (from GatewayFactFindSteps)
+  // ==========================================================
+
+  /* -------------------- Main Flow -------------------- */
+  public async validateGatewayFactFindData(): Promise<void> {
+    await this.page.bringToFront();
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
+
+    await this.verifyLatestFactFindClientNameMatchesKyc();
+    await this.verifyLatestFactFindStatusIsCompleteForKycClient();
+
+    await this.navigateToClientDetailsPage();
+
+    // clear method for contact comparison
+    await this.verifyGatewayContactDetailsMatchKyc();
+  }
+
+  public async validateGatewayFactFindTableData(): Promise<void> {
+    await this.page.bringToFront();
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
+
+    const table = this.factFindLocators.factFindHistoryTable;
+    await expect(table).toBeVisible({ timeout: 30000 });
+
+    const status = await this.table.getCellTextByHeader(table, 0, 'Status');
+    expect(status).toBe('Complete');
+  }
+
+  /* -------------------- Checks -------------------- */
+  private async verifyLatestFactFindClientNameMatchesKyc(): Promise<void> {
+    const kycName = this.getDisplayedKycFullName();
+
+    const table = this.factFindLocators.factFindHistoryTable;
+    await expect(table).toBeVisible({ timeout: 30000 });
+
+    const rows = await this.table.getRows(table);
+    const rowIndex = await this.table.findRowIndex(rows, { containsText: kycName });
+    if (rowIndex < 0) {
+      throw new Error(`Client "${kycName}" not found in Fact Find History`);
+    }
+
+    const clientNameOnTable = this.normalizeName(
+      await this.table.getCellTextByHeader(table, rowIndex, 'Client Names')
+    );
+
+    expect(clientNameOnTable).toBe(this.normalizeName(kycName));
+  }
+
+  private async verifyLatestFactFindStatusIsCompleteForKycClient(): Promise<void> {
+    const kycName = this.getDisplayedKycFullName();
+
+    const table = this.factFindLocators.factFindHistoryTable;
+    await expect(table).toBeVisible({ timeout: 30000 });
+
+    const status = await this.table.getCellTextForRowByHeader(table, kycName, 'Status');
+    expect(TextHelper.normalizeWhitespace(status)).toBe('Complete');
+  }
+
+  private async navigateToClientDetailsPage(): Promise<void> {
+    await this.navBar.clickNavItem('Client Details');
+  }
+
+  /* -------------------- Contact comparison (Gateway UI vs KYC UI) -------------------- */
+  private async verifyGatewayContactDetailsMatchKyc(): Promise<void> {
+    // KYC values (already stored earlier from KYC screen)
+    const displayedKycMobile = this.getDisplayedKycMobile();
+    const displayedKycEmail = this.getDisplayedKycEmail();
+
+    // Gateway values (read directly from Gateway screen)
+    const displayedGatewayMobile = await this.getGatewayValueByLabel(
+      'Contact Details',
+      'Mobile Phone'
+    );
+    const displayedGatewayEmail = await this.getGatewayValueByLabel('Contact Details', 'Email');
+
+    dataStore.setValue('displayed.gateway.contact.mobile', displayedGatewayMobile);
+    dataStore.setValue('displayed.gateway.contact.email', displayedGatewayEmail);
+
+    this.logger.info?.(
+      `Gateway vs KYC Mobile → Gateway: "${displayedGatewayMobile}", KYC: "${displayedKycMobile}"`
+    );
+    this.logger.info?.(
+      `Gateway vs KYC Email  → Gateway: "${displayedGatewayEmail}", KYC: "${displayedKycEmail}"`
+    );
+
+    expect(displayedGatewayMobile).toBe(displayedKycMobile);
+    expect(displayedGatewayEmail).toBe(displayedKycEmail);
   }
 }

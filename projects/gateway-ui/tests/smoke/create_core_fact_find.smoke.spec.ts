@@ -16,7 +16,7 @@ import { KycLiabilitiesAndExpendituresPageSteps } from '@steps/kyc_forms/kyc_sin
 import {
   KycInvestmentKnowledgeAndPreferencesPageSteps
 } from '@steps/kyc_forms/kyc_single_core_fact_find_forms/KycInvestmentKnowledgeAndPreferencesPageSteps';
-import { GatewayFactFindSteps } from '@steps/gateway/GatewayFactFindSteps';
+import { GatewayManagementSteps } from '@steps/gateway/GatewayManagementSteps';
 
 test.describe('Create core Fact Find', () => {
   test.beforeEach(async () => {
@@ -29,7 +29,7 @@ test.describe('Create core Fact Find', () => {
     let kycPage: Page;
     
     try {
-      const gatewayFactFindSteps = new GatewayFactFindSteps(testBase.page);
+      const gatewayFactFindSteps = new GatewayManagementSteps(testBase.page);
 
       // Get to Fact Find then launch KYC (KYC opens in a new tab)
       await testBase.factFindSteps.addClientAndNavigateToFactFindTab(
