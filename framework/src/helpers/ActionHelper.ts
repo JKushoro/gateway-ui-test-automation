@@ -1547,15 +1547,42 @@ export class ActionHelper {
       () => this.page.getByLabel(labelText, { exact: true }),
       () => this.page.getByLabel(labelText, { exact: false }),
 
+      // Modern CSS selector approach - more reliable
       () =>
         this.page
           .locator(`label:has-text("${labelText}")`)
-          .locator(
-            'xpath=../../following-sibling::div//input[not(@type="checkbox") and not(@type="radio")] | ' +
-              'xpath=../../following-sibling::div//textarea | ' +
-              'xpath=../following-sibling::div//input[not(@type="checkbox") and not(@type="radio")] | ' +
-              'xpath=../following-sibling::div//textarea'
-          )
+          .locator('.. >> input:not([type="checkbox"]):not([type="radio"])')
+          .first(),
+
+      () =>
+        this.page
+          .locator(`label:has-text("${labelText}")`)
+          .locator('.. >> textarea')
+          .first(),
+
+      // Direct adjacent selectors
+      () =>
+        this.page
+          .locator(`label:has-text("${labelText}") + input:not([type="checkbox"]):not([type="radio"])`)
+          .first(),
+
+      () =>
+        this.page
+          .locator(`label:has-text("${labelText}") ~ input:not([type="checkbox"]):not([type="radio"])`)
+          .first(),
+
+      // Container-based approach for complex layouts
+      () =>
+        this.page
+          .locator(`label:has-text("${labelText}")`)
+          .locator('.. >> div input:not([type="checkbox"]):not([type="radio"])')
+          .first(),
+
+      // Broader search within form containers
+      () =>
+        this.page
+          .locator(`label:has-text("${labelText}")`)
+          .locator('.. >> [class*="form"] input:not([type="checkbox"]):not([type="radio"])')
           .first(),
 
       () =>
