@@ -9,9 +9,10 @@ import { FrameworkConfig } from '@framework/types';
  * Follows SOLID principles and DRY patterns
  */
 export class BaseKYCSteps extends KYCHelper {
-  
   /** Common heading locator for KYC pages */
-  protected readonly heading = this.page.locator('h1, h2, .heading, [data-testid="page-heading"]').first();
+  protected readonly heading = this.page
+    .locator('h1, h2, .heading, [data-testid="page-heading"]')
+    .first();
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     // Initialize with a logger to prevent undefined errors
@@ -72,10 +73,13 @@ export class BaseKYCSteps extends KYCHelper {
       }
 
       // Use the enhanced ActionHelper method with verification
-      const result = await this.action.setRadioByQuestionWithVerification(questionText, answer, timeoutMs);
+      const result = await this.action.setRadioByQuestionWithVerification(
+        questionText,
+        answer,
+        timeoutMs
+      );
       this.logInfo(`Successfully answered with verification: "${questionText}" = "${result}"`);
       return result;
-
     } catch (error) {
       const errorMsg = `CRITICAL: Failed to answer radio question: "${questionText}". Error: ${error instanceof Error ? error.message : String(error)}`;
       this.logError(errorMsg);
@@ -94,16 +98,19 @@ export class BaseKYCSteps extends KYCHelper {
     timeoutMs: number = 15_000
   ): Promise<string | undefined> {
     try {
-      const result = await this.action.setRadioByQuestionWithVerificationIfPresent(questionText, answer, timeoutMs);
-      
+      const result = await this.action.setRadioByQuestionWithVerificationIfPresent(
+        questionText,
+        answer,
+        timeoutMs
+      );
+
       if (result) {
         this.logInfo(`Successfully answered with verification: "${questionText}" = "${result}"`);
       } else {
         this.logInfo(`ℹ Question not shown, skipping: "${questionText}"`);
       }
-      
-      return result;
 
+      return result;
     } catch (error) {
       const errorMsg = `CRITICAL: Failed to answer radio question: "${questionText}". Error: ${error instanceof Error ? error.message : String(error)}`;
       this.logError(errorMsg);
@@ -136,7 +143,6 @@ export class BaseKYCSteps extends KYCHelper {
     try {
       await this.action.setCheckboxByLabelWithVerification(labelText, checked, timeoutMs);
       this.logInfo(`Checkbox verified: "${labelText}" = ${checked ? 'checked' : 'unchecked'}`);
-
     } catch (error) {
       const errorMsg = `CRITICAL: Failed to set checkbox: "${labelText}". Expected: ${checked ? 'checked' : 'unchecked'}. Error: ${error instanceof Error ? error.message : String(error)}`;
       this.logError(errorMsg);
@@ -169,10 +175,7 @@ export class BaseKYCSteps extends KYCHelper {
    * @param answer - The answer to select (optional, will use random if not provided)
    * @returns Promise<void>
    */
-  public async answerRadioQuestionIfExists(
-    questionText: string,
-    answer?: string
-  ): Promise<void> {
+  public async answerRadioQuestionIfExists(questionText: string, answer?: string): Promise<void> {
     if (await this.elementNotExists(questionText)) {
       this.logInfo(`ℹ Question not found, skipping: "${questionText}"`);
       return;
@@ -205,10 +208,7 @@ export class BaseKYCSteps extends KYCHelper {
    * @param urlFragment - URL fragment to check (e.g., 'page=income')
    * @param expectedHeading - Expected heading text
    */
-  public async verifyKYCPageHeading(
-    urlFragment: string,
-    expectedHeading: string
-  ): Promise<void> {
+  public async verifyKYCPageHeading(urlFragment: string, expectedHeading: string): Promise<void> {
     await this.assert.assertPageURLContains(urlFragment);
     await expect(this.heading).toBeVisible({ timeout: 15_000 });
     await expect(this.heading).toHaveText(expectedHeading);
@@ -219,10 +219,7 @@ export class BaseKYCSteps extends KYCHelper {
    * @param labelText - The label text to look for
    * @param value - The value to fill
    */
-  public async fillInputIfExists(
-    labelText: string,
-    value: string
-  ): Promise<void> {
+  public async fillInputIfExists(labelText: string, value: string): Promise<void> {
     if (await this.elementNotExists(labelText)) {
       this.logInfo(`ℹ Field not found, skipping: "${labelText}"`);
       return;
@@ -237,25 +234,23 @@ export class BaseKYCSteps extends KYCHelper {
    * @param labelText - The label text to look for
    * @param value - The value to select
    */
-  public async selectDropdownIfExists(
-    labelText: string,
-    value: string
-  ): Promise<void> {
+  public async selectDropdownIfExists(labelText: string, value: string): Promise<void> {
     try {
       // Try to find the dropdown first without throwing an error
-      const dropdownExists = await this.page.getByText(labelText, { exact: false }).count() > 0;
-      
+      const dropdownExists = (await this.page.getByText(labelText, { exact: false }).count()) > 0;
+
       if (!dropdownExists) {
         this.logInfo(`ℹ Dropdown label not found, skipping: "${labelText}"`);
         return;
       }
 
       // Check if the actual dropdown element exists
-      const dropdownElement = this.page.locator('select').filter({ hasText: labelText }).or(
-        this.page.locator('[role="combobox"]').filter({ hasText: labelText })
-      );
-      
-      if (await dropdownElement.count() === 0) {
+      const dropdownElement = this.page
+        .locator('select')
+        .filter({ hasText: labelText })
+        .or(this.page.locator('[role="combobox"]').filter({ hasText: labelText }));
+
+      if ((await dropdownElement.count()) === 0) {
         this.logInfo(`ℹ Dropdown element not found, skipping: "${labelText}"`);
         return;
       }
@@ -263,7 +258,9 @@ export class BaseKYCSteps extends KYCHelper {
       await this.action.selectDropdownByLabel(labelText, value);
       this.logInfo(`✓ Selected "${labelText}": ${value}`);
     } catch (error) {
-      this.logInfo(`ℹ Dropdown not available, skipping: "${labelText}" - ${error instanceof Error ? error.message : String(error)}`);
+      this.logInfo(
+        `ℹ Dropdown not available, skipping: "${labelText}" - ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -299,5 +296,16 @@ export class BaseKYCSteps extends KYCHelper {
       return returnValue;
     }
     return undefined;
+  }
+
+  /**
+   * Verify KYC completes successfully and we land on the success page.
+   */
+  protected async verifyFactFindCompleted(): Promise<void> {
+    await this.page.waitForURL(/\/kyc-ff\/success/i, { timeout: 15_000 });
+    await expect(this.page.getByText(/Fact Find Successfully Completed/i)).toBeVisible({
+      timeout: 15_000,
+    });
+    this.logInfo('✓ Fact Find completed successfully');
   }
 }

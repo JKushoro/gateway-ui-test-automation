@@ -3,13 +3,17 @@ import { clearWorkerDataStore } from '@framework/utils/DataStore';
 import BaseTest from '@tests/shared/TestUtils';
 import { GatewayFactFindSteps } from '@steps/gateway/GatewayFactFindSteps';
 import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
-import {
-  KycFactFindDetailsPageSteps
-} from '@steps/kyc_forms/kyc_single_core_fact_find_forms/KycFactFindDetailsPageSteps';
 import { KycPurposePageSteps } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycPurposePageSteps';
 import {
   KycContributionsAndProtectionSteps
 } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycContributionsAndProtectionSteps';
+import {
+  KycFuturePlanningPageSteps
+} from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycFuturePlanningPageSteps';
+import {
+  KycKycLifeEventsAndBenefitsPageSteps
+} from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycLifeEventsAndBenefitsPageSteps';
+import { KycAnnuityPageSteps } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycAnnuityPageSteps';
 
 test.describe('Create Retirement Fact Find', () => {
   test.beforeEach(async () => {
@@ -37,12 +41,29 @@ test.describe('Create Retirement Fact Find', () => {
       // Initialize all KYC step classes
       const kycPurposePageSteps = new KycPurposePageSteps(kycPage);
       const kycContributionsAndProtectionSteps = new KycContributionsAndProtectionSteps(kycPage);
+      const kycFuturePlanningPageSteps = new KycFuturePlanningPageSteps(kycPage);
+      const kycKycLifeEventsAndBenefitsPageSteps = new KycKycLifeEventsAndBenefitsPageSteps(
+        kycPage
+      );
+      const kycAnnuityPageSteps = new KycAnnuityPageSteps(kycPage);
 
       // Complete Purpose
       await kycPurposePageSteps.completeKYCPurpose();
 
       // Complete Contributions Allowances And Protection
       await kycContributionsAndProtectionSteps.completeKycContributionsAllowancesAndProtection();
+
+      // Complete Future Planning
+      await kycFuturePlanningPageSteps.completeKYCKycFuturePlanning();
+
+      //Complete LifeEvents And Benefits
+      await kycKycLifeEventsAndBenefitsPageSteps.completeKYCKycLifeEventsAndBenefits();
+
+      //Complete Annuity
+      await kycAnnuityPageSteps.completeKYCAnnuity();
+
+      // Validate Gateway fact find data
+      await gatewayFactFindSteps.validateGatewayFactFindTableData();
     } finally {
       await cleanupClient1FactFinds();
       await testBase.cleanup();

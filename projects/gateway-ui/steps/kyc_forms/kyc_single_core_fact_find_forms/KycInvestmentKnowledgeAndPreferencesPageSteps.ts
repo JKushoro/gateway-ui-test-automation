@@ -227,15 +227,4 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     this.logInfo(`✓ Answered sustainable investment statement: ${chosen}`);
   }
 
-  /* -------------------- Final Fact Find Completed -------------------- */
-
-  /**
-   * Verify KYC completes successfully and we land on the success page.
-   */
-  private async verifyFactFindCompleted(): Promise<void> {
-    await this.page.waitForURL(/\/kyc-ff\/success/i, { timeout: 15_000 });
-    await expect(this.page.getByText(/Fact Find Successfully Completed/i)).toBeVisible({
-      timeout: 15_000,
-    });
-  }
 }

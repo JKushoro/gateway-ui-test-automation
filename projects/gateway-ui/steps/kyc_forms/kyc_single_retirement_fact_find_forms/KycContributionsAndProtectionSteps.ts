@@ -21,7 +21,6 @@ export class KycContributionsAndProtectionSteps extends BaseKYCSteps {
   /* -------------------- Main Flow -------------------- */
 
   public async completeKycContributionsAllowancesAndProtection(): Promise<void> {
-    // await this.page.waitForLoadState('domcontentloaded');
     await this.assert.assertPageURLContains('page=contributions-allowances-protection');
     await this.assert.assertHeadingVisible('Purpose', 15_000);
 

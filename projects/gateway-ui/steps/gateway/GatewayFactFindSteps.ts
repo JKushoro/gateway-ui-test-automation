@@ -97,6 +97,17 @@ export class GatewayFactFindSteps extends BasePage {
     await this.verifyGatewayContactDetailsMatchKyc();
   }
 
+  public async validateGatewayFactFindTableData(): Promise<void> {
+    await this.page.bringToFront();
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
+
+    const table = this.factFindLocators.factFindHistoryTable;
+    await expect(table).toBeVisible({ timeout: 30000 });
+
+    const status = await this.table.getCellTextByHeader(table, 0, 'Status');
+    expect(status).toBe('Complete');
+  }
+
   /* -------------------- Checks -------------------- */
   private async verifyLatestFactFindClientNameMatchesKyc(): Promise<void> {
     const kycName = this.getDisplayedKycFullName();

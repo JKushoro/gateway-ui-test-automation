@@ -350,8 +350,8 @@ export class ActionHelper {
   }
 
   /** Fill by label and assert the value is what we expect (normalized) */
-  public async fillInputByLabelAndAssert(label: string, value: string): Promise<void> {
-    const expected = TextHelper.cleanText(value);
+  public async fillInputByLabelAndAssert(label: string, value: string | number): Promise<void> {
+    const expected = TextHelper.cleanText(String(value));
     await this.fillInputByLabel(label, expected);
 
     const actual = TextHelper.cleanText(await this.getInputValueByLabel(label));
@@ -827,7 +827,9 @@ export class ActionHelper {
         await label.click({ force: true });
         if (await input.isChecked()) break;
         // Wait for checkbox state to update
-        await expect(input).toBeChecked({ timeout: 1000 }).catch(() => {});
+        await expect(input)
+          .toBeChecked({ timeout: 1000 })
+          .catch(() => {});
       }
 
       await expect(input).toBeChecked({ timeout: 10_000 });

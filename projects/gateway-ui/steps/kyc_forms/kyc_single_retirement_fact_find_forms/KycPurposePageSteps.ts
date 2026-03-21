@@ -23,7 +23,7 @@ export class KycPurposePageSteps extends BaseKYCSteps {
   private async answerPurposeQuestions(): Promise<void> {
     await this.fillPensionDiscussionPurpose(
       'What is the purpose of this pension discussion?',
-      'This is to test this field works'
+      'This is to test Pension Discussion Purpose field works'
     );
   }
 
