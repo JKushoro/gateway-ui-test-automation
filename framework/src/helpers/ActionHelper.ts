@@ -15,15 +15,39 @@ const DEFAULT_CONFIG: FrameworkConfig = {
 };
 
 /**
- * ActionHelper
- * - One place for all user-like interactions (click/fill/select)
- * - Consistent waiting + slowMo behaviour
- * - Robust "find-by-label/question" utilities used across KYC flows
+ * 🎯 ActionHelper - Simplified UI Interactions for Junior Developers
  *
- * Notes:
- * - Keep "core primitives" (wait/click/fill) private and reused everywhere.
- * - Keep "locator resolution" centralised (firstThatExists/tryMany/findInput...).
- * - Public methods are grouped by concern for easier navigation/maintenance.
+ * This helper provides easy-to-use methods for common UI interactions like clicking,
+ * typing, selecting from dropdowns, and filling forms. All methods include proper
+ * waiting and error handling.
+ *
+ * Key Features:
+ * - Clear, descriptive method names
+ * - Automatic waiting for elements to be ready
+ * - Robust error handling with helpful messages
+ * - Consistent behavior across all interactions
+ * - Built-in slowMo support for debugging
+ *
+ * Common Usage Patterns:
+ * ```typescript
+ * // Click buttons and links
+ * await this.action.clickButtonByText('Save & Continue');
+ * await this.action.clickLocator(submitButton);
+ *
+ * // Fill input fields
+ * await this.action.fillInputByLabel('Email', 'test@example.com');
+ * await this.action.fillInput(emailInput, 'test@example.com');
+ *
+ * // Select from dropdowns
+ * await this.action.chooseFromLabeledReactSelectDropdown('Country', 'United Kingdom');
+ * await this.action.setRadioByQuestion('Are you employed?', 'Yes');
+ * ```
+ *
+ * Architecture Notes:
+ * - Core primitives (wait/click/fill) are private and reused everywhere
+ * - Locator resolution is centralized for consistency
+ * - Public methods are grouped by functionality for easy navigation
+ * - All methods follow the same pattern: find → wait → interact → verify
  */
 export class ActionHelper {
   // ---------------------------------------------------------------------------
@@ -154,17 +178,42 @@ export class ActionHelper {
     await this.clickEl(locator, options);
   }
 
-  /** Click a button by accessible name */
+  /**
+   * 🎯 Click a button by its visible text
+   *
+   * This method finds a button by its accessible name (visible text) and clicks it.
+   * It automatically waits for the button to be visible and enabled before clicking.
+   *
+   * @param text - The text on the button to click
+   * @param exact - Whether to match the text exactly (default: true)
+   * @param options - Click options (timeout, force, etc.)
+   *
+   * @example
+   * ```typescript
+   * // Click button with exact text match (recommended)
+   * await this.action.clickButtonByText('Save & Continue');
+   *
+   * // Click button with partial text match
+   * await this.action.clickButtonByText('Save', false);
+   * ```
+   */
   public async clickButtonByText(
     text: string,
     exact = true,
     options: ClickOptions = {}
   ): Promise<void> {
-    const btn = this.page
-      .getByRole('button', { name: exact ? this.exactRx(text) : this.containsRx(text) })
-      .first();
+    try {
+      const btn = this.page
+        .getByRole('button', { name: exact ? this.exactRx(text) : this.containsRx(text) })
+        .first();
 
-    await this.clickEl(btn, options);
+      await this.clickEl(btn, options);
+      this.logger.info(`✓ Successfully clicked button: "${text}"`);
+    } catch (error) {
+      const errorMsg = `Failed to click button "${text}". Make sure the button exists and is clickable. ${error instanceof Error ? error.message : String(error)}`;
+      this.logger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
   }
 
   /** Click a link by accessible name */
@@ -368,18 +417,63 @@ export class ActionHelper {
     label = 'Formatted number input'
   ): Promise<void> {
     const expected =
-      typeof value === 'number' ? value : this.assertionHelper.parseFormattedNumber(String(value));
+      typeof value === 'number'
+        ? value
+        : this.assertionHelper.parseFormattedNumber(String(value));
 
-    if (!Number.isFinite(expected)) throw new Error(`${label}: invalid numeric value "${value}"`);
+    if (!Number.isFinite(expected)) {
+      throw new Error(`${label}: invalid numeric value "${value}"`);
+    }
 
-    await expect(input).toBeVisible();
+    await expect(input, `${label} should be visible`).toBeVisible();
     await input.scrollIntoViewIfNeeded();
 
-    await input.fill(String(expected));
-    await input.evaluate(el => el.blur());
+    const maxAttempts = 3;
 
-    await this.assertionHelper.assertFormattedNumberEquals(input, expected);
-    this.logger.info?.(`✓ ${label}: ${expected}`);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await input.focus();
+
+      // Clear existing value properly
+      await input.clear();
+
+      if (attempt === 1) {
+        // Best default approach
+        await input.fill(String(expected));
+      } else if (attempt === 2) {
+        // For masked inputs that require real key events
+        await input.pressSequentially(String(expected), { delay: 50 });
+      } else {
+        // Final fallback: select all, delete, then type sequentially
+        await input.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+        await input.press('Delete');
+        await input.pressSequentially(String(expected), { delay: 50 });
+      }
+
+      // Trigger blur/change/formatting
+      await input.blur();
+      await this.page.waitForTimeout(300);
+
+      const currentValue = await input.inputValue();
+
+      if (currentValue.trim() !== '') {
+        this.logger?.info?.(`✓ ${label}: ${expected} (attempt ${attempt})`);
+        await this.assertionHelper.assertFormattedNumberEquals(input, expected);
+        return;
+      }
+
+      this.logger?.warn?.(
+        `${label}: attempt ${attempt} left field empty, retrying...`
+      );
+    }
+
+    const finalValue = await input.inputValue();
+    this.logger?.error?.(
+      `${label}: failed to set value "${expected}". Final value: "${finalValue}"`
+    );
+
+    throw new Error(
+      `${label}: Unable to set value "${expected}" - field remains empty after ${maxAttempts} attempts`
+    );
   }
 
   // ===========================================================================

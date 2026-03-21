@@ -4,32 +4,127 @@ import { Page } from '@playwright/test';
 import { FrameworkConfig, TestDataGenerator } from '@/framework/src';
 import { dataStore } from '@framework/utils/DataStore';
 
+/**
+ * 🎯 KYC Current Situation Page Steps
+ *
+ * This class handles all interactions with the KYC Current Situation page.
+ * It follows a simple pattern: validate page → answer questions → save data → continue.
+ *
+ * Key Features:
+ * - Clear method names that describe what they do
+ * - Proper error handling and validation
+ * - Data persistence for later use
+ * - Junior developer friendly structure
+ *
+ * @example Basic usage
+ * ```typescript
+ * const currentSituationSteps = new KycCurrentSituationPageSteps(page);
+ * await currentSituationSteps.completeKYCCurrentSituation();
+ * ```
+ */
 export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
   }
 
-  /* -------------------- Main Flow -------------------- */
+  // ==========================================
+  // 🎯 MAIN WORKFLOW METHOD
+  // ==========================================
 
+  /**
+   * 🎯 Complete the entire KYC Current Situation page
+   *
+   * This is the main method that orchestrates the entire page completion.
+   * It follows a clear sequence: validate → answer → save → continue.
+   */
   public async completeKYCCurrentSituation(): Promise<void> {
-    await this.assert.assertPageURLContains('page=current-situation');
-    await this.assert.assertHeadingVisible('Current situation', 15_000);
-
-    await this.answerCurrentSituationQuestions();
-    this.logInfo('✓ Completed all KYC Current Situation questions');
-
-    await this.action.clickButtonByText('Save & Continue');
+    // Step 1: Validate we're on the correct page
+    await this.validateCurrentSituationPage();
+    
+    // Step 2: Answer all the questions on the page
+    await this.answerAllCurrentSituationQuestions();
+    
+    // Step 3: Save and continue to next page
+    await this.saveAndContinue();
   }
 
-  private async answerCurrentSituationQuestions(): Promise<void> {
-    //await this.selectEmploymentStatus('Semi-Retired');
+  // ==========================================
+  // 🎯 PAGE VALIDATION
+  // ==========================================
+
+  /**
+   * 🎯 Validate that we're on the Current Situation page
+   *
+   * This ensures we're on the right page before proceeding with form filling.
+   */
+  private async validateCurrentSituationPage(): Promise<void> {
+    await this.assert.assertPageURLContains('page=current-situation');
+    await this.assert.assertHeadingVisible('Current situation', 15_000);
+    this.logInfo('✓ Current Situation page validated');
+  }
+
+  // ==========================================
+  // 🎯 QUESTION ANSWERING WORKFLOW
+  // ==========================================
+
+  /**
+   * 🎯 Answer all questions on the Current Situation page
+   *
+   * This method breaks down the complex form into logical sections.
+   * Each section is handled by a separate method for better readability.
+   */
+  private async answerAllCurrentSituationQuestions(): Promise<void> {
+    // Employment related questions
+    await this.handleEmploymentQuestions();
+    
+    // Retirement related questions
+    await this.handleRetirementQuestions();
+    
+    // Health related questions
+    await this.handleHealthQuestions();
+    
+    // Personal details (occupation, employer)
+    await this.handlePersonalDetailsQuestions();
+    
+    // Legal documents questions
+    await this.handleLegalDocumentQuestions();
+    
+    this.logInfo('✓ Completed all KYC Current Situation questions');
+  }
+
+  /**
+   * 🎯 Handle employment-related questions
+   */
+  private async handleEmploymentQuestions(): Promise<void> {
     await this.selectEmploymentStatus('Unemployed');
     await this.selectEmploymentContract();
+    await this.selectEmploymentChangeExpected();
+    this.logInfo('✓ Employment questions completed');
+  }
+
+  /**
+   * 🎯 Handle retirement-related questions
+   */
+  private async handleRetirementQuestions(): Promise<void> {
     await this.answerRetirementAndAge('No');
     await this.fillRetirementAge('When do you plan to retire?', '75');
+    this.logInfo('✓ Retirement questions completed');
+  }
+
+  /**
+   * 🎯 Handle health-related questions
+   */
+  private async handleHealthQuestions(): Promise<void> {
     await this.selectOverallHealth();
     await this.answerMedicalConditions();
+    await this.answerSmoking12Months();
+    this.logInfo('✓ Health questions completed');
+  }
 
+  /**
+   * 🎯 Handle personal details questions and save the data
+   */
+  private async handlePersonalDetailsQuestions(): Promise<void> {
     const occupation = await this.fillOccupation(
       'What is your occupation?',
       dataStore.getValue<string>('kyc.currentSituation.occupation')
@@ -40,22 +135,45 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
       dataStore.getValue<string>('kyc.currentSituation.currentEmployer')
     );
 
-    await this.selectEmploymentChangeExpected();
-    await this.answerSmoking12Months();
+    // Save the data for later use
+    this.savePersonalDetailsData(occupation, currentEmployer);
+    this.logInfo('✓ Personal details questions completed and data saved');
+  }
+
+  /**
+   * 🎯 Handle legal document questions
+   */
+  private async handleLegalDocumentQuestions(): Promise<void> {
     await this.answerWillQuestion('Yes');
     await this.answerPowerOfAttorney('Yes');
     await this.selectPowerOfAttorneyType('Enduring POA', 'Lasting POA Both', 'Ordinary POA');
+    this.logInfo('✓ Legal document questions completed');
+  }
 
-    // Persist both individually (recommended)
+  /**
+   * 🎯 Save personal details data to the data store
+   *
+   * @param occupation - The occupation value to save
+   * @param currentEmployer - The current employer value to save
+   */
+  private savePersonalDetailsData(occupation: string, currentEmployer: string): void {
+    // Save individual values (recommended for easy access)
     dataStore.setValue('kyc.currentSituation.occupation', occupation);
     dataStore.setValue('kyc.currentSituation.currentEmployer', currentEmployer);
 
-    // Optional: store combined object
+    // Save combined object (useful for bulk operations)
     dataStore.setValue('kyc.currentSituation', {
       occupation,
       currentEmployer,
     });
+  }
 
+  /**
+   * 🎯 Save the form and continue to the next page
+   */
+  private async saveAndContinue(): Promise<void> {
+    await this.action.clickButtonByText('Save & Continue');
+    this.logInfo('✓ Current Situation form saved and continuing to next page');
   }
 
   /* -------------------- Question Methods -------------------- */

@@ -52,12 +52,20 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
 
   /* -------------------- Questions -------------------- */
 
+  /**
+   * 🎯 Answer mortgage question with proper validation
+   *
+   * This method answers the mortgage question and validates that a selection was made.
+   *
+   * @param answer - The answer to select (optional, will use random if not provided)
+   */
   private async answerHasMortgageOnProperty(answer?: string): Promise<void> {
     const question = /do you have a mortgage on this property\?/i;
     const selected = await this.action.setRadioByQuestionPattern(question, answer);
 
-    expect(selected).toBeTruthy();
-    this.logInfo(`✓ ${question}: ${answer}`);
+    expect(selected, 'Should have selected an answer for mortgage question').toBeDefined();
+    expect(selected, 'Selected answer should not be empty').not.toBe('');
+    this.logInfo(`✓ Mortgage question answered: ${selected}`);
   }
 
   private async selectCurrentMortgageEndTerm(answer?: string): Promise<void> {

@@ -119,7 +119,7 @@ export class KYCDatePickerService extends BasePage {
     }
 
     const selected = await this.action.getSelectedDropdownText(KYCDatePickerLocators.YEAR_DROPDOWN);
-    expect(selected?.includes(year.toString())).toBeTruthy();
+    expect(selected, `Year dropdown should contain selected year ${year}`).toContain(year.toString());
   }
 
   private async selectMonth(month0: number): Promise<void> {

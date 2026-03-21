@@ -15,56 +15,68 @@ import {
 } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycLifeEventsAndBenefitsPageSteps';
 import { KycAnnuityPageSteps } from '@steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycAnnuityPageSteps';
 
+/**
+ * 🎯 Retirement Fact Find Creation Tests
+ *
+ * This test suite validates the complete workflow for creating a retirement fact find.
+ * It covers the entire journey from client creation to fact find completion.
+ *
+ * Test Flow:
+ * 1. Setup: Clear data store and create test environment
+ * 2. Navigation: Add client and navigate to fact find section
+ * 3. Creation: Create and launch new retirement fact find
+ * 4. KYC Process: Complete all KYC pages in sequence
+ * 5. Validation: Verify fact find completion in Gateway
+ * 6. Cleanup: Clean up test data and close browser
+ */
 test.describe('Create Retirement Fact Find', () => {
   test.beforeEach(async () => {
-    // Clear any shared state before each test
+    // 🧹 Clear any shared state before each test to ensure clean test environment
     clearWorkerDataStore();
   });
 
   test('Complete Retirement fact find creation workflow', async ({ browser }) => {
+    // 🏗️ Test Setup Phase
     const testBase = await BaseTest.create(browser, 'qa');
     let kycPage: Page;
 
     try {
+      // 📋 Initialize Gateway management steps for fact find operations
       const gatewayFactFindSteps = new GatewayManagementSteps(testBase.page);
 
-      // Get to Fact Find then launch KYC (KYC opens in a new tab)
+      // 🚀 Phase 1: Navigate to Fact Find section
       await testBase.factFindSteps.addClientAndNavigateToFactFindTab(
         testBase.sideNav,
         testBase.navBar
       );
+
+      // 🆕 Phase 2: Create and launch new retirement fact find (opens in new tab)
       kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind('Retirement Fact Find');
 
-      // Sanity check that we really are on KYC
-      await expect(kycPage).toHaveTitle('KYC');
+      // ✅ Phase 3: Validate KYC page is loaded correctly
+      await expect(kycPage, 'KYC page should be loaded with correct title').toHaveTitle('KYC');
 
-      // Initialize all KYC step classes
-      const kycPurposePageSteps = new KycPurposePageSteps(kycPage);
-      const kycContributionsAndProtectionSteps = new KycContributionsAndProtectionSteps(kycPage);
-      const kycFuturePlanningPageSteps = new KycFuturePlanningPageSteps(kycPage);
-      const kycKycLifeEventsAndBenefitsPageSteps = new KycKycLifeEventsAndBenefitsPageSteps(
-        kycPage
-      );
-      const kycAnnuityPageSteps = new KycAnnuityPageSteps(kycPage);
+      // 🏭 Phase 4: Initialize all KYC step classes for the workflow
+      const kycSteps = {
+        purpose: new KycPurposePageSteps(kycPage),
+        contributions: new KycContributionsAndProtectionSteps(kycPage),
+        futurePlanning: new KycFuturePlanningPageSteps(kycPage),
+        lifeEvents: new KycKycLifeEventsAndBenefitsPageSteps(kycPage),
+        annuity: new KycAnnuityPageSteps(kycPage)
+      };
 
-      // Complete Purpose
-      await kycPurposePageSteps.completeKYCPurpose();
+      // 📝 Phase 5: Complete KYC workflow in sequence
+      await kycSteps.purpose.completeKYCPurpose();
+      await kycSteps.contributions.completeKycContributionsAllowancesAndProtection();
+      await kycSteps.futurePlanning.completeKYCKycFuturePlanning();
+      await kycSteps.lifeEvents.completeKYCKycLifeEventsAndBenefits();
+      await kycSteps.annuity.completeKYCAnnuity();
 
-      // Complete Contributions Allowances And Protection
-      await kycContributionsAndProtectionSteps.completeKycContributionsAllowancesAndProtection();
-
-      // Complete Future Planning
-      await kycFuturePlanningPageSteps.completeKYCKycFuturePlanning();
-
-      //Complete LifeEvents And Benefits
-      await kycKycLifeEventsAndBenefitsPageSteps.completeKYCKycLifeEventsAndBenefits();
-
-      //Complete Annuity
-      await kycAnnuityPageSteps.completeKYCAnnuity();
-
-      // Validate Gateway fact find data
+      // 🎯 Phase 6: Validate fact find completion in Gateway
       await gatewayFactFindSteps.verifyFirstFactFindStatusIsComplete();
+
     } finally {
+      // 🧹 Cleanup Phase: Always clean up test data, even if test fails
       await cleanupClient1FactFinds();
       await testBase.cleanup();
     }

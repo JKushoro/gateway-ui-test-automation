@@ -637,9 +637,11 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
 
   private async selectDependantOneRelationship(value?: string): Promise<void> {
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Relationship', value);
-    expect(chosen).toBeTruthy();
+    expect(chosen, 'Should have selected a relationship option').toBeDefined();
+    expect(chosen, 'Selected relationship should not be empty').not.toBe('');
 
-    await expect(this.page.getByText(chosen, { exact: false }).first()).toBeVisible();
+    await expect(this.page.getByText(chosen, { exact: false }).first(),
+      `Selected relationship "${chosen}" should be visible on page`).toBeVisible();
     this.logInfo(`✓ Relationship selected: ${chosen}`);
   }
 

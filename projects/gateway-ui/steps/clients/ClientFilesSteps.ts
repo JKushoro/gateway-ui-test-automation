@@ -72,16 +72,34 @@ export class ClientFilesSteps extends BasePage {
   /**
    * Assert that stored data matches displayed data (field-by-field).
    */
+  /**
+   * 🎯 Assert that stored data matches displayed data (field-by-field)
+   *
+   * This method verifies that all client data fields match between what was stored
+   * during form submission and what is currently displayed on the page.
+   *
+   * @param dataPrefix - The prefix used to store data in the data store (default: 'formData')
+   *
+   * @example
+   * ```typescript
+   * // Verify all client data matches what was stored
+   * await clientSteps.assertStoredClientDataMatches();
+   *
+   * // Verify with custom data prefix
+   * await clientSteps.assertStoredClientDataMatches('customPrefix');
+   * ```
+   */
   public async assertStoredClientDataMatches(dataPrefix: string = 'formData'): Promise<void> {
     const result: VerificationResult = await this.verifyStoredClientDataMatches(dataPrefix);
 
-    expect(result.companyName).toBe(true);
-    expect(result.contactForename).toBe(true);
-    expect(result.contactSurname).toBe(true);
-    expect(result.phone).toBe(true);
-    expect(result.emailAddress).toBe(true);
-    expect(result.addressMatches).toBe(true);
-    expect(result.allFieldsMatch).toBe(true);
+    // Use descriptive error messages for better debugging
+    expect(result.companyName, 'Company name should match stored data').toBe(true);
+    expect(result.contactForename, 'Contact forename should match stored data').toBe(true);
+    expect(result.contactSurname, 'Contact surname should match stored data').toBe(true);
+    expect(result.phone, 'Phone number should match stored data').toBe(true);
+    expect(result.emailAddress, 'Email address should match stored data').toBe(true);
+    expect(result.addressMatches, 'Address should match stored data').toBe(true);
+    expect(result.allFieldsMatch, 'All client data fields should match stored data').toBe(true);
   }
 
   /**
