@@ -72,7 +72,7 @@ export class AuthenticationService extends BasePage {
    */
   public async handleOtpChallenge(otpSecret: string): Promise<void> {
     try {
-      await expect(this.microsoftLoginPage.otpInput).toBeVisible({ timeout: 2000 });
+      await expect(this.microsoftLoginPage.otpInput).toBeVisible({ timeout: 10000 });
       const otpCode = generateOTP(otpSecret);
       await this.microsoftLoginPage.otpInput.fill(otpCode);
       await this.action.clickLocator(this.microsoftLoginPage.signInButton);
@@ -87,7 +87,7 @@ export class AuthenticationService extends BasePage {
    */
   public async handleStaySignedInPrompt(): Promise<void> {
     try {
-      await expect(this.microsoftLoginPage.staySignedInPrompt).toBeVisible({ timeout: 3000 });
+      await expect(this.microsoftLoginPage.staySignedInPrompt).toBeVisible({ timeout: 10000 });
       await this.action.clickLocator(this.microsoftLoginPage.noButton);
       await this.wait.waitForDOMContentLoaded();
     } catch {
