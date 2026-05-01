@@ -358,4 +358,108 @@ export class AssertionHelper {
     const actualValue = this.parseFormattedNumber(rawValue);
     expect(actualValue, `Formatted number should equal ${expectedValue}, but got "${rawValue}" (parsed as ${actualValue})`).toBe(expectedValue);
   }
+
+  // ========================================
+  // 🌐 HTTP RESPONSE ASSERTIONS
+  // ========================================
+
+  /**
+   * 🎯 Assert HTTP response has successful status (200)
+   * Use this when checking if GET requests worked
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseSuccess(response);
+   */
+  public async assertResponseSuccess(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 200 (Success)').toBe(200);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has created status (201)
+   * Use this when checking if POST requests created something new
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseCreated(response);
+   */
+  public async assertResponseCreated(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 201 (Created)').toBe(201);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has no content status (204)
+   * Use this when checking if DELETE requests worked
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseNoContent(response);
+   */
+  public async assertResponseNoContent(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 204 (No Content)').toBe(204);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has bad request status (400)
+   * Use this when testing validation errors
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseBadRequest(response);
+   */
+  public async assertResponseBadRequest(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 400 (Bad Request)').toBe(400);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has unauthorized status (401)
+   * Use this when testing authentication failures
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseUnauthorized(response);
+   */
+  public async assertResponseUnauthorized(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 401 (Unauthorized)').toBe(401);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has forbidden status (403)
+   * Use this when testing permission errors
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseForbidden(response);
+   */
+  public async assertResponseForbidden(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 403 (Forbidden)').toBe(403);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has not found status (404)
+   * Use this when testing missing resources
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseNotFound(response);
+   */
+  public async assertResponseNotFound(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 404 (Not Found)').toBe(404);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has server error status (500)
+   * Use this when testing server errors
+   *
+   * @param response - The HTTP response object
+   * @example await this.assert.assertResponseServerError(response);
+   */
+  public async assertResponseServerError(response: any): Promise<void> {
+    expect(response.status(), 'Response should have status 500 (Server Error)').toBe(500);
+  }
+
+  /**
+   * 🎯 Assert HTTP response has any custom status code
+   * Use this for any other status codes not covered above
+   *
+   * @param response - The HTTP response object
+   * @param expectedStatus - The expected status code
+   * @example await this.assert.assertResponseStatus(response, 418);
+   */
+  public async assertResponseStatus(response: any, expectedStatus: number): Promise<void> {
+    expect(response.status(), `Response should have status ${expectedStatus}`).toBe(expectedStatus);
+  }
 }

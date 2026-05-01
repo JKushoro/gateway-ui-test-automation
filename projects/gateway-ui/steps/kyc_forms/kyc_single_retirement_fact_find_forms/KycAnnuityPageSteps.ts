@@ -64,32 +64,44 @@ export class KycAnnuityPageSteps extends BaseKYCSteps {
   }
 
   private async fillEscalationRequirements(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   private async fillIncomeFrequency(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   private async fillAdvanceOrArrearsWithProportion(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   private async fillGuaranteedPeriod(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   private async fillOverlapDetails(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   private async fillValueProtection(label: string, value: string): Promise<void> {
-    if (await this.elementNotExists(label)) return;
+    if (await this.elementNotExists(label)) {
+      return;
+    }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 }

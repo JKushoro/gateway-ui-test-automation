@@ -1,12 +1,15 @@
-import { Page } from '@playwright/test';
-import { KYCHelper } from '@/framework/src';
-import { FrameworkConfig } from '@framework/types';
+import { Page, KYCHelper, FrameworkConfig } from '@/framework/src';
+import { BaseKYCPageLocators } from '@pages/kycElementLocators/BaseKYCPageLocators';
 /**
  * Base class for KYC form steps with common functionality
  * Now extends KYCHelper to reduce duplication
  * Follows SOLID principles and DRY patterns
  */
 export declare class BaseKYCSteps extends KYCHelper {
+    /** KYC page locators */
+    protected readonly kycLocators: BaseKYCPageLocators;
+    /** Common heading locator for KYC pages */
+    protected get heading(): import("playwright-core").Locator;
     constructor(page: Page, config?: Partial<FrameworkConfig>);
     /**
      * Persist key/value pairs under a prefix in the data store
@@ -106,5 +109,9 @@ export declare class BaseKYCSteps extends KYCHelper {
      * @param exact - Whether to match exactly (default: false)
      */
     protected returnIfElementNotExists<T>(text: string, returnValue?: T, exact?: boolean): Promise<T | undefined>;
+    /**
+     * Verify KYC completes successfully and we land on the success page.
+     */
+    protected verifyFactFindCompleted(): Promise<void>;
 }
 //# sourceMappingURL=BaseKYCSteps.d.ts.map

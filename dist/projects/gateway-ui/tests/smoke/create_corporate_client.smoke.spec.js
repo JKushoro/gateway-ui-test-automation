@@ -1,41 +1,39 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 //projects/gateway-ui/tests/smoke/create_corporate_client.smoke.spec.ts
 const test_1 = require("@playwright/test");
-const LoginSteps_1 = require("@steps/LoginSteps");
-const SideNav_1 = require("@steps/components/SideNav");
+const TestUtils_1 = __importDefault(require("../shared/TestUtils"));
 const CorporateClientCreationSteps_1 = require("@steps/clients/CorporateClientCreationSteps");
 const ClientsSearchSteps_1 = require("@steps/clients/ClientsSearchSteps");
 const ClientFilesSteps_1 = require("@steps/clients/ClientFilesSteps");
+const DataStore_1 = require("@framework/utils/DataStore");
 test_1.test.describe('Create Corporate Client', () => {
-    let page;
-    let sideNav;
-    let clientSteps;
-    let searchSteps;
-    let clientFilesSteps;
-    test_1.test.beforeAll(async ({ browser }) => {
-        page = await browser.newPage();
-        await LoginSteps_1.LoginSteps.setupForEnvironment(page, 'qa');
-        // Initialize services once - eliminates duplication
-        sideNav = new SideNav_1.SideNavService(page);
-        clientSteps = new CorporateClientCreationSteps_1.AddCorporateClientSteps(page);
-        searchSteps = new ClientsSearchSteps_1.ClientsSearchSteps(page);
-        clientFilesSteps = new ClientFilesSteps_1.ClientFilesSteps(page);
+    test_1.test.beforeEach(async () => {
+        // Clear any shared state before each test
+        (0, DataStore_1.clearWorkerDataStore)();
     });
-    (0, test_1.test)('Navigate to Add Corporate Client page', async () => {
-        await clientSteps.executeNavigateToAddCorporateClient(sideNav);
-    });
-    (0, test_1.test)('Create complete Corporate Client', async () => {
-        await clientSteps.executeCompleteClientCreation();
-    });
-    (0, test_1.test)('Search for created client and verify company name matches', async () => {
-        await searchSteps.executeSearchAndVerifyStoredClient();
-    });
-    (0, test_1.test)('Verify all stored client data matches client details page', async () => {
-        await clientFilesSteps.executeStoredClientDataVerification();
-    });
-    test_1.test.afterAll(async () => {
-        await page?.close();
+    (0, test_1.test)('Complete corporate client creation workflow', async ({ browser }) => {
+        const testBase = await TestUtils_1.default.create(browser, 'qa');
+        try {
+            // Initialize services
+            const clientSteps = new CorporateClientCreationSteps_1.AddCorporateClientSteps(testBase.page);
+            const searchSteps = new ClientsSearchSteps_1.ClientsSearchSteps(testBase.page);
+            const clientFilesSteps = new ClientFilesSteps_1.ClientFilesSteps(testBase.page);
+            // Navigate to Add Corporate Client page
+            await clientSteps.executeNavigateToAddCorporateClient(testBase.sideNav);
+            // Create complete Corporate Client
+            await clientSteps.executeCompleteClientCreation();
+            // Search for created client and verify company name matches
+            await searchSteps.executeSearchAndVerifyStoredClient();
+            // Verify all stored client data matches client details page
+            await clientFilesSteps.executeStoredClientDataVerification();
+        }
+        finally {
+            await testBase.cleanup();
+        }
     });
 });
 //# sourceMappingURL=create_corporate_client.smoke.spec.js.map

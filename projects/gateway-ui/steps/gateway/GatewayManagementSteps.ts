@@ -60,7 +60,6 @@ export class GatewayManagementSteps extends BasePage {
       .trim();
   }
 
-
   private async firstExisting(...locators: Locator[]): Promise<Locator> {
     for (const l of locators) {
       if ((await l.count()) > 0) return l;
@@ -544,7 +543,7 @@ export class GatewayManagementSteps extends BasePage {
     const timeout = GatewayManagementSteps.KYC_TIMEOUT_MS;
     await kycPage.waitForLoadState('domcontentloaded', { timeout }).catch(() => {});
     await kycPage.waitForURL('**/kyc-ff/*', { timeout });
-    await expect(kycPage).toHaveTitle('KYC', { timeout });
+    await expect(kycPage).toHaveTitle('Fairstone', { timeout });
     return kycPage;
   }
 

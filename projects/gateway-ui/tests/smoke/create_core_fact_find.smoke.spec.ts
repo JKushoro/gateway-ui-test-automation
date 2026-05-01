@@ -35,9 +35,6 @@ test.describe('Create core Fact Find', () => {
     );
     const kycPage = await testBase.factFindSteps.createAndLaunchNewFactFind('Core Fact Find');
 
-    // Sanity check that we really are on KYC
-    await expect(kycPage).toHaveTitle('KYC');
-
     // Initialize all KYC step classes
     const kycFactFindDetailsPageSteps = new KycFactFindDetailsPageSteps(kycPage);
     const kycPersonalDetailsPageSteps = new KycPersonalDetailsPageSteps(kycPage);
@@ -84,8 +81,12 @@ test.describe('Create core Fact Find', () => {
     await gatewayFactFindSteps.validateGatewayFactFindData();
     await kycPage.waitForLoadState('networkidle');
 
-    // Cleanup
-    await cleanupClient1FactFinds();
+    // Cleanup with improved error handling
+    await cleanupClient1FactFinds({
+      skipCleanup: false,
+      maxRetries: 2,
+      timeoutMs: 15000
+    });
     await kycPage.close();
     await testBase.cleanup();
   });

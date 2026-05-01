@@ -50,7 +50,9 @@
   "include": [
     "framework/src/**/*",
     "projects/gateway-ui/**/*",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "framework/node_modules/@types/jest/index.d.ts",
+    "framework/node_modules/@types/jest/index.d.ts"
   ],
   "exclude": [
     "node_modules",

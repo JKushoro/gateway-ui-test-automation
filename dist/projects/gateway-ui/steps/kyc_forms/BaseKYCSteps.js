@@ -2,18 +2,23 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseKYCSteps = void 0;
 //projects/gateway-ui/steps/kyc_forms/BaseKYCSteps.ts
-const test_1 = require("@playwright/test");
 const src_1 = require("@/framework/src");
+const BaseKYCPageLocators_1 = require("@pages/kycElementLocators/BaseKYCPageLocators");
 /**
  * Base class for KYC form steps with common functionality
  * Now extends KYCHelper to reduce duplication
  * Follows SOLID principles and DRY patterns
  */
 class BaseKYCSteps extends src_1.KYCHelper {
+    /** Common heading locator for KYC pages */
+    get heading() {
+        return this.kycLocators.pageHeading;
+    }
     constructor(page, config) {
         // Initialize with a logger to prevent undefined errors
         const logger = (0, src_1.createLogger)('BaseKYCSteps');
         super(page, logger, config);
+        this.kycLocators = new BaseKYCPageLocators_1.BaseKYCPageLocators(page, config);
     }
     /**
      * Persist key/value pairs under a prefix in the data store
@@ -167,8 +172,8 @@ class BaseKYCSteps extends src_1.KYCHelper {
      */
     async verifyKYCPageHeading(urlFragment, expectedHeading) {
         await this.assert.assertPageURLContains(urlFragment);
-        await (0, test_1.expect)(this.heading).toBeVisible({ timeout: 15000 });
-        await (0, test_1.expect)(this.heading).toHaveText(expectedHeading);
+        await (0, src_1.expect)(this.heading).toBeVisible({ timeout: 15000 });
+        await (0, src_1.expect)(this.heading).toHaveText(expectedHeading);
     }
     /**
      * Fill input field if it exists with consistent logging
@@ -191,14 +196,14 @@ class BaseKYCSteps extends src_1.KYCHelper {
     async selectDropdownIfExists(labelText, value) {
         try {
             // Try to find the dropdown first without throwing an error
-            const dropdownExists = await this.page.getByText(labelText, { exact: false }).count() > 0;
+            const dropdownExists = (await this.page.getByText(labelText, { exact: false }).count()) > 0;
             if (!dropdownExists) {
                 this.logInfo(`ℹ Dropdown label not found, skipping: "${labelText}"`);
                 return;
             }
             // Check if the actual dropdown element exists
-            const dropdownElement = this.page.locator('select').filter({ hasText: labelText }).or(this.page.locator('[role="combobox"]').filter({ hasText: labelText }));
-            if (await dropdownElement.count() === 0) {
+            const dropdownElement = this.kycLocators.getDropdownByLabel(labelText);
+            if ((await dropdownElement.count()) === 0) {
                 this.logInfo(`ℹ Dropdown element not found, skipping: "${labelText}"`);
                 return;
             }
@@ -232,6 +237,16 @@ class BaseKYCSteps extends src_1.KYCHelper {
             return returnValue;
         }
         return undefined;
+    }
+    /**
+     * Verify KYC completes successfully and we land on the success page.
+     */
+    async verifyFactFindCompleted() {
+        await this.page.waitForURL(/\/kyc-ff\/success/i, { timeout: 15000 });
+        await (0, src_1.expect)(this.page.getByText(/Fact Find Successfully Completed/i)).toBeVisible({
+            timeout: 15000,
+        });
+        this.logInfo('✓ Fact Find completed successfully');
     }
 }
 exports.BaseKYCSteps = BaseKYCSteps;

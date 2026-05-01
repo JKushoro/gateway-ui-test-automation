@@ -92,8 +92,9 @@ class DatePickerService extends BasePage_1.BasePage {
                 if (targetYear >= min && targetYear <= max)
                     return;
                 await this.action.clickLocator(targetYear < min ? this.component.yearsPrev : this.component.yearsNext);
+                // Wait for year cells to update after navigation
+                await this.wait.waitForElement(this.component.yearCells.first());
             }
-            await this.wait.waitForTimeout(80); // small settle time
         }
         throw new Error(`Could not reach year ${targetYear} in datepicker`);
     }

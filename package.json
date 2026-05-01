@@ -10,6 +10,12 @@
     "test:smoke": "playwright test tests/smoke",
     "test:smoke:headed": "playwright test tests/smoke --headed",
     "test:qa": "cross-env TEST_ENV=qa playwright test",
+    "test:report": "playwright test && start playwright-report/index.html",
+    "test:smoke:report": "playwright test tests/smoke && start playwright-report/index.html",
+    "test:headed:report": "playwright test --headed && start playwright-report/index.html",
+    "test:with-server": "playwright test && playwright show-report",
+    "show-report": "playwright show-report playwright-report",
+    "open-report": "start playwright-report/index.html",
     "install:browsers": "playwright install",
     "setup": "npm install && npm run install:browsers",
     "build": "tsc"
@@ -17,14 +23,14 @@
   "devDependencies": {
     "@playwright/test": "^1.53.2",
     "@types/node": "^24.0.10",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
     "cross-env": "^10.0.0",
-    "eslint": "^8.57.0",
+    "eslint": "^10.1.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.1.3",
     "typescript": "^5.5.3"
   },
   "dependencies": {

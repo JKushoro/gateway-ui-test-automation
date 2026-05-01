@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { ILogger } from './Logger';
 import { QuestionHelper } from './QuestionHelper';
 import { ActionHelper } from '../helpers/ActionHelper';
@@ -8,19 +8,16 @@ import { WaitHelper } from '@framework/helpers/WaitHelper';
 export declare class KYCHelper {
     protected page: Page;
     protected logger?: ILogger | undefined;
+    protected config?: Partial<FrameworkConfig> | undefined;
     protected questionHelper: QuestionHelper;
     protected action: ActionHelper;
     protected assert: AssertionHelper;
     protected waitHelper: WaitHelper;
-    constructor(page: Page, logger?: ILogger | undefined, config?: Partial<FrameworkConfig>);
+    constructor(page: Page, logger?: ILogger | undefined, config?: Partial<FrameworkConfig> | undefined);
     /**
      * Safe logging method that handles undefined logger
      */
     protected logInfo(message: string): void;
-    /**
-     * Get the common KYC page heading locator
-     */
-    get heading(): Locator;
     /**
      * Verify KYC page heading with URL and text validation
      * @param urlFragment - URL fragment to check (e.g., 'page=income')

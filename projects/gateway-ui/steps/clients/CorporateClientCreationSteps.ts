@@ -177,7 +177,7 @@ export class AddCorporateClientSteps extends BasePage {
   }
 
   private persist(prefix: string, obj: Record<string, unknown>): void {
-    for (const [k, v] of Object.entries(obj)) dataStore.setValue(`${prefix}.${k}`, v);
+    for (const [k, v] of Object.entries(obj)) {dataStore.setValue(`${prefix}.${k}`, v);}
   }
 
   private async handleDateEstablished(date?: string): Promise<string | undefined> {

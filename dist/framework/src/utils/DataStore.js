@@ -25,6 +25,8 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStore = exports.dataStore = void 0;
+exports.getDataStore = getDataStore;
+exports.clearWorkerDataStore = clearWorkerDataStore;
 /**
  * Simple in-memory data store for test data
  */
@@ -92,9 +94,33 @@ class DataStore {
 }
 exports.DataStore = DataStore;
 /**
- * Singleton instance of the data store
- * Use this instance throughout your tests
+ * Worker-isolated data store instances
+ * Each test worker gets its own isolated data store
  */
-const dataStore = new DataStore();
+const workerDataStores = new Map();
+/**
+ * Get or create a data store for the current test worker
+ * This ensures test isolation when running in parallel
+ */
+function getDataStore() {
+    const workerId = process.env.TEST_WORKER_INDEX || 'default';
+    if (!workerDataStores.has(workerId)) {
+        workerDataStores.set(workerId, new DataStore());
+    }
+    return workerDataStores.get(workerId);
+}
+/**
+ * Clear the data store for the current worker
+ * Useful for test cleanup
+ */
+function clearWorkerDataStore() {
+    const workerId = process.env.TEST_WORKER_INDEX || 'default';
+    const store = workerDataStores.get(workerId);
+    if (store) {
+        store.clear();
+    }
+}
+// Export the worker-isolated data store
+const dataStore = getDataStore();
 exports.dataStore = dataStore;
 //# sourceMappingURL=DataStore.js.map

@@ -6,7 +6,7 @@ const AlertServiceLocator_1 = require("@components/AlertServiceLocator");
 class AlertService extends BasePage_1.BasePage {
     constructor(page, config) {
         super(page, config);
-        this.alert = new AlertServiceLocator_1.AlertComponent(page);
+        this.alert = new AlertServiceLocator_1.AlertServiceLocator(page);
     }
     /**
      * Waits for a visible alert, optionally asserts title/message,
@@ -18,11 +18,10 @@ class AlertService extends BasePage_1.BasePage {
         await this.wait.waitForElement(container);
         // Optional assertions
         if (expectedTitle) {
-            await this.assert.assertElementHasText(this.alert.title, expectedTitle);
+            await this.assert.assertElementHasText(this.alert.alertTitle, expectedTitle);
         }
         if (expectedMessage) {
-            // Single assertion is enough — it auto-waits
-            await this.assert.assertElementContainsText(this.alert.message, expectedMessage);
+            await this.assert.assertElementContainsText(this.alert.alertMessage, expectedMessage);
         }
         // Click and wait for dismissal
         await this.action.clickButtonByTextIn(buttonText, container);

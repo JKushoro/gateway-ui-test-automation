@@ -6,10 +6,16 @@ export default defineConfig({
   retries: 0,
   workers: process.env.CI ? 2 : undefined, // Use 2 workers in CI, auto-detect locally
   reporter: [
-    ['html', { open: 'always', outputFolder: 'playwright-report' }],
+    [
+      'html',
+      {
+        open: process.env.CI ? 'never' : 'always',
+        outputFolder: 'playwright-report',
+      },
+    ],
     ['json', { outputFile: 'test-results/results.json' }],
     ['junit', { outputFile: 'test-results/junit-results.xml' }],
-    ['list'],
+    ['list', { printSteps: true }],
   ],
   timeout: 180_000, // 3 minutes - appropriate for end-to-end tests
   outputDir: './test-results/gateway-ui',
@@ -42,14 +48,14 @@ export default defineConfig({
       use: { channel: 'chrome' },
     },
 
-        // {
-        //   name: "firefox",
-        //   use: { ...devices["Desktop Firefox"] },
-        // },
-        //
-        // {
-        //   name: "webkit",
-        //   use: { ...devices["Desktop Safari"] },
-        // },
+    // {
+    //   name: "firefox",
+    //   use: { ...devices["Desktop Firefox"] },
+    // },
+    //
+    // {
+    //   name: "webkit",
+    //   use: { ...devices["Desktop Safari"] },
+    // },
   ],
 });

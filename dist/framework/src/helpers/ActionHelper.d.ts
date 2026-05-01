@@ -5,15 +5,39 @@ import { ActionOptions, ClickOptions, FrameworkConfig } from '../types';
 import { ILogger } from '../utils/Logger';
 import { AssertionHelper } from '@framework/helpers/AssertionHelper';
 /**
- * ActionHelper
- * - One place for all user-like interactions (click/fill/select)
- * - Consistent waiting + slowMo behaviour
- * - Robust "find-by-label/question" utilities used across KYC flows
+ * 🎯 ActionHelper - Simplified UI Interactions for Junior Developers
  *
- * Notes:
- * - Keep "core primitives" (wait/click/fill) private and reused everywhere.
- * - Keep "locator resolution" centralised (firstThatExists/tryMany/findInput...).
- * - Public methods are grouped by concern for easier navigation/maintenance.
+ * This helper provides easy-to-use methods for common UI interactions like clicking,
+ * typing, selecting from dropdowns, and filling forms. All methods include proper
+ * waiting and error handling.
+ *
+ * Key Features:
+ * - Clear, descriptive method names
+ * - Automatic waiting for elements to be ready
+ * - Robust error handling with helpful messages
+ * - Consistent behavior across all interactions
+ * - Built-in slowMo support for debugging
+ *
+ * Common Usage Patterns:
+ * ```typescript
+ * // Click buttons and links
+ * await this.action.clickButtonByText('Save & Continue');
+ * await this.action.clickLocator(submitButton);
+ *
+ * // Fill input fields
+ * await this.action.fillInputByLabel('Email', 'test@example.com');
+ * await this.action.fillInput(emailInput, 'test@example.com');
+ *
+ * // Select from dropdowns
+ * await this.action.chooseFromLabeledReactSelectDropdown('Country', 'United Kingdom');
+ * await this.action.setRadioByQuestion('Are you employed?', 'Yes');
+ * ```
+ *
+ * Architecture Notes:
+ * - Core primitives (wait/click/fill) are private and reused everywhere
+ * - Locator resolution is centralized for consistency
+ * - Public methods are grouped by functionality for easy navigation
+ * - All methods follow the same pattern: find → wait → interact → verify
  */
 export declare class ActionHelper {
     readonly page: Page;
@@ -45,7 +69,25 @@ export declare class ActionHelper {
     click(selector: string, options?: ClickOptions): Promise<void>;
     /** Click a Locator directly */
     clickLocator(locator: Locator, options?: ClickOptions): Promise<void>;
-    /** Click a button by accessible name */
+    /**
+     * 🎯 Click a button by its visible text
+     *
+     * This method finds a button by its accessible name (visible text) and clicks it.
+     * It automatically waits for the button to be visible and enabled before clicking.
+     *
+     * @param text - The text on the button to click
+     * @param exact - Whether to match the text exactly (default: true)
+     * @param options - Click options (timeout, force, etc.)
+     *
+     * @example
+     * ```typescript
+     * // Click button with exact text match (recommended)
+     * await this.action.clickButtonByText('Save & Continue');
+     *
+     * // Click button with partial text match
+     * await this.action.clickButtonByText('Save', false);
+     * ```
+     */
     clickButtonByText(text: string, exact?: boolean, options?: ClickOptions): Promise<void>;
     /** Click a link by accessible name */
     clickLinkByText(text: string, exact?: boolean, options?: ClickOptions): Promise<void>;
@@ -82,7 +124,7 @@ export declare class ActionHelper {
     /** Fill first found label among a list */
     fillInputByAnyLabel(labels: string[], value: string, options?: ActionOptions): Promise<Locator>;
     /** Fill by label and assert the value is what we expect (normalized) */
-    fillInputByLabelAndAssert(label: string, value: string): Promise<void>;
+    fillInputByLabelAndAssert(label: string, value: string | number): Promise<void>;
     /**
      * Fill formatted number inputs and verify formatting/parsing
      * - Useful for currency/number masked controls

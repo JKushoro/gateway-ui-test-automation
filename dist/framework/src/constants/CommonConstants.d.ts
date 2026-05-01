@@ -2,15 +2,7 @@
  * Common UI element selectors and test IDs
  * Following the Single Responsibility Principle - each constant has one clear purpose
  */
-export declare const UI_SELECTORS: {
-    readonly FORM_HEADING: "definition-form-active-page-title";
-    readonly SAVE_CONTINUE: "Save & Continue";
-    readonly DEFAULTS: {
-        readonly TIMEOUT: 15000;
-        readonly WAIT_TIMEOUT: 5000;
-        readonly GROSS_INCOME: "50000";
-    };
-};
+export declare const UI_SELECTORS: {};
 /**
  * Common dropdown options
  * Centralized to ensure consistency across the application

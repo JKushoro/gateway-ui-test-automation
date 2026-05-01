@@ -4,7 +4,7 @@ exports.AddCorporateClientSteps = void 0;
 // projects/gateway-ui/steps/clients/CorporateClientCreationSteps.ts
 const test_1 = require("@playwright/test");
 const BasePage_1 = require("@framework/core/BasePage");
-const ClientCreationPageLocators_1 = require("@pages/clients/ClientCreationPageLocators");
+const ClientCreationPageLocators_1 = require("@pages/gatewayElementLocators/ClientCreationPageLocators");
 const PostcodeLookup_1 = require("@steps/components/PostcodeLookup");
 const AlertService_1 = require("@steps/components/AlertService");
 const FormsLocators_1 = require("@pages/componentsLocator/FormsLocators");
@@ -118,8 +118,9 @@ class AddCorporateClientSteps extends BasePage_1.BasePage {
         };
     }
     persist(prefix, obj) {
-        for (const [k, v] of Object.entries(obj))
+        for (const [k, v] of Object.entries(obj)) {
             DataStore_1.dataStore.setValue(`${prefix}.${k}`, v);
+        }
     }
     async handleDateEstablished(date) {
         if (date) {

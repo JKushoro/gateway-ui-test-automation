@@ -7,12 +7,12 @@ const test_1 = require("@playwright/test");
 const QuestionHelper_1 = require("./QuestionHelper");
 const ActionHelper_1 = require("../helpers/ActionHelper");
 const AssertionHelper_1 = require("../helpers/AssertionHelper");
-const CommonConstants_1 = require("../constants/CommonConstants");
 const WaitHelper_1 = require("@framework/helpers/WaitHelper");
 class KYCHelper {
     constructor(page, logger, config) {
         this.page = page;
         this.logger = logger;
+        this.config = config;
         this.questionHelper = new QuestionHelper_1.QuestionHelper(page, logger);
         this.action = new ActionHelper_1.ActionHelper(page, config);
         this.assert = new AssertionHelper_1.AssertionHelper(page, config);
@@ -26,22 +26,24 @@ class KYCHelper {
             this.logger.info(message);
         }
     }
-    /**
-     * Get the common KYC page heading locator
-     */
-    get heading() {
-        return this.page.getByTestId(CommonConstants_1.UI_SELECTORS.FORM_HEADING);
-    }
+    // /**
+    //  * Get the common KYC page heading locator
+    //  * Includes all headings including Fact Find related ones
+    //  */
+    // public get heading(): Locator {
+    //   return this.page.locator('h1, h2, .form-heading, .page-title');
+    // }
     /**
      * Verify KYC page heading with URL and text validation
      * @param urlFragment - URL fragment to check (e.g., 'page=income')
      * @param expectedHeading - Expected heading text
      * @param timeout - Timeout in milliseconds (uses default from constants)
      */
-    async verifyKYCPageHeading(urlFragment, expectedHeading, timeout = CommonConstants_1.UI_SELECTORS.DEFAULTS.TIMEOUT) {
+    async verifyKYCPageHeading(urlFragment, expectedHeading, timeout) {
+        const effectiveTimeout = timeout || this.config?.timeout || 30000;
         await this.assert.assertPageURLContains(urlFragment);
         // use helper which falls back to text if testid not present
-        await this.assert.assertHeadingVisible(expectedHeading, timeout);
+        await this.assert.assertHeadingVisible(expectedHeading, effectiveTimeout);
     }
     /**
      * Standard KYC page completion flow
@@ -50,7 +52,7 @@ class KYCHelper {
      * @param questionsHandler - Function to handle page-specific questions
      * @param continueButtonText - Text for continue button (uses default from constants)
      */
-    async completeKYCPage(urlFragment, headingText, questionsHandler, continueButtonText = CommonConstants_1.UI_SELECTORS.SAVE_CONTINUE) {
+    async completeKYCPage(urlFragment, headingText, questionsHandler, continueButtonText = 'Save & Continue') {
         await this.page.waitForLoadState('domcontentloaded');
         await this.verifyKYCPageHeading(urlFragment, headingText);
         await questionsHandler();

@@ -8,15 +8,7 @@ exports.MESSAGES = exports.UI_SELECTORS = void 0;
  * Following the Single Responsibility Principle - each constant has one clear purpose
  */
 exports.UI_SELECTORS = {
-    // Form elements
-    FORM_HEADING: 'definition-form-active-page-title',
-    SAVE_CONTINUE: 'Save & Continue',
-    // Default values
-    DEFAULTS: {
-        TIMEOUT: 15000,
-        WAIT_TIMEOUT: 5000,
-        GROSS_INCOME: '50000',
-    },
+// Reserved for future UI selectors if needed
 };
 /**
  * Common dropdown options

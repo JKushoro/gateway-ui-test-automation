@@ -315,7 +315,7 @@ class WaitHelper {
     async waitForFormElementReady(locator, timeout) {
         await this.waitForElement(locator, timeout);
         await (0, test_1.expect)(locator).toBeEnabled({ timeout: timeout || this.config.timeout });
-        await this.waitForTimeout(200); // Small delay for element stabilization
+        // Element is ready when visible and enabled - no additional delay needed
     }
     /**
      * Wait for input field to be ready and clear any existing value
@@ -324,7 +324,7 @@ class WaitHelper {
         await this.waitForFormElementReady(locator, timeout);
         // Additional check for input-specific readiness
         await (0, test_1.expect)(locator).not.toHaveAttribute('readonly', { timeout: 1000 }).catch(() => { });
-        await this.waitForTimeout(100);
+        // Input is ready when visible, enabled, and not readonly
     }
     /**
      * Wait for dropdown to be populated with options
@@ -345,7 +345,7 @@ class WaitHelper {
             const options = element.querySelectorAll('[role="option"], option, .option');
             return options.length >= min;
         }, [locator.toString(), minOptions], timeout || this.config.timeout);
-        await this.waitForTimeout(300); // Additional stabilization time
+        // Dropdown is ready when populated with minimum options
     }
     /**
      * Wait for MUI/React dropdown to be ready
@@ -364,7 +364,7 @@ class WaitHelper {
                 element.getAttribute('aria-busy') === 'true';
             return !hasLoadingClass;
         }, comboboxLocator.toString(), timeout || this.config.timeout);
-        await this.waitForTimeout(200);
+        // MUI dropdown is ready when visible, enabled, and not in loading state
     }
     /**
      * Wait for data generation to complete (simulated delay)
@@ -405,7 +405,8 @@ class WaitHelper {
             if (await checkStability()) {
                 return;
             }
-            await this.waitForTimeout(50);
+            // Small delay between stability checks
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
         throw new Error('Element did not stabilize within timeout');
     }

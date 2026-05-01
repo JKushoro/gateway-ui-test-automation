@@ -13,15 +13,39 @@ const DEFAULT_CONFIG = {
     timeout: 30000,
 };
 /**
- * ActionHelper
- * - One place for all user-like interactions (click/fill/select)
- * - Consistent waiting + slowMo behaviour
- * - Robust "find-by-label/question" utilities used across KYC flows
+ * 🎯 ActionHelper - Simplified UI Interactions for Junior Developers
  *
- * Notes:
- * - Keep "core primitives" (wait/click/fill) private and reused everywhere.
- * - Keep "locator resolution" centralised (firstThatExists/tryMany/findInput...).
- * - Public methods are grouped by concern for easier navigation/maintenance.
+ * This helper provides easy-to-use methods for common UI interactions like clicking,
+ * typing, selecting from dropdowns, and filling forms. All methods include proper
+ * waiting and error handling.
+ *
+ * Key Features:
+ * - Clear, descriptive method names
+ * - Automatic waiting for elements to be ready
+ * - Robust error handling with helpful messages
+ * - Consistent behavior across all interactions
+ * - Built-in slowMo support for debugging
+ *
+ * Common Usage Patterns:
+ * ```typescript
+ * // Click buttons and links
+ * await this.action.clickButtonByText('Save & Continue');
+ * await this.action.clickLocator(submitButton);
+ *
+ * // Fill input fields
+ * await this.action.fillInputByLabel('Email', 'test@example.com');
+ * await this.action.fillInput(emailInput, 'test@example.com');
+ *
+ * // Select from dropdowns
+ * await this.action.chooseFromLabeledReactSelectDropdown('Country', 'United Kingdom');
+ * await this.action.setRadioByQuestion('Are you employed?', 'Yes');
+ * ```
+ *
+ * Architecture Notes:
+ * - Core primitives (wait/click/fill) are private and reused everywhere
+ * - Locator resolution is centralized for consistency
+ * - Public methods are grouped by functionality for easy navigation
+ * - All methods follow the same pattern: find → wait → interact → verify
  */
 class ActionHelper {
     constructor(page, config = {}) {
@@ -120,12 +144,38 @@ class ActionHelper {
     async clickLocator(locator, options = {}) {
         await this.clickEl(locator, options);
     }
-    /** Click a button by accessible name */
+    /**
+     * 🎯 Click a button by its visible text
+     *
+     * This method finds a button by its accessible name (visible text) and clicks it.
+     * It automatically waits for the button to be visible and enabled before clicking.
+     *
+     * @param text - The text on the button to click
+     * @param exact - Whether to match the text exactly (default: true)
+     * @param options - Click options (timeout, force, etc.)
+     *
+     * @example
+     * ```typescript
+     * // Click button with exact text match (recommended)
+     * await this.action.clickButtonByText('Save & Continue');
+     *
+     * // Click button with partial text match
+     * await this.action.clickButtonByText('Save', false);
+     * ```
+     */
     async clickButtonByText(text, exact = true, options = {}) {
-        const btn = this.page
-            .getByRole('button', { name: exact ? this.exactRx(text) : this.containsRx(text) })
-            .first();
-        await this.clickEl(btn, options);
+        try {
+            const btn = this.page
+                .getByRole('button', { name: exact ? this.exactRx(text) : this.containsRx(text) })
+                .first();
+            await this.clickEl(btn, options);
+            this.logger.info(`✓ Successfully clicked button: "${text}"`);
+        }
+        catch (error) {
+            const errorMsg = `Failed to click button "${text}". Make sure the button exists and is clickable. ${error instanceof Error ? error.message : String(error)}`;
+            this.logger.error(errorMsg);
+            throw new Error(errorMsg);
+        }
     }
     /** Click a link by accessible name */
     async clickLinkByText(text, exact = true, options = {}) {
@@ -255,7 +305,7 @@ class ActionHelper {
     }
     /** Fill by label and assert the value is what we expect (normalized) */
     async fillInputByLabelAndAssert(label, value) {
-        const expected = TextHelper_1.TextHelper.cleanText(value);
+        const expected = TextHelper_1.TextHelper.cleanText(String(value));
         await this.fillInputByLabel(label, expected);
         const actual = TextHelper_1.TextHelper.cleanText(await this.getInputValueByLabel(label));
         (0, test_1.expect)(actual, `Input "${label}" value mismatch`).toBe(expected);
@@ -265,15 +315,47 @@ class ActionHelper {
      * - Useful for currency/number masked controls
      */
     async fillFormattedNumberInput(input, value, label = 'Formatted number input') {
-        const expected = typeof value === 'number' ? value : this.assertionHelper.parseFormattedNumber(String(value));
-        if (!Number.isFinite(expected))
+        const expected = typeof value === 'number'
+            ? value
+            : this.assertionHelper.parseFormattedNumber(String(value));
+        if (!Number.isFinite(expected)) {
             throw new Error(`${label}: invalid numeric value "${value}"`);
-        await (0, test_1.expect)(input).toBeVisible();
+        }
+        await (0, test_1.expect)(input, `${label} should be visible`).toBeVisible();
         await input.scrollIntoViewIfNeeded();
-        await input.fill(String(expected));
-        await input.evaluate(el => el.blur());
-        await this.assertionHelper.assertFormattedNumberEquals(input, expected);
-        this.logger.info?.(`✓ ${label}: ${expected}`);
+        const maxAttempts = 3;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            await input.focus();
+            // Clear existing value properly
+            await input.clear();
+            if (attempt === 1) {
+                // Best default approach
+                await input.fill(String(expected));
+            }
+            else if (attempt === 2) {
+                // For masked inputs that require real key events
+                await input.pressSequentially(String(expected), { delay: 50 });
+            }
+            else {
+                // Final fallback: select all, delete, then type sequentially
+                await input.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+                await input.press('Delete');
+                await input.pressSequentially(String(expected), { delay: 50 });
+            }
+            // Trigger blur/change/formatting
+            await input.blur();
+            await this.page.waitForTimeout(300);
+            const currentValue = await input.inputValue();
+            if (currentValue.trim() !== '') {
+                this.logger?.info?.(`✓ ${label}: ${expected} (attempt ${attempt})`);
+                await this.assertionHelper.assertFormattedNumberEquals(input, expected);
+                return;
+            }
+            this.logger?.warn?.(`${label}: attempt ${attempt} left field empty, retrying...`);
+        }
+        const finalValue = await input.inputValue();
+        this.logger?.error?.(`${label}: failed to set value "${expected}". Final value: "${finalValue}"`);
+        throw new Error(`${label}: Unable to set value "${expected}" - field remains empty after ${maxAttempts} attempts`);
     }
     // ===========================================================================
     // Visibility & state
@@ -620,7 +702,10 @@ class ActionHelper {
                 await label.click({ force: true });
                 if (await input.isChecked())
                     break;
-                await this.waitHelper.waitForTimeout(80);
+                // Wait for checkbox state to update
+                await (0, test_1.expect)(input)
+                    .toBeChecked({ timeout: 1000 })
+                    .catch(() => { });
             }
             await (0, test_1.expect)(input).toBeChecked({ timeout: 10000 });
             return ((await label.textContent()) ?? '').trim();
@@ -968,7 +1053,6 @@ class ActionHelper {
     async waitForMUIMenu(menuSelector, itemSelector, timeout = 5000) {
         await this.waitHelper.waitForElement(this.page.locator(menuSelector), timeout);
         await this.waitHelper.waitForElement(this.page.locator(itemSelector).first(), 3000);
-        await this.waitHelper.waitForTimeout(300);
     }
     /** Pick a random item from MUI menu list */
     async selectRandomMUIMenuItem(items, menu) {
@@ -1086,12 +1170,31 @@ class ActionHelper {
                 : []),
             () => this.page.getByLabel(labelText, { exact: true }),
             () => this.page.getByLabel(labelText, { exact: false }),
+            // Modern CSS selector approach - more reliable
             () => this.page
                 .locator(`label:has-text("${labelText}")`)
-                .locator('xpath=../../following-sibling::div//input[not(@type="checkbox") and not(@type="radio")] | ' +
-                'xpath=../../following-sibling::div//textarea | ' +
-                'xpath=../following-sibling::div//input[not(@type="checkbox") and not(@type="radio")] | ' +
-                'xpath=../following-sibling::div//textarea')
+                .locator('.. >> input:not([type="checkbox"]):not([type="radio"])')
+                .first(),
+            () => this.page
+                .locator(`label:has-text("${labelText}")`)
+                .locator('.. >> textarea')
+                .first(),
+            // Direct adjacent selectors
+            () => this.page
+                .locator(`label:has-text("${labelText}") + input:not([type="checkbox"]):not([type="radio"])`)
+                .first(),
+            () => this.page
+                .locator(`label:has-text("${labelText}") ~ input:not([type="checkbox"]):not([type="radio"])`)
+                .first(),
+            // Container-based approach for complex layouts
+            () => this.page
+                .locator(`label:has-text("${labelText}")`)
+                .locator('.. >> div input:not([type="checkbox"]):not([type="radio"])')
+                .first(),
+            // Broader search within form containers
+            () => this.page
+                .locator(`label:has-text("${labelText}")`)
+                .locator('.. >> [class*="form"] input:not([type="checkbox"]):not([type="radio"])')
                 .first(),
             () => this.page
                 .locator(`div:has(> .mb-2 > label:has-text("${labelText}"))`)
@@ -1199,16 +1302,13 @@ class ActionHelper {
      */
     async selectDropdownOptionRobust(selector, optionText, fallbackIndex) {
         await this.page.click(selector);
-        await this.waitHelper.waitForTimeout(300);
         await this.page.waitForSelector(`${selector}:not([disabled])`, { timeout: 5000 });
         const ok = await this.selectDropdownOptionByJS(selector, optionText, fallbackIndex);
         if (!ok)
             throw new Error(`Failed to select option: ${optionText}`);
-        await this.waitHelper.waitForTimeout(500);
         const current = await this.getSelectedDropdownText(selector);
         if (current && current !== 'Select Address' && current !== optionText)
             return current;
-        await this.waitHelper.waitForTimeout(300);
         return optionText;
     }
     // ===========================================================================

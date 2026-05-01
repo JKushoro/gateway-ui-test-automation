@@ -71,9 +71,15 @@ declare class DataStore {
     size(): number;
 }
 /**
- * Singleton instance of the data store
- * Use this instance throughout your tests
+ * Get or create a data store for the current test worker
+ * This ensures test isolation when running in parallel
  */
+declare function getDataStore(): DataStore;
+/**
+ * Clear the data store for the current worker
+ * Useful for test cleanup
+ */
+declare function clearWorkerDataStore(): void;
 declare const dataStore: DataStore;
-export { dataStore, DataStore };
+export { dataStore, DataStore, getDataStore, clearWorkerDataStore };
 //# sourceMappingURL=DataStore.d.ts.map

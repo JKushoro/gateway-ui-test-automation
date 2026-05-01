@@ -1,19 +1,32 @@
-export { Page, Locator, expect } from '@playwright/test';
+/**
+ * 🎯 Framework Common Imports
+ *
+ * Single source of truth for framework-level imports.
+ * This file provides commonly used framework exports in one place.
+ *
+ * @fileoverview Framework common imports utility
+ * @author Framework Team
+ * @since 1.0.0
+ */
+export { Page, Locator, expect, test } from '@playwright/test';
 export { BasePage } from '../core/BasePage';
-export { FrameworkConfig } from '../types';
-export { dataStore } from './DataStore';
-export { TestDataGenerator } from './TestDataGenerator';
-export { createLogger, ILogger } from './Logger';
-export { KYCHelper } from './KYCHelper';
-export { QuestionHelper } from './QuestionHelper';
-export { FormDataHelper } from './FormDataHelper';
+export { AuthenticationService } from '../services/AuthenticationService';
 export { ActionHelper } from '../helpers/ActionHelper';
 export { AssertionHelper } from '../helpers/AssertionHelper';
-export { LocatorHelper } from '../helpers/LocatorHelper';
-export { TableHelper } from '../helpers/TableHelper';
-export { TextHelper } from '../helpers/TextHelper';
 export { WaitHelper } from '../helpers/WaitHelper';
-export { UI_SELECTORS, MESSAGES } from '../constants/CommonConstants';
+export { LocatorHelper } from '../helpers/LocatorHelper';
+export { TextHelper } from '../helpers/TextHelper';
+export { TableHelper } from '../helpers/TableHelper';
+export { dataStore, DataStore } from './DataStore';
+export { TestDataGenerator } from './TestDataGenerator';
+export { FormDataHelper } from './FormDataHelper';
+export { KYCHelper } from './KYCHelper';
+export { QuestionHelper } from './QuestionHelper';
+export { createLogger, logger } from './Logger';
+export type { ILogger } from './Logger';
+export type { FrameworkConfig, ActionOptions, ClickOptions, WaitOptions, SelectOptions } from '../types';
 export type { Environment } from '../types/Environment';
 export type { Address, Dependent, ThirdParty } from '../types/KYCTypes';
+export type { AuthConfig, AuthenticationOptions, AuthenticationResult, OtpConfig } from '../types/AuthTypes';
+export * from '../constants/CommonConstants';
 //# sourceMappingURL=CommonImports.d.ts.map

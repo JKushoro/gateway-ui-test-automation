@@ -66,13 +66,9 @@ class PostcodeLookupService extends BasePage_1.BasePage {
         const postcodeToUse = postcode ?? TestDataGenerator_1.TestDataGenerator.postcode();
         // Fill the search address field using the provided label
         await this.action.fillInputByLabel(labelText, postcodeToUse);
-        // Wait a moment for the autocomplete to trigger
-        await this.wait.waitForTimeout(1000);
         // Wait for the Material-UI dropdown menu to appear
         await this.wait.waitForElement(this.pc.muiAddressMenu, 10000);
         await this.wait.waitForElement(this.pc.muiAddressMenuItems.first(), 5000);
-        // Additional wait to ensure menu items are fully loaded
-        await this.wait.waitForTimeout(500);
         // Verify menu items are actually visible and clickable
         const itemCount = await this.pc.muiAddressMenuItems.count();
         if (itemCount === 0) {
@@ -118,7 +114,6 @@ class PostcodeLookupService extends BasePage_1.BasePage {
     async openModal() {
         await this.action.clickLocator(this.pc.postcodeLookupButton);
         await this.wait.waitForElement(this.pc.modalContent, 5000);
-        await this.wait.waitForTimeout(200);
     }
     async searchForAddresses(postcode) {
         await this.wait.waitForElement(this.pc.postcodeInput);
@@ -129,7 +124,6 @@ class PostcodeLookupService extends BasePage_1.BasePage {
     async waitForAddressResults() {
         await this.wait.waitForElement(this.pc.chooseAddressSection, 10000);
         await this.action.waitForDropdownPopulation(PostcodeLookupService.DROPDOWN_SELECTOR, PostcodeLookupService.EXCLUDE_TEXT, 10000);
-        await this.wait.waitForTimeout(1000);
         await this.wait.waitForElement(this.pc.addressDropdown);
     }
     validateAddressOptions(validOptions) {

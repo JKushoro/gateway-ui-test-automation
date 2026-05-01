@@ -1,12 +1,11 @@
 export { BasePage } from './core/BasePage';
-export { AlertService } from '../../projects/gateway-ui/steps/components/AlertService';
+export { AuthenticationService } from './services/AuthenticationService';
 export { ActionHelper } from './helpers/ActionHelper';
 export { AssertionHelper } from './helpers/AssertionHelper';
 export { LocatorHelper } from './helpers/LocatorHelper';
 export { TextHelper } from './helpers/TextHelper';
 export { TableHelper } from './helpers/TableHelper';
 export { WaitHelper } from './helpers/WaitHelper';
-export { EnvManager } from './config/EnvManager';
 export { dataStore, DataStore } from './utils/DataStore';
 export { TestDataGenerator } from './utils/TestDataGenerator';
 export { FormDataHelper } from './utils/FormDataHelper';
@@ -18,6 +17,8 @@ export type * from './types';
 export type { Environment } from './types/Environment';
 export type { FrameworkConfig, ActionOptions, ClickOptions, WaitOptions, SelectOptions } from './types';
 export type { Address, Dependent, ThirdParty } from './types/KYCTypes';
+export type { AuthConfig, AuthenticationOptions, AuthenticationResult, OtpConfig } from './types/AuthTypes';
 export * from './constants/CommonConstants';
+export * from './utils/CommonImports';
 export type { Page, Locator, Response, expect as ExpectType } from '@playwright/test';
 //# sourceMappingURL=index.d.ts.map

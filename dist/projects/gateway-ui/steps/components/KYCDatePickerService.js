@@ -94,7 +94,7 @@ class KYCDatePickerService extends BasePage_1.BasePage {
             await this.action.selectDropdownOptionByJS(KYCDatePickerLocators_1.KYCDatePickerLocators.YEAR_DROPDOWN, year.toString());
         }
         const selected = await this.action.getSelectedDropdownText(KYCDatePickerLocators_1.KYCDatePickerLocators.YEAR_DROPDOWN);
-        (0, test_1.expect)(selected?.includes(year.toString())).toBeTruthy();
+        (0, test_1.expect)(selected, `Year dropdown should contain selected year ${year}`).toContain(year.toString());
     }
     async selectMonth(month0) {
         const sel = this.page.locator(KYCDatePickerLocators_1.KYCDatePickerLocators.MONTH_DROPDOWN);
@@ -192,7 +192,8 @@ class KYCDatePickerService extends BasePage_1.BasePage {
             else {
                 await clickPrev();
             }
-            await this.page.waitForTimeout(50);
+            // Wait for year header to be updated after navigation instead of dropdown
+            await this.wait.waitForElement(yearHeader);
         }
         const finalText = (await yearHeader.textContent())?.trim() ?? '';
         const finalYear = Number(finalText.replace(/[^\d]/g, ''));

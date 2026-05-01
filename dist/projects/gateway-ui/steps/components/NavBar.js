@@ -20,7 +20,7 @@ class NavBarService extends BasePage_1.BasePage {
         const navItem = this.component.getNavItemByText(itemText);
         await this.action.clickLocator(navItem);
         // Wait for page navigation to complete
-        await this.wait.waitForTimeout(1000);
+        await this.page.waitForLoadState('networkidle');
     }
 }
 exports.NavBarService = NavBarService;
