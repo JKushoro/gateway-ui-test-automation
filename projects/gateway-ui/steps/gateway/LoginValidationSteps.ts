@@ -7,7 +7,7 @@ import {
   AuthenticationService,
   getEnvironmentManager,
 } from '../../shared/SharedImports';
-import { LoginPage } from '@pages/gatewayElementLocators/LoginPageLocators';
+import { LoginPage } from '@pages/auth/LoginPageLocators';
 import { LoginSteps } from './LoginSteps';
 import { expect } from '@playwright/test';
 

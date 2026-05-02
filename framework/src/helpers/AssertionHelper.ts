@@ -2,6 +2,11 @@
 import { Locator, Page, expect } from '@playwright/test';
 import { FrameworkConfig } from '../types';
 
+// Helper function to get field input by test ID
+export function getFieldInputByTestId(page: Page, testId: string) {
+  return page.getByTestId(testId);
+}
+
 /**
  * 🎯 AssertionHelper - Simplified Playwright Assertions for Junior Developers
  * 
@@ -256,6 +261,27 @@ export class AssertionHelper {
   }
 
   /**
+   * 🚫 Assert that a heading with specific text is NOT visible
+   *
+   * This method locates the heading using the test ID and filters by the provided text,
+   * then verifies that the element is either hidden or not present in the DOM.
+   *
+   * @param headingText - The text of the heading
+   * @param timeout - Optional timeout (uses default if not provided)
+   */
+  public async assertHeadingNotVisible(headingText: string, timeout?: number): Promise<void> {
+    const t = timeout ?? this.config.timeout;
+
+    const locator = this.page
+      .getByTestId('definition-form-active-page-title')
+      .filter({ hasText: headingText });
+
+    await expect(locator, `Heading "${headingText}" should NOT be visible`).toBeHidden({
+      timeout: t,
+    });
+  }
+
+  /**
    * 🎯 Assert element is clickable (visible and enabled)
    *
    * @param locator - The element locator
@@ -345,18 +371,26 @@ export class AssertionHelper {
    * @param expectedValue - The expected numeric value
    * @param timeout - Optional timeout (uses default if not provided)
    */
-  public async assertFormattedNumberEquals(locator: Locator, expectedValue: number, timeout?: number): Promise<void> {
+  public async assertFormattedNumberEquals(
+    locator: Locator,
+    expectedValue: number,
+    timeout?: number
+  ): Promise<void> {
     const t = timeout || this.config.timeout;
     await expect(locator).toBeVisible({ timeout: t });
 
     // Get the value from the element - prefer inputValue for form elements
     const tagName = await locator.evaluate(el => el.tagName.toLowerCase());
-    const rawValue = (tagName === 'input' || tagName === 'textarea')
-      ? await locator.inputValue({ timeout: t })
-      : (await locator.textContent({ timeout: t }) ?? '');
+    const rawValue =
+      tagName === 'input' || tagName === 'textarea'
+        ? await locator.inputValue({ timeout: t })
+        : ((await locator.textContent({ timeout: t })) ?? '');
 
     const actualValue = this.parseFormattedNumber(rawValue);
-    expect(actualValue, `Formatted number should equal ${expectedValue}, but got "${rawValue}" (parsed as ${actualValue})`).toBe(expectedValue);
+    expect(
+      actualValue,
+      `Formatted number should equal ${expectedValue}, but got "${rawValue}" (parsed as ${actualValue})`
+    ).toBe(expectedValue);
   }
 
   // ========================================
@@ -461,5 +495,93 @@ export class AssertionHelper {
    */
   public async assertResponseStatus(response: any, expectedStatus: number): Promise<void> {
     expect(response.status(), `Response should have status ${expectedStatus}`).toBe(expectedStatus);
+  }
+
+  // ─── Assertion helpers for prepopulation verification ───
+
+  public async assertInputValue(page: Page, fieldName: string, expected: string) {
+    const input = getFieldInputByTestId(page, `input-${fieldName}`);
+    await input.waitFor({ state: 'visible' });
+    await expect(input).toHaveValue(expected);
+  }
+
+  public async assertMoneyValue(page: Page, fieldName: string, expected: string) {
+    const input = getFieldInputByTestId(page, `input-money-${fieldName}`);
+    await input.waitFor({ state: 'visible' });
+    await expect(input).toHaveValue(`£${Number(expected).toLocaleString('en-GB')}`);
+  }
+
+  public async assertNumberValue(page: Page, fieldName: string, expected: string) {
+    const input = getFieldInputByTestId(page, `number-input-${fieldName}`);
+    await input.waitFor({ state: 'visible' });
+    await expect(input).toHaveValue(expected);
+  }
+
+  public async assertDropdownValue(page: Page, fieldName: string, expected: string) {
+    const container = getFieldInputByTestId(page, `select-${fieldName}`);
+    await container.waitFor({ state: 'visible' });
+    const selectedValue = container.locator('.react-select__single-value').first();
+    await expect(selectedValue).toHaveText(expected);
+  }
+
+  public async assertDateValue(page: Page, fieldName: string, expected: string) {
+    const container = getFieldInputByTestId(page, `date-picker-${fieldName}`);
+    const input = container.locator('input').first();
+    await input.waitFor({ state: 'visible' });
+    await expect(input).toHaveValue(expected);
+  }
+
+  public async assertRadioChecked(page: Page, fieldName: string, expectedLabel: string) {
+    const checkedLabel = page
+      .locator('label', {
+        has: page.locator(`input[name="${fieldName}"]:checked`),
+      })
+      .first();
+    await checkedLabel.waitFor({ state: 'visible' });
+    await expect(checkedLabel).toContainText(expectedLabel);
+  }
+
+  // ─── Order-tolerant assertion helpers (DB may return items in any order) ───
+
+  public async assertDropdownValueOneOf(page: Page, fieldName: string, acceptableValues: string[]) {
+    const container = getFieldInputByTestId(page, `select-${fieldName}`);
+    await container.waitFor({ state: 'visible' });
+    const selectedValue = container.locator('.react-select__single-value').first();
+    const text = (await selectedValue.textContent())?.trim() ?? '';
+    expect(
+      acceptableValues,
+      `Dropdown ${fieldName}: "${text}" not in [${acceptableValues}]`
+    ).toContainEqual(text);
+  }
+
+  public async assertMoneyValueOneOf(page: Page, fieldName: string, acceptableValues: string[]) {
+    const input = getFieldInputByTestId(page, `input-money-${fieldName}`);
+    await input.waitFor({ state: 'visible' });
+    const formatted = acceptableValues.map(v => `£${Number(v).toLocaleString('en-GB')}`);
+    const actual = await input.inputValue();
+    expect(formatted, `Money ${fieldName}: "${actual}" not in [${formatted}]`).toContainEqual(
+      actual
+    );
+  }
+
+  public async assertInputValueOneOf(page: Page, fieldName: string, acceptableValues: string[]) {
+    const input = getFieldInputByTestId(page, `input-${fieldName}`);
+    await input.waitFor({ state: 'visible' });
+    const actual = await input.inputValue();
+    expect(
+      acceptableValues,
+      `Input ${fieldName}: "${actual}" not in [${acceptableValues}]`
+    ).toContainEqual(actual);
+  }
+
+  public async assertDateValueOneOf(page: Page, fieldName: string, acceptableValues: string[]) {
+    const container = getFieldInputByTestId(page, `date-picker-${fieldName}`);
+    const input = container.locator('input').first();
+    await input.waitFor({ state: 'visible' });
+    const actual = await input.inputValue();
+    expect(
+      acceptableValues,
+      `Date ${fieldName}: "${actual}" not in [${acceptableValues}]`
+    ).toContainEqual(actual);
   }
 }

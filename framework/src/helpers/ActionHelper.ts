@@ -537,6 +537,17 @@ export class ActionHelper {
     await this.slowMo();
   }
 
+
+
+  public async selectCustomRadioOptionByLabel(label: string): Promise<void> {
+    const option = this.page.getByRole('button', {
+      name: new RegExp(`^${label}$`, 'i'),
+    });
+
+    await option.waitFor({ state: 'visible' });
+    await option.click();
+  }
+
   /**
    * Set radio answer for a question text (KYC style)
    * - Finds the radiogroup following the question text

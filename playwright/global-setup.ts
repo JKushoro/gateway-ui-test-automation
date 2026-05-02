@@ -51,11 +51,24 @@ export default async function globalSetup(_config: FullConfig) {
   try {
     const authService = new AuthenticationService(page);
     
-    // Authenticate with OTP support
-    await authService.authenticateUser({
-      environment: envName,
-      skipOtp: false // Enable OTP if configured
-    });
+    // Check if already authenticated by navigating to dashboard
+    await page.goto(`${process.env.BASE_URL || 'https://qa-fairstonegateway.fairstone.co.uk'}/dashboard`);
+    
+    // Wait a bit to see if we're redirected to login
+    await page.waitForTimeout(3000);
+    
+    const currentUrl = page.url();
+    
+    if (currentUrl.includes('/dashboard')) {
+      console.log('Already authenticated, saving current state');
+    } else {
+      console.log('Not authenticated, performing login');
+      // Authenticate with OTP support
+      await authService.authenticateUser({
+        environment: envName,
+        skipOtp: false // Enable OTP if configured
+      });
+    }
 
     // Save authentication state
     await context.storageState({ path: authFile });

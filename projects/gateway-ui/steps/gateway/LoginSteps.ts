@@ -9,7 +9,7 @@ import {
   AuthenticationOptions,
   getEnvironmentManager
 } from '../../shared/SharedImports';
-import { LoginPage } from '@pages/gatewayElementLocators/LoginPageLocators';
+import { LoginPage } from '@pages/auth/LoginPageLocators';
 import { DashboardSteps } from '@steps/gateway/DashboardSteps';
 
 type Credentials = { username: string; password: string };

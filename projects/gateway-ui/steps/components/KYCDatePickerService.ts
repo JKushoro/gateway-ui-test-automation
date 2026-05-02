@@ -303,7 +303,11 @@ export class KYCDatePickerService extends BasePage {
       'November',
       'December',
     ];
-    return names[month - 1];
+    const monthName = names[month - 1];
+    if (monthName === undefined) {
+      throw new Error(`Invalid month number: ${month}. Expected 1-12.`);
+    }
+    return monthName;
   }
 
   // =====================================================

@@ -48,7 +48,7 @@ export type {
 // ==========================================
 // PROJECT-SPECIFIC BASE CLASSES
 // ==========================================
-export { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
+export { BaseKYCSteps } from '@steps/kyc/BaseKYCSteps';
 
 // ==========================================
 // PROJECT-SPECIFIC SERVICES
@@ -110,7 +110,7 @@ export async function createTestSetup(browser: Browser, environment: Environment
 // ==========================================
 // COMMONLY USED PAGE LOCATORS
 // ==========================================
-export { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
+export { LoginPage } from '@pages/auth/LoginPageLocators';
 export { KYCDatePickerLocators } from '@pages/componentsLocator/KYCDatePickerLocators';
 
 // ==========================================
