@@ -52,7 +52,7 @@ export class AuthenticationService extends BasePage {
 
     await expect(this.microsoftLoginPage.loginButton).toBeVisible({ timeout: 10000 });
     await this.action.clickLocator(this.microsoftLoginPage.loginButton);
-    await this.page.waitForURL(/login\.microsoftonline\.com/);
+    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 120000 });
     await this.wait.waitForDOMContentLoaded();
   }
 
