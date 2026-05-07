@@ -3,17 +3,11 @@ import { clearWorkerDataStore } from 'framework/src/utils/DataStore';
 import BaseTest from 'projects/gateway-ui/tests/shared/TestUtils';
 import { GatewayManagementSteps } from 'projects/gateway-ui/steps/gateway/GatewayManagementSteps';
 import { cleanupClient1FactFinds } from 'framework/src/utils/TestCleanupHelper';
-import { KycPurposePageSteps } from 'projects/gateway-ui/steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycPurposePageSteps';
-import {
-  KycContributionsAndProtectionSteps
-} from 'projects/gateway-ui/steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycContributionsAndProtectionSteps';
-import {
-  KycFuturePlanningPageSteps
-} from 'projects/gateway-ui/steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycFuturePlanningPageSteps';
-import {
-  KycKycLifeEventsAndBenefitsPageSteps
-} from 'projects/gateway-ui/steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycLifeEventsAndBenefitsPageSteps';
-import { KycAnnuityPageSteps } from 'projects/gateway-ui/steps/kyc_forms/kyc_single_retirement_fact_find_forms/KycAnnuityPageSteps';
+import { KycPurposePageSteps } from '@steps/kyc/retirement/KycPurposePageSteps';
+import { KycContributionsAndProtectionSteps } from '@steps/kyc/retirement/KycContributionsAndProtectionSteps';
+import { KycFuturePlanningPageSteps } from '@steps/kyc/retirement/KycFuturePlanningPageSteps';
+import { KycKycLifeEventsAndBenefitsPageSteps } from '@steps/kyc/retirement/KycLifeEventsAndBenefitsPageSteps';
+import { KycAnnuityPageSteps } from '@steps/kyc/retirement/KycAnnuityPageSteps';
 
 /**
  * Retirement Fact Find Creation Tests

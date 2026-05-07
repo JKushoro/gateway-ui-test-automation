@@ -108,7 +108,7 @@ export class SimpleTestManager {
    * - Wraps your test code in a describe block
    * 
    * @param testName - The name for your test (shows in test results)
-   * @param testCode - Your actual test code (the fun part!)
+   * @param testCode - The actual test code (the fun part!)
    */
   setupIsolatedTest(testName: string, testCode: () => void): void {
     test.describe(testName, () => {
