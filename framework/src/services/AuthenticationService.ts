@@ -1,22 +1,22 @@
 // framework/src/services/AuthenticationService.ts
-
 import { Page, expect } from '@playwright/test';
 import { generateOTP } from '../utils/generateOtp';
 import { Environment } from '../types/Environment';
 import { BasePage } from '../core/BasePage';
 import { FrameworkConfig } from '../types';
 import { AuthConfig, AuthenticationOptions } from '../types/AuthTypes';
+import { getEnvironmentManager } from '../utils/EnvironmentManager';
+import { MicrosoftLoginPageLocators } from '../../../projects/gateway-ui/pages/auth/MicrosoftLoginPageLocators';
 
 /**
  * Clean Authentication Service
  * Uses proper page locators, Playwright assertions, and eliminates all duplication
  */
 export class AuthenticationService extends BasePage {
-  private microsoftLoginPage: any;
+  private microsoftLoginPage: MicrosoftLoginPageLocators;
 
   constructor(page: Page, config?: Partial<FrameworkConfig>) {
     super(page, config);
-    const { MicrosoftLoginPageLocators } = require('@gateway/pages/auth/MicrosoftLoginPageLocators');
     this.microsoftLoginPage = new MicrosoftLoginPageLocators(page, config);
   }
 
@@ -24,7 +24,6 @@ export class AuthenticationService extends BasePage {
    * Get authentication configuration using EnvironmentManager
    */
   public getAuthConfig(environment: Environment = 'qa'): AuthConfig {
-    const { getEnvironmentManager } = require('../utils/EnvironmentManager');
     return getEnvironmentManager().getAuthConfig(environment);
   }
 
@@ -34,16 +33,15 @@ export class AuthenticationService extends BasePage {
   public async navigateToApplication(environment: Environment = 'qa'): Promise<void> {
     const authConfig = this.getAuthConfig(environment);
     await this.page.goto(authConfig.baseUrl);
-    await this.wait.waitForLoadingToComplete();
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
    * Start Microsoft login flow
    */
   public async startMicrosoftLogin(): Promise<void> {
-    // Check if already logged in by looking for dashboard elements
-    const hasDashboard = await this.page.locator('text=Dashboard').isVisible().catch(() => false);
-    const hasLogout = await this.page.locator('text=Log out').isVisible().catch(() => false);
+    const hasDashboard = await this.microsoftLoginPage.dashboardIndicator.isVisible().catch(() => false);
+    const hasLogout = await this.microsoftLoginPage.logoutButton.isVisible().catch(() => false);
     
     if (hasDashboard || hasLogout) {
       this.logger.info('User already logged in, skipping login flow');
@@ -51,44 +49,29 @@ export class AuthenticationService extends BasePage {
     }
 
     await expect(this.microsoftLoginPage.loginButton).toBeVisible({ timeout: 10000 });
-    await this.action.clickLocator(this.microsoftLoginPage.loginButton);
-    // Wait for successful login redirect to dashboard instead of Microsoft login URL
-    await this.wait.waitForUrlToMatch('**/dashboard/**');
-    await this.wait.waitForDOMContentLoaded();
+    await this.microsoftLoginPage.loginButton.click();
+    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 15000 });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
    * Submit username for Microsoft login
    */
   public async submitUsername(username: string): Promise<void> {
-    // Check if username field is available - if not, authentication might already be complete
-    const isUsernameVisible = await this.microsoftLoginPage.usernameInput.isVisible().catch(() => false);
-    if (!isUsernameVisible) {
-      console.log('Username field not visible - authentication might be cached/auto-completed');
-      return;
-    }
-    
-    await expect(this.microsoftLoginPage.usernameInput).toBeVisible();
+    await expect(this.microsoftLoginPage.usernameInput).toBeVisible({ timeout: 10000 });
     await this.microsoftLoginPage.usernameInput.fill(username);
-    await this.action.clickLocator(this.microsoftLoginPage.nextButton);
-    await this.wait.waitForDOMContentLoaded();
+    await this.microsoftLoginPage.nextButton.click();
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
    * Submit password for Microsoft login
    */
   public async submitPassword(password: string): Promise<void> {
-    // Check if password field is available - if not, authentication might already be complete
-    const isPasswordVisible = await this.microsoftLoginPage.passwordInput.isVisible().catch(() => false);
-    if (!isPasswordVisible) {
-      console.log('Password field not visible - authentication might be cached/auto-completed');
-      return;
-    }
-    
-    await expect(this.microsoftLoginPage.passwordInput).toBeVisible();
+    await expect(this.microsoftLoginPage.passwordInput).toBeVisible({ timeout: 10000 });
     await this.microsoftLoginPage.passwordInput.fill(password);
-    await this.action.clickLocator(this.microsoftLoginPage.signInButton);
-    await this.wait.waitForDOMContentLoaded();
+    await this.microsoftLoginPage.signInButton.click();
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
@@ -99,8 +82,8 @@ export class AuthenticationService extends BasePage {
       await expect(this.microsoftLoginPage.otpInput).toBeVisible({ timeout: 10000 });
       const otpCode = generateOTP(otpSecret);
       await this.microsoftLoginPage.otpInput.fill(otpCode);
-      await this.action.clickLocator(this.microsoftLoginPage.signInButton);
-      await this.wait.waitForDOMContentLoaded();
+      await this.microsoftLoginPage.signInButton.click();
+      await this.page.waitForLoadState('domcontentloaded');
     } catch {
       // No OTP required - continue
     }
@@ -112,8 +95,8 @@ export class AuthenticationService extends BasePage {
   public async handleStaySignedInPrompt(): Promise<void> {
     try {
       await expect(this.microsoftLoginPage.staySignedInPrompt).toBeVisible({ timeout: 10000 });
-      await this.action.clickLocator(this.microsoftLoginPage.noButton);
-      await this.wait.waitForDOMContentLoaded();
+      await this.microsoftLoginPage.yesButton.click();
+      await this.page.waitForLoadState('domcontentloaded');
     } catch {
       // Prompt not present
     }
@@ -135,9 +118,9 @@ export class AuthenticationService extends BasePage {
     const environment = options.environment || 'qa';
     const authConfig = this.getAuthConfig(environment);
     
-    // Check if already logged in first
-    const hasDashboard = await this.page.locator('text=Dashboard').isVisible().catch(() => false);
-    const hasLogout = await this.page.locator('text=Log out').isVisible().catch(() => false);
+    // Check if already logged in
+    const hasDashboard = await this.microsoftLoginPage.dashboardIndicator.isVisible().catch(() => false);
+    const hasLogout = await this.microsoftLoginPage.logoutButton.isVisible().catch(() => false);
     
     if (hasDashboard || hasLogout) {
       this.logger.info('User already logged in, skipping entire login flow');
@@ -157,6 +140,8 @@ export class AuthenticationService extends BasePage {
     }
 
     await this.handleStaySignedInPrompt();
-    await this.wait.waitForNetworkIdle();
+    
+    await this.page.waitForURL('**/dashboard/**', { timeout: 15000 });
+    await this.page.waitForLoadState('networkidle');
   }
 }

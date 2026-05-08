@@ -1,63 +1,74 @@
-// projects/gateway-ui/pages/gatewayElementLocators/LoginPageLocators.ts
+// projects/gateway-ui/pages/auth/LoginPageLocators.ts
 import { Locator } from '@playwright/test';
 import { BasePage } from '@framework/core/BasePage';
 
-export class LoginPage extends BasePage {
-  // ==========================================
-  // PRIVATE LOCATORS
-  // ==========================================
-
+/**
+ * LoginPageLocators - Provides element locators for login-related pages
+ * 
+ * Single Responsibility: Centralized locator management for login workflows
+ * Covers both application login page and Microsoft OAuth page elements
+ */
+export class LoginPageLocators extends BasePage {
+  
+  /* ==================== APPLICATION LOGIN PAGE ==================== */
+  
   private readonly loginButton = this.page.getByRole('link', { name: 'Login' });
+  private readonly logoutButton = this.page.getByRole('link', { name: 'Log out' });
+
+  /* ==================== MICROSOFT OAUTH PAGE ==================== */
+  
   private readonly usernameInput = this.page.locator('input#i0116');
   private readonly passwordInput = this.page.locator('input#i0118');
   private readonly primaryButton = this.page.locator('input#idSIButton9');
-  private readonly microsoftErrorMessage = this.page.locator('[role="alert"]');
-  private readonly loadingIndicator = this.page.locator('.loading, .spinner');
+  private readonly errorMessage = this.page.locator('[role="alert"]');
+
+  /* ==================== DASHBOARD/SESSION INDICATORS ==================== */
+  
   private readonly dashboardIndicator = this.page.locator('[data-testid="dashboard"]');
   private readonly userMenuIndicator = this.page.locator('[data-testid="user-menu"]');
-  private readonly logoutButton = this.page.getByRole('link', { name: 'Log out' });
+  private readonly loadingIndicator = this.page.locator('.loading, .spinner');
 
-  // ==========================================
-  // PAGE IDENTIFICATION
-  // ==========================================
+  /* ==================== PUBLIC LOCATOR GETTERS ==================== */
 
-  // ==========================================
-  // LOCATOR GETTERS
-  // ==========================================
-
-  public getLoginButtonLocator(): Locator {
+  // Application Login Elements
+  getLoginButtonLocator(): Locator {
     return this.loginButton;
   }
 
-  public getUsernameInputLocator(): Locator {
-    return this.usernameInput;
-  }
-
-  public getLogoutButtonLocator(): Locator {
+  getLogoutButtonLocator(): Locator {
     return this.logoutButton;
   }
 
-  public getPasswordInputLocator(): Locator {
+  // Microsoft OAuth Elements
+  getUsernameInputLocator(): Locator {
+    return this.usernameInput;
+  }
+
+  getPasswordInputLocator(): Locator {
     return this.passwordInput;
   }
 
-  public getPrimaryButtonLocator(): Locator {
+  getPrimaryButtonLocator(): Locator {
     return this.primaryButton;
   }
 
-  public getErrorMessageLocator(): Locator {
-    return this.microsoftErrorMessage;
+  getErrorMessageLocator(): Locator {
+    return this.errorMessage;
   }
 
-  public getLoadingIndicatorLocator(): Locator {
-    return this.loadingIndicator;
-  }
-
-  public getDashboardIndicatorLocator(): Locator {
+  // Session State Elements
+  getDashboardIndicatorLocator(): Locator {
     return this.dashboardIndicator;
   }
 
-  public getUserMenuIndicatorLocator(): Locator {
+  getUserMenuIndicatorLocator(): Locator {
     return this.userMenuIndicator;
   }
+
+  getLoadingIndicatorLocator(): Locator {
+    return this.loadingIndicator;
+  }
 }
+
+// Backward compatibility - can be removed after updating all imports
+export class LoginPage extends LoginPageLocators {}

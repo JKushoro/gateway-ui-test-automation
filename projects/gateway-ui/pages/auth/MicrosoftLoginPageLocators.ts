@@ -25,7 +25,7 @@ export class MicrosoftLoginPageLocators extends BasePage {
 
   // Password input field
   get passwordInput(): Locator {
-    return this.page.locator('input[name="passwd"], #i0118').first();
+    return this.page.locator('input[type="password"], input[name="passwd"], #i0118').first();
   }
 
   // Next/Submit buttons
@@ -49,5 +49,18 @@ export class MicrosoftLoginPageLocators extends BasePage {
 
   get noButton(): Locator {
     return this.page.locator('input[value="No"], button:has-text("No")').first();
+  }
+
+  get yesButton(): Locator {
+    return this.page.locator('input[value="Yes"], button:has-text("Yes")').first();
+  }
+
+  // Dashboard and session indicators
+  get dashboardIndicator(): Locator {
+    return this.page.locator('text=Dashboard');
+  }
+
+  get logoutButton(): Locator {
+    return this.page.locator('text=Log out');
   }
 }
