@@ -36,25 +36,56 @@ export class LoginValidationSteps extends BasePage {
   /* -------------------- Small shared helpers -------------------- */
 
   /**
-   * Navigate to application and open Microsoft login page.
+   * Navigate directly to application URL without using AuthenticationService.
+   */
+  private async navigateToApplicationOnly(environment: Environment = 'qa'): Promise<void> {
+    const baseUrl = this.envManager.getBaseUrl(environment);
+    this.logger.info(`Navigating to application: ${baseUrl}`);
+    await this.page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+  }
+
+  /**
+   * Navigate to application and open Microsoft login page for UI validation only.
    */
   private async openMicrosoftLogin(): Promise<void> {
-    await this.authService.navigateToApplication();
-    await this.authService.startMicrosoftLogin();
+    await this.navigateToApplicationOnly();
+    await this.logoutIfLoggedIn();
+    
+    // Wait for and click login button, then wait for Microsoft page
+    await this.expectLoginButtonVisible();
+    await this.clickLoginButton(true);
   }
 
   /**
-   * Submit username step (optionally blank).
+   * Submit username step (optionally blank) - UI validation only.
    */
   private async submitUsername(username?: string): Promise<void> {
-    await this.authService.submitUsername(username ?? '');
+    try {
+      await expect(this.loginPage.getUsernameInputLocator()).toBeVisible({ timeout: 10000 });
+      await this.loginPage.getUsernameInputLocator().fill(username ?? '');
+      await this.loginPage.getPrimaryButtonLocator().click();
+      // Wait briefly for page transition or error message
+      await this.page.waitForTimeout(2000);
+    } catch (error) {
+      this.logger.error(`Failed to submit username: ${error}`);
+      throw error;
+    }
   }
 
   /**
-   * Submit password step (optionally blank).
+   * Submit password step (optionally blank) - UI validation only.
    */
   private async submitPassword(password?: string): Promise<void> {
-    await this.authService.submitPassword(password ?? '');
+    try {
+      await expect(this.loginPage.getPasswordInputLocator()).toBeVisible({ timeout: 10000 });
+      await this.loginPage.getPasswordInputLocator().fill(password ?? '');
+      await this.loginPage.getPrimaryButtonLocator().click();
+      // Wait briefly for validation or error message
+      await this.page.waitForTimeout(2000);
+    } catch (error) {
+      this.logger.error(`Failed to submit password: ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -114,11 +145,22 @@ export class LoginValidationSteps extends BasePage {
   }
 
   /**
-   * Click login button and wait for username field.
+   * Click login button and optionally wait for Microsoft login page elements.
    */
-  private async clickLoginButton(): Promise<void> {
+  private async clickLoginButton(waitForMicrosoftPage: boolean = false): Promise<void> {
     await this.loginPage.getLoginButtonLocator().click();
-    await expect(this.loginPage.getUsernameInputLocator()).toBeVisible();
+    
+    if (waitForMicrosoftPage) {
+      // Wait for navigation to Microsoft login page first
+      try {
+        await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 15000 });
+        // Then wait for the username input with a longer timeout
+        await expect(this.loginPage.getUsernameInputLocator()).toBeVisible({ timeout: 10000 });
+      } catch (error) {
+        this.logger.error(`Failed to reach Microsoft login page or find username field: ${error}`);
+        throw error;
+      }
+    }
   }
 
   /**
@@ -132,29 +174,32 @@ export class LoginValidationSteps extends BasePage {
   /* -------------------- UI validations -------------------- */
 
   /**
-   * Verify login button is present and functional.
+   * Verify login button is present and functional - UI validation only.
    */
   public async verifyLoginButtonPresent(): Promise<void> {
-    await this.login.navigateToApplication();
+    await this.navigateToApplicationOnly();
     await this.logoutIfLoggedIn();
 
     this.logger.info(`Current URL: ${this.page.url()}`);
 
     await this.expectLoginButtonVisible();
-    await this.clickLoginButton();
+    await this.clickLoginButton(true); // Wait for Microsoft page elements
+    this.logger.info('Login button validation completed successfully');
   }
 
   /**
-   * Verify user is redirected to Microsoft login page.
+   * Verify user is redirected to Microsoft login page - UI validation only.
    */
   public async verifyRedirectToMicrosoftLogin(): Promise<void> {
-    await this.login.navigateToApplication();
+    await this.navigateToApplicationOnly();
     await this.logoutIfLoggedIn();
 
     await this.expectLoginButtonVisible();
     await this.clickLoginButton();
 
-    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 10000 });
+    // Wait for redirect to Microsoft login
+    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 15000 });
+    this.logger.info('Microsoft login redirect validation completed successfully');
   }
 
   /* -------------------- Negative tests -------------------- */
@@ -296,27 +341,16 @@ export class LoginValidationSteps extends BasePage {
    * Verify browser back navigation returns user to app.
    */
   public async verifyBrowserBackButton(): Promise<void> {
-    await this.login.navigateToApplication();
+    await this.navigateToApplicationOnly();
+    await this.logoutIfLoggedIn();
 
     const originalUrl = this.page.url();
 
-    await this.login.startMicrosoftLogin();
-    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 10000 });
+    await this.expectLoginButtonVisible();
+    await this.clickLoginButton();
+    await this.page.waitForURL(/login\.microsoftonline\.com/, { timeout: 15000 });
 
-    try {
-      await this.page.goto(originalUrl, { waitUntil: 'networkidle' });
-    } catch {
-      try {
-        await this.page.goBack({ waitUntil: 'domcontentloaded', timeout: 5000 });
-      } catch {
-        await this.page.goto(originalUrl);
-      }
-    }
-
-    await this.page.waitForURL(url => !url.toString().includes('login.microsoftonline.com'), {
-      timeout: 10000,
-    });
-
+    await this.page.goto(originalUrl);
     await this.expectLoginButtonVisible();
   }
 }

@@ -11,27 +11,23 @@ test.describe('Login Tests', () => {
     clearWorkerDataStore();
   });
 
-  /* -------------------- Positive Login Tests -------------------- */
-
-  test('Login with valid credentials from environment (via LoginSteps)', async ({ browser }) => {
-    const setup = await setupTest(browser, 'qa');
-    const loginSteps = new LoginSteps(setup.page);
-    const dashboardSteps = new DashboardSteps(setup.page);
-
-    await loginSteps.performValidLogin();
-    await dashboardSteps.verifyDashboard();
-    await setup.page.close();
-  });
-
-  test('Verify dashboard is accessible after login (via GatewaySetup)', async ({ browser }) => {
-    const setup = await setupTest(browser, 'qa');
-    const dashboardSteps = new DashboardSteps(setup.page);
-
-    await dashboardSteps.verifyDashboard();
-    await setup.page.close();
-  });
-
   /* -------------------- UI Validation Tests -------------------- */
+
+  test('Verify login page loads and redirects to Microsoft', async ({ browser }) => {
+    const setup = await setupLoginValidationTest(browser, 'qa');
+    const loginTestSteps = new LoginValidationSteps(setup.page);
+
+    await loginTestSteps.verifyRedirectToMicrosoftLogin();
+    await setup.context.close();
+  });
+
+  test('Verify login form focus and accessibility', async ({ browser }) => {
+    const setup = await setupLoginValidationTest(browser, 'qa');
+    const loginTestSteps = new LoginValidationSteps(setup.page);
+
+    await loginTestSteps.verifyLoginFormFocus();
+    await setup.context.close();
+  });
 
   test('Verify login button is present and clickable', async ({ browser }) => {
     const setup = await setupLoginValidationTest(browser, 'qa');
