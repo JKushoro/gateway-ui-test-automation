@@ -1,0 +1,134 @@
+# RETAIL CLIENT CREATION TEST CASES
+
+**Gateway UI Test Automation - Retail Client Creation**  
+**Based on:** [`RetailClientCreationSteps.ts`](projects/gateway-ui/steps/gateway/RetailClientCreationSteps.ts)
+
+---
+
+## TEST EXECUTION TABLE
+
+| Test Case ID | Test Scenario                                          | Expected Result                                                                                           | Actual Result |
+| ------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------- |
+| TC_RC_001    | Navigate to Add Client page via side menu             | Page loads with URL `/clientfiles/createclient` and title "Gateway \| Create Client Record(s)"           |               |
+| TC_RC_002    | Create Retail Client with mandatory fields only       | Client is created successfully, success message displayed, and user is redirected to Client Details page |               |
+| TC_RC_003    | Create Retail Client with all optional fields         | Client is created successfully and all optional fields (Known As, NI Number, Email, Phone) are saved    |               |
+| TC_RC_004    | Create Retail Client using predefined client1 data    | Client is created successfully using default client1 forename and surname values                         |               |
+| TC_RC_005    | Verify Adviser Select2 dropdown functionality         | Dropdown opens, displays available advisers, selection updates rendered field, value persists             |               |
+| TC_RC_006    | Verify Title Select2 dropdown functionality           | Dropdown opens, displays title options (Mr, Mrs, Ms, Dr), selection updates rendered field               |               |
+| TC_RC_007    | Verify Source of Enquiry Select2 dropdown             | Dropdown opens, displays enquiry sources, selection updates rendered field, value persists               |               |
+| TC_RC_008    | Enter Forename in required field                       | Text input accepts alphanumeric characters, field value updates and persists                             |               |
+| TC_RC_009    | Enter Surname in required field                        | Text input accepts alphanumeric characters, field value updates and persists                             |               |
+| TC_RC_010    | Select Gender from standard dropdown                   | Gender dropdown displays Male/Female options, selected value persists and saves                          |               |
+| TC_RC_011    | Select Date of Birth using date picker                 | Date picker opens, allows valid date selection, displays in dd/MM/yyyy format, accepts ages 18-80       |               |
+| TC_RC_012    | Select Marital Status from dropdown                    | Marital status options display (Single, Married, Divorced, Widowed), selection saves correctly          |               |
+| TC_RC_013    | Select Active Plan from dropdown                       | Active Plan dropdown displays available plans, selection saves and persists                              |               |
+| TC_RC_014    | Enter Known As optional field                          | Optional field accepts text input, saves with client record, form submits without validation error      |               |
+| TC_RC_015    | Enter NI Number in optional field                      | NI Number field accepts UK format (AB123456C), validates format, saves correctly                        |               |
+| TC_RC_016    | Enter Specific Source optional field                   | Specific Source field accepts text input, saves with client record                                       |               |
+| TC_RC_017    | Enter Email Address in optional field                  | Email field validates format, accepts valid emails, rejects invalid formats with error message          |               |
+| TC_RC_018    | Enter Home Phone in optional field                     | Home Phone field accepts numeric input, validates phone format, saves correctly                          |               |
+| TC_RC_019    | Enter Mobile Phone in optional field                   | Mobile Phone field accepts numeric input, validates phone format, saves correctly                        |               |
+| TC_RC_020    | Submit form with "Save Details" button                 | Form submits successfully, processing begins, no validation errors for complete form                     |               |
+| TC_RC_021    | Handle client creation success alert                   | Success alert appears with "Client Created Successfully" message, "OK" button dismisses alert           |               |
+| TC_RC_022    | Verify navigation to client details page              | URL changes to `/clientfiles/details/{clientId}`, client details page loads successfully                 |               |
+| TC_RC_023    | Extract client ID from details page URL              | Client ID successfully extracted from URL path, ID format is valid and unique                           |               |
+| TC_RC_024    | Save client ID to JSON file                           | File `playwright/currentClient1.json` created with correct clientId property                            |               |
+| TC_RC_025    | Store client data in dataStore                        | Client data saved to `gateway.clientData.complete` and `selected.gatewayClient` keys                    |               |
+| TC_FV_001    | Submit form with missing Adviser field                | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_002    | Submit form with missing Title field                  | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_003    | Submit form with missing Forename field              | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_004    | Submit form with missing Surname field               | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_005    | Submit form with missing Date of Birth               | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_006    | Submit form with missing Source of Enquiry           | Validation prevents submission, appropriate error message displayed for required field                    |               |
+| TC_FV_007    | Enter invalid email format                            | Email validation displays error message, prevents form submission with invalid email                     |               |
+| TC_FV_008    | Enter valid email format                              | Email validation passes, field accepts input, form can be submitted successfully                         |               |
+| TC_FV_009    | Enter invalid phone number format                     | Phone validation displays error message for invalid format                                               |               |
+| TC_FV_010    | Enter valid phone number format                       | Phone validation passes, field accepts numeric input, saves correctly                                    |               |
+| TC_FV_011    | Enter invalid NI Number format                        | NI Number validation displays error message for incorrect UK format                                      |               |
+| TC_FV_012    | Enter valid NI Number format (AB123456C)             | NI Number validation passes, field accepts proper UK format, saves correctly                            |               |
+| TC_FV_013    | Enter future date for Date of Birth                  | Date validation prevents future dates, error message displays for invalid age                           |               |
+| TC_FV_014    | Enter date creating age over 120 years               | Date validation prevents excessively old dates, error message displays                                  |               |
+| TC_FV_015    | Enter date creating valid age (18-80 years)          | Date validation passes, age calculation correct, form accepts valid DOB                                 |               |
+| TC_FV_016    | Leave all optional fields blank                       | Form submits successfully without optional data, no validation errors for empty optional fields         |               |
+| TC_DG_001    | Generate random person names using TestDataGenerator | Valid forename and surname generated, names accepted by form fields                                     |               |
+| TC_DG_002    | Use client1 default names                            | Default client1.forename and client1.surname values used correctly in form                             |               |
+| TC_DG_003    | Generate random Date of Birth                        | Valid DOB generated within acceptable age range (18-80 years), date format correct                     |               |
+| TC_DG_004    | Generate random email based on names                 | Valid email generated using contact names, email format correct and accepted                            |               |
+| TC_DG_005    | Generate random phone numbers                        | Valid phone numbers generated, formats accepted by phone fields                                         |               |
+| TC_ERR_001   | Submit form during network interruption              | Network error handled gracefully, user-friendly error message displayed, form data preserved            |               |
+| TC_ERR_002   | Submit form when server returns error               | Server error handled gracefully, meaningful error message displayed, user can retry submission         |               |
+| TC_ERR_003   | Handle timeout during form submission               | Timeout handled appropriately, error message displayed, form data preserved for retry                  |               |
+| TC_PCV_001   | Search for newly created client by forename         | Client appears in search results with matching forename                                                |               |
+| TC_PCV_002   | Search for newly created client by surname          | Client appears in search results with matching surname                                                 |               |
+| TC_PCV_003   | Open created client record from search results      | Client details page opens, all submitted data displays correctly                                        |               |
+| TC_PCV_004   | Verify client data matches original submission      | All form fields (required and optional) match original input data                                      |               |
+| TC_PCV_005   | Verify client ID consistency across operations      | Client ID remains consistent in URL, JSON file, and dataStore                                          |               |
+| TC_PCV_006   | Verify JSON file contains correct client ID         | `playwright/currentClient1.json` file exists with proper clientId property                             |               |
+| TC_PCV_007   | Verify client data persists after logout/login     | Client data remains available and unchanged after session restart                                       |               |
+| TC_PCV_008   | Verify dataStore contains complete client data      | `gateway.clientData.complete` and `selected.gatewayClient` contain all client information              |               |
+| TC_PCV_009   | Load existing client ID from JSON file             | Existing clientId loaded correctly from JSON file when available                                        |               |
+| TC_PCV_010   | Verify client record editable after creation       | Client details can be modified and changes save successfully                                            |               |
+
+---
+
+## TEST DATA STRUCTURE
+
+**Required Fields:**
+- Adviser: Selected from available dropdown options
+- Title: Mr, Mrs, Ms, Dr, etc. (Select2 dropdown)
+- Forename: Generated or specified text
+- Surname: Generated or specified text  
+- Date of Birth: Valid date in dd/MM/yyyy format (age 18-80)
+- Source of Enquiry: Selected from available options
+
+**Optional Fields:**
+- Known As: Alternative name or nickname
+- Gender: Male/Female selection
+- Marital Status: Single/Married/Divorced/Widowed
+- Active Plan: Selected from available plans
+- NI Number: UK format (AB123456C)
+- Specific Source: Additional source details
+- Email Address: Valid email format
+- Home Phone: Valid phone number
+- Mobile Phone: Valid phone number
+
+**Generated Data Examples:**
+```javascript
+{
+  forename: "TestForename123",
+  surname: "TestSurname456", 
+  email: "testforename123.testsurname456@example.com",
+  dob: "15/03/1990", // dd/MM/yyyy format
+  phone: "01234567890"
+}
+```
+
+---
+
+## AUTOMATION IMPLEMENTATION REFERENCE
+
+**Key Methods from [`RetailClientCreationSteps.ts`](projects/gateway-ui/steps/gateway/RetailClientCreationSteps.ts):**
+- `executeNavigateToAddClient()` - Navigation to client creation page
+- `verifyClientPage()` - Page verification (URL and title)
+- `createClient()` - Complete client creation workflow
+- `completeRetailClientForm()` - Form completion with data
+- `selectAdviser()`, `selectTitle()`, `selectSourceOfEnquiry()` - Select2 dropdown handling
+- `fillForename()`, `fillSurname()` - Required field population
+- `fillOptionalContactFields()` - Optional field handling
+- `selectDOB()` - Date picker interaction
+- Alert handling via [`AlertService`](projects/gateway-ui/steps/components/AlertService.ts)
+- Data persistence via [`DataStore`](framework/src/utils/DataStore.ts)
+
+**Page Elements from [`ClientCreationPageLocators.ts`](projects/gateway-ui/pages/gatewayElementLocators/ClientCreationPageLocators.ts):**
+- Select2 triggers and rendered fields for Adviser, Title, Source of Enquiry
+- Global Select2 options locator
+- Form field locators for all input types
+
+---
+
+**Test Execution Notes:**
+- All tests should be executed in a clean test environment
+- Each test should start from the Gateway UI login page
+- Client creation should be verified through both UI and data persistence
+- Optional field tests can be combined or executed separately
+- Error scenario tests may require specific environment configuration

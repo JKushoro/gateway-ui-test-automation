@@ -106,14 +106,14 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Gateway Client (DataStore)
   // =====================================================
-  private getSelectedGatewayClient(): any {
+  public getSelectedGatewayClient(): any {
     return dataStore.getValue('selected.gatewayClient') || {};
   }
 
   // =====================================================
   // Read + Assert Displayed KYC Client (REQUIRED)
   // =====================================================
-  private async readAndStoreDisplayedKycClient(): Promise<DisplayedKycClient> {
+  public async readAndStoreDisplayedKycClient(): Promise<DisplayedKycClient> {
     const title = await this.readAndAssertTitle();
     const { firstName, surname } = await this.readAndAssertNames('First name', 'Surname');
     const dob = await this.readAndAssertDateOfBirth();
@@ -178,7 +178,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Compare Gateway vs KYC
   // =====================================================
-  private async compareSelectedGatewayVsDisplayedKyc(
+  public async compareSelectedGatewayVsDisplayedKyc(
     gatewayClient: any,
     displayedKycClient: DisplayedKycClient
   ): Promise<void> {
@@ -209,7 +209,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Contact Details
   // =====================================================
-  private generateAndStoreKycContactDetails(): { mobile: string; email: string } {
+  public generateAndStoreKycContactDetails(): { mobile: string; email: string } {
     const mobile = TestDataGenerator.phone();
     const email = TestDataGenerator.email();
 
@@ -219,7 +219,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     return { mobile, email };
   }
 
-  private async fillKycContactAndStoreDisplayed(data: {
+  public async fillKycContactAndStoreDisplayed(data: {
     mobile: string;
     email: string;
   }): Promise<void> {
@@ -265,7 +265,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Current Address (Address 1)
   // =====================================================
-  private async fillCurrentAddress_Address1(): Promise<void> {
+  public async fillCurrentAddress_Address1(): Promise<void> {
     const currentAddress = TestDataGenerator.generateUKAddress({ useRealPostcode: true });
 
     await this.action.fillInputByLabelAndAssert(
@@ -308,7 +308,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo('✓ Clicked "Add another address" (to add Previous Address / Address 2)');
   }
 
-  private async fillPreviousAddress_Address2(): Promise<string> {
+  public async fillPreviousAddress_Address2(): Promise<string> {
     const previousAddress = TestDataGenerator.generateUKAddress({ useRealPostcode: true });
 
     const line1 = `${previousAddress.buildingNumber} ${previousAddress.street}`;
@@ -473,7 +473,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Personal Details Questions
   // =====================================================
-  private async answerPersonalDetailsQuestions(): Promise<void> {
+  public async answerPersonalDetailsQuestions(): Promise<void> {
     await this.answerUkNationality('No');
     await this.selectNonUkNationality('Nigeria');
 
@@ -486,7 +486,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     await this.answerChildrenOrDependants('Yes');
   }
 
-  private async answerUkNationality(answer?: string): Promise<void> {
+  public async answerUkNationality(answer?: string): Promise<void> {
     const q = this.page.getByText('Are you a UK national?', { exact: false }).first();
     if (!(await q.count())) return;
 
@@ -497,7 +497,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   }
 
   /** Nationality dropdown shown when UK national = "Yes/No" */
-  private async selectNonUkNationality(value?: string): Promise<void> {
+  public async selectNonUkNationality(value?: string): Promise<void> {
     if (await this.elementNotExists('Choose nationality')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown(
@@ -509,7 +509,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Nationality selected: ${chosen}`);
   }
 
-  private async answerUkResidency(answer?: string): Promise<void> {
+  public async answerUkResidency(answer?: string): Promise<void> {
     const q = this.page.getByText('Are you a UK resident?', { exact: false }).first();
     if (!(await q.count())) return;
 
@@ -520,7 +520,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   }
 
   /** Residency dropdown shown when UK resident = "Yes/No" */
-  private async selectNonUkResidency(value?: string): Promise<void> {
+  public async selectNonUkResidency(value?: string): Promise<void> {
     if (await this.elementNotExists('Choose residency')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown(
@@ -532,7 +532,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Residency selected: ${chosen}`);
   }
 
-  private async answerTaxOutsideUk(answer?: string): Promise<void> {
+  public async answerTaxOutsideUk(answer?: string): Promise<void> {
     const question = 'Do you pay Tax in any other Country outside of the UK?';
 
     const q = this.page.getByText(question, { exact: false }).first();
@@ -545,7 +545,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   }
 
   /** Country dropdown shown when Tax outside UK = "Yes/No" */
-  private async selectTaxPaidCountryOutsideUk(value?: string): Promise<void> {
+  public async selectTaxPaidCountryOutsideUk(value?: string): Promise<void> {
     if (await this.elementNotExists('What country')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('What country', value);
@@ -554,7 +554,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Selected tax paid country: ${chosen}`);
   }
 
-  private async answerChildrenOrDependants(answer?: string): Promise<void> {
+  public async answerChildrenOrDependants(answer?: string): Promise<void> {
     const q = this.page
       .getByText('Do you have any children or dependants?', { exact: false })
       .first();
@@ -569,7 +569,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
   // =====================================================
   // Children / Dependants (Optional Details)
   // =====================================================
-  private async completeChildrenOrDependantsDetails(): Promise<void> {
+  public async completeChildrenOrDependantsDetails(): Promise<void> {
     await this.fillDependantsFullName();
     await this.selectDependantOneSexAtBirth();
     await this.setDependantOneDateOfBirth(2, 4);
@@ -578,7 +578,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     await this.setDependantOneDependantUntil(12, 14);
   }
 
-  private async fillDependantsFullName(forename?: string, surname?: string): Promise<void> {
+  public async fillDependantsFullName(forename?: string, surname?: string): Promise<void> {
     const firstNameInput = this.locators.dependentOneFirstName;
     const surnameInput = this.locators.dependentOneSurname;
 
@@ -592,7 +592,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Dependant full name: ${names.forename} ${names.surname}`);
   }
 
-  private async selectDependantOneSexAtBirth(value?: string): Promise<void> {
+  public async selectDependantOneSexAtBirth(value?: string): Promise<void> {
     const chosen = await this.action.selectReactSelectDropdownOption(
       this.locators.dependentOneSexAtBirth,
       value
@@ -626,7 +626,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     return date;
   }
 
-  private async answerFinanciallyDependant(answer?: string): Promise<void> {
+  public async answerFinanciallyDependant(answer?: string): Promise<void> {
     const question = 'Financially dependant';
 
     await expect(this.page.getByText(question, { exact: false }).first()).toBeVisible();
@@ -635,7 +635,7 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ ${question}: ${answer}`);
   }
 
-  private async selectDependantOneRelationship(value?: string): Promise<void> {
+  public async selectDependantOneRelationship(value?: string): Promise<void> {
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Relationship', value);
     expect(chosen, 'Should have selected a relationship option').toBeDefined();
     expect(chosen, 'Selected relationship should not be empty').not.toBe('');
@@ -706,5 +706,3 @@ export class KycPersonalDetailsPageSteps extends BaseKYCSteps {
     return this.postcodeLookup.kycAddressSearchField(labelText, postcode);
   }
 }
-
-

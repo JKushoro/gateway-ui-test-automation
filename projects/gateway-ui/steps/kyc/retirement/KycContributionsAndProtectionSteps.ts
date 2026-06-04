@@ -29,7 +29,7 @@ export class KycContributionsAndProtectionSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerContributionsAllowancesAndProtectionQuestions(): Promise<void> {
+  public async answerContributionsAllowancesAndProtectionQuestions(): Promise<void> {
     await this.selectPensionContributionIntent('Yes');
     await this.enterContributionDetails('This is to test Contribution field works');
 
@@ -42,14 +42,14 @@ export class KycContributionsAndProtectionSteps extends BaseKYCSteps {
 
   /* -------------------- Question Methods -------------------- */
 
-  private async selectPensionContributionIntent(answer?: string): Promise<void> {
+  public async selectPensionContributionIntent(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Are you planning to contribute to/remain an active member of a pension scheme?',
       answer
     );
   }
 
-  private async enterContributionDetails(value: string): Promise<void> {
+  public async enterContributionDetails(value: string): Promise<void> {
     const input = this.locators.contributeDetails;
     const label = 'Contribute Details';
 
@@ -59,14 +59,14 @@ export class KycContributionsAndProtectionSteps extends BaseKYCSteps {
     await expect(input).toHaveValue(value);
   }
 
-  private async selectAnnualAllowanceExceedance(answer?: string): Promise<void> {
+  public async selectAnnualAllowanceExceedance(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Are you in a position to contribute more than your annual allowance in the current tax year?',
       answer
     );
   }
 
-  private async enterAnnualAllowanceDetails(value: string): Promise<void> {
+  public async enterAnnualAllowanceDetails(value: string): Promise<void> {
     const input = this.locators.annualAllowanceDetails;
     const label = 'Annual Allowance Details';
 
@@ -76,14 +76,14 @@ export class KycContributionsAndProtectionSteps extends BaseKYCSteps {
     await expect(input).toHaveValue(value);
   }
 
-  private async selectCarryForward(answer?: string): Promise<void> {
+  public async selectCarryForward(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Have you made use of carry forward in the last three years?',
       answer
     );
   }
 
-  private async enterCarryForwardDetails(value: string): Promise<void> {
+  public async enterCarryForwardDetails(value: string): Promise<void> {
     const input = this.locators.carryForwardDetails;
     const label = 'Carry Forward Details';
 

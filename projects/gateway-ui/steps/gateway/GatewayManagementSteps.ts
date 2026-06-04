@@ -924,13 +924,6 @@ export class GatewayManagementSteps extends BasePage {
   }
 
   /**
-   * Verify the first row abandoned Fact Find cannot be launched.
-   */
-  public async executeVerifyFirstRowAbandonedFactFindCannotBeLaunched(): Promise<void> {
-    await this.verifyFirstRowLaunchFactFindNotAvailable();
-  }
-
-  /**
    * Verify the first row abandoned Fact Find status remains after page reload.
    */
   public async executeVerifyFirstRowAbandonmentStatusMaintained(): Promise<void> {

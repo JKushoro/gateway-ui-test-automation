@@ -24,7 +24,8 @@ projects/*/playwright-report/
 projects/*/tests/*/test-results/
 
 # Environment variables
-.env
+.env.dev
+.env.qa
 
 # Environment files with credentials (keep template)
 .env.*

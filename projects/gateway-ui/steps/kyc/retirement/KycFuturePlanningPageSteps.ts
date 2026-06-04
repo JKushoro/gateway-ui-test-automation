@@ -30,7 +30,7 @@ export class KycFuturePlanningPageSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerFuturePlanningQuestions(): Promise<void> {
+  public async answerFuturePlanningQuestions(): Promise<void> {
     await this.fillRetirementPlans(
       'What are your retirement plans? Please provide details of short and longer term plans',
       'This is to test Retirement Plans field works'
@@ -72,31 +72,31 @@ export class KycFuturePlanningPageSteps extends BaseKYCSteps {
 
   /* -------------------- Retirement Planning Question Methods -------------------- */
 
-  private async fillRetirementPlans(label: string, value: string): Promise<void> {
+  public async fillRetirementPlans(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async selectRetirementMoveIntent(answer?: string): Promise<void> {
+  public async selectRetirementMoveIntent(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Do you intend to move in retirement?', answer);
   }
 
-  private async fillFurtherInformation(label: string, value: string): Promise<void> {
+  public async fillFurtherInformation(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillEssentialExpenditureChanges(label: string, value: string): Promise<void> {
+  public async fillEssentialExpenditureChanges(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillDiscretionaryExpenditureChanges(label: string, value: string): Promise<void> {
+  public async fillDiscretionaryExpenditureChanges(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async selectOneOffEventsPlanning(answer?: string): Promise<void> {
+  public async selectOneOffEventsPlanning(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any specific one-off events to plan for?',
       answer
@@ -122,19 +122,19 @@ export class KycFuturePlanningPageSteps extends BaseKYCSteps {
     return date;
   }
 
-  private async fillFirstRetirementAmount(value: string | number): Promise<void> {
+  public async fillFirstRetirementAmount(value: string | number): Promise<void> {
     const input = this.locators.firstRetirementAmount(0);
 
     if (!(await this.action.ensureVisibleOrSkip(input, 'First retirement amount'))) return;
     await this.action.fillFormattedNumberInput(input, value, 'First retirement amount');
   }
 
-  private async fillRetirementIncomeSourcesDetails(label: string, value: string): Promise<void> {
+  public async fillRetirementIncomeSourcesDetails(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillGuaranteedIncomeEssentialExpenditureDetails(
+  public async fillGuaranteedIncomeEssentialExpenditureDetails(
     label: string,
     value: string
   ): Promise<void> {
@@ -142,7 +142,7 @@ export class KycFuturePlanningPageSteps extends BaseKYCSteps {
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillGuaranteedIncomeForOtherExpenditureDetails(
+  public async fillGuaranteedIncomeForOtherExpenditureDetails(
     label: string,
     value: string
   ): Promise<void> {

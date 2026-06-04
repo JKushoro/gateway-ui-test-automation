@@ -22,7 +22,7 @@ export class KycAnnuityPageSteps extends BaseKYCSteps {
     await this.verifyFactFindCompleted();
   }
 
-  private async answerAnnuityQuestions(): Promise<void> {
+  public async answerAnnuityQuestions(): Promise<void> {
     await this.selectPersonalisedAnnuityQuote('Yes');
     await this.fillEscalationRequirements(
       'Escalation requirements',
@@ -56,49 +56,49 @@ export class KycAnnuityPageSteps extends BaseKYCSteps {
 
   /* -------------------- Personalised Annuity Quotes Question Methods -------------------- */
 
-  private async selectPersonalisedAnnuityQuote(answer?: string): Promise<void> {
+  public async selectPersonalisedAnnuityQuote(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Are we considering a personalised annuity quote for the client at this time?',
       answer
     );
   }
 
-  private async fillEscalationRequirements(label: string, value: string): Promise<void> {
+  public async fillEscalationRequirements(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillIncomeFrequency(label: string, value: string): Promise<void> {
+  public async fillIncomeFrequency(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillAdvanceOrArrearsWithProportion(label: string, value: string): Promise<void> {
+  public async fillAdvanceOrArrearsWithProportion(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillGuaranteedPeriod(label: string, value: string): Promise<void> {
+  public async fillGuaranteedPeriod(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillOverlapDetails(label: string, value: string): Promise<void> {
+  public async fillOverlapDetails(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
-  private async fillValueProtection(label: string, value: string): Promise<void> {
+  public async fillValueProtection(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) {
       return;
     }

@@ -30,7 +30,7 @@ export class KycSavingsAndInvestmentsPageSteps extends BaseKYCSteps {
    * Answer all savings and investments-related questions
    * Each method handles one specific question using standardized patterns
    */
-  private async answerAllSavingsAndInvestmentsQuestions(): Promise<void> {
+  public async answerAllSavingsAndInvestmentsQuestions(): Promise<void> {
     await this.answerCashSavingsOutsideFairstoneQuestion('No');
     await this.answerInvestmentsOutsideFairstoneQuestion('No');
     await this.answerIsaContributionQuestion('No');
@@ -40,7 +40,7 @@ export class KycSavingsAndInvestmentsPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any cash savings outside of Fairstone?"
    * Uses the standardized radio question pattern
    */
-  private async answerCashSavingsOutsideFairstoneQuestion(answer?: string): Promise<void> {
+  public async answerCashSavingsOutsideFairstoneQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any cash savings outside of Fairstone?',
       answer
@@ -51,7 +51,7 @@ export class KycSavingsAndInvestmentsPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any investments outside of Fairstone?"
    * Uses the standardized radio question pattern
    */
-  private async answerInvestmentsOutsideFairstoneQuestion(answer?: string): Promise<void> {
+  public async answerInvestmentsOutsideFairstoneQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any investments outside of Fairstone?',
       answer
@@ -62,7 +62,7 @@ export class KycSavingsAndInvestmentsPageSteps extends BaseKYCSteps {
    * Answer: "Have you paid into an ISA in the current tax year?"
    * Uses the standardized radio question pattern
    */
-  private async answerIsaContributionQuestion(answer?: string): Promise<void> {
+  public async answerIsaContributionQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Have you paid into an ISA in the current tax year?',
       answer

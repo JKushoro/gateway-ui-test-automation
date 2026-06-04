@@ -30,7 +30,7 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Answer all income-related questions
    * Each method handles one specific question using standardized patterns
    */
-  private async answerAllIncomeQuestions(): Promise<void> {
+  public async answerAllIncomeQuestions(): Promise<void> {
     await this.answerOtherIncomeSourceQuestion('Yes');
     await this.answerEarnerTypeQuestion('Joint');
     await this.selectIncomeSourceOption('Employed Salary');
@@ -41,7 +41,7 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Answer: "Do you have any other income source?"
    * Uses the standardized radio question pattern
    */
-  private async answerOtherIncomeSourceQuestion(answer?: string): Promise<void> {
+  public async answerOtherIncomeSourceQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Do you have any other income source?', answer);
   }
 
@@ -49,7 +49,7 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Answer: "Earner" question
    * Uses the standardized radio question pattern
    */
-  private async answerEarnerTypeQuestion(answer?: string): Promise<void> {
+  public async answerEarnerTypeQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Earner', answer);
   }
 
@@ -57,7 +57,7 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Select income source from dropdown
    * Uses the standardized dropdown selection pattern
    */
-  private async selectIncomeSourceOption(value?: string): Promise<string> {
+  public async selectIncomeSourceOption(value?: string): Promise<string> {
     try {
       return this.action.chooseFromQuestionReactSelectDropdown('Income source', value);
     } catch (error) {
@@ -71,7 +71,7 @@ export class KycIncomePageSteps extends BaseKYCSteps {
    * Fill gross annual income field
    * Uses the standardized input filling pattern
    */
-  private async fillGrossAnnualIncomeField(value: string): Promise<void> {
+  public async fillGrossAnnualIncomeField(value: string): Promise<void> {
     await this.fillInputIfExists('Gross annual income', value);
   }
 }

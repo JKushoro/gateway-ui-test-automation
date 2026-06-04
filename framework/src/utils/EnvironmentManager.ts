@@ -68,10 +68,17 @@ export class EnvironmentManager {
 
   /**
    * Get environment variable value
-   * Checks process.env first, then loaded environment file
+   * Checks the requested environment file first when a non-default environment
+   * is explicitly requested, so BaseTest.create(browser, 'dev') is not
+   * overridden by QA values loaded earlier into process.env.
    */
   public getEnvValue(key: string, environment: Environment = 'qa'): string | undefined {
     this.ensureEnvLoaded(environment);
+
+    if (environment !== 'qa') {
+      return this.envSettings[key] || process.env[key];
+    }
+
     return process.env[key] || this.envSettings[key];
   }
 

@@ -29,7 +29,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerPropertyAndAssetQuestions(): Promise<void> {
+  public async answerPropertyAndAssetQuestions(): Promise<void> {
     await this.answerOwnOrRentPropertyQuestion('Owner');
     await this.answerAssetOwnerQuestion();
     await this.fillPropertyValue('£250,000');
@@ -38,7 +38,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
   }
 
   /* -------------------- Questions (split into methods) -------------------- */
-  private async answerOwnOrRentPropertyQuestion(answer?: string): Promise<void> {
+  public async answerOwnOrRentPropertyQuestion(answer?: string): Promise<void> {
     const selected = await this.action.setRadioByQuestionPattern(
       /do you own or rent .+\?/i,
       answer
@@ -48,7 +48,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
 
   /* -------------------- Supporting methods -------------------- */
   /** ---- (2) Answer: Asset owner */
-  private async answerAssetOwnerQuestion(answer: string = 'Joint'): Promise<void> {
+  public async answerAssetOwnerQuestion(answer: string = 'Joint'): Promise<void> {
     const label = 'Asset owner';
 
     if (await this.elementNotExists(label)) {
@@ -61,7 +61,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
   }
 
   /** ---- (3) Fill the current property value field */
-  private async fillPropertyValue(value: string): Promise<void> {
+  public async fillPropertyValue(value: string): Promise<void> {
     const label = 'Current property value';
 
     if (await this.elementNotExists(label)) {
@@ -73,7 +73,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
     this.logInfo(`✓ Filled property value: ${value}`);
   }
 
-  private async fillPurchaseHomeDate(minYears: number, maxYears: number): Promise<void> {
+  public async fillPurchaseHomeDate(minYears: number, maxYears: number): Promise<void> {
     const label = 'When did you purchase your home?';
 
     if (await this.elementNotExists(label)) {
@@ -97,7 +97,7 @@ export class KycPropertyAndAssetsSteps extends BaseKYCSteps {
     this.logInfo(`✓ Filled purchase home date: ${moveInDate}`);
   }
 
-  private async answerOtherPropertiesOrAssets(answer: string = 'No'): Promise<void> {
+  public async answerOtherPropertiesOrAssets(answer: string = 'No'): Promise<void> {
     await this.action.setRadioByQuestion('Do you have any other properties or assets?', answer);
     this.logInfo(`✓ Answered other properties or assets: ${answer}`);
   }

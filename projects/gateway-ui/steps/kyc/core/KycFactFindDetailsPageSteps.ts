@@ -45,7 +45,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Proceed to Personal Details');
   }
 
-  private async answerFactFindDetailsQuestions(): Promise<void> {
+  public async answerFactFindDetailsQuestions(): Promise<void> {
     await this.workCompletedDate('Yes');
     await this.setWorkCompletedDate('What date was the work completed on', 1, 1);
     await this.selectVenue('Email');
@@ -65,7 +65,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
    * Questions
    * ====================================================================================== */
 
-  private async workCompletedDate(answer?: string): Promise<void> {
+  public async workCompletedDate(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Was the work completed on a different date', answer);
   }
 
@@ -93,7 +93,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     return date;
   }
 
-  private async selectVenue(value?: string): Promise<void> {
+  public async selectVenue(value?: string): Promise<void> {
     if (await this.elementNotExists('Venue')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Venue', value);
@@ -101,7 +101,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Venue selected: ${chosen}`);
   }
 
-  private async requireA3rdPartyToBePresent(answer?: string): Promise<void> {
+  public async requireA3rdPartyToBePresent(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Does the client require a 3rd party to be present',
       answer
@@ -119,7 +119,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo('✓ Clicked "Add Third Party"');
   }
 
-  private async selectThirdPartyTitle(value?: string): Promise<void> {
+  public async selectThirdPartyTitle(value?: string): Promise<void> {
     if (await this.elementNotExists('Title')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Title', value);
@@ -127,7 +127,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Third party Title selected: ${chosen}`);
   }
 
-  private async fillFirstAndLastName(): Promise<void> {
+  public async fillFirstAndLastName(): Promise<void> {
     const forename = TestDataGenerator.firstName();
     const surname = TestDataGenerator.lastName();
 
@@ -150,7 +150,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     }
   }
 
-  private async selectRelationship(value?: string): Promise<void> {
+  public async selectRelationship(value?: string): Promise<void> {
     if (await this.elementNotExists('Relationship')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Relationship', value);
@@ -159,7 +159,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Relationship selected: ${chosen}`);
   }
 
-  private async fillContactNumber(): Promise<void> {
+  public async fillContactNumber(): Promise<void> {
     const number = TestDataGenerator.phone();
 
     if (await this.elementNotExists('Contact number')) return;
@@ -174,7 +174,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Contact number: ${number}`);
   }
 
-  private async fillThirdPartyAddress(): Promise<void> {
+  public async fillThirdPartyAddress(): Promise<void> {
     const address = TestDataGenerator.generateUKAddress({ useRealPostcode: true });
 
     const address1 = address.buildingName
@@ -227,7 +227,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Address entered: ${address.fullAddress}`);
   }
 
-  private async selectCountry(value?: string): Promise<void> {
+  public async selectCountry(value?: string): Promise<void> {
     if (await this.elementNotExists('Country')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Country', value);
@@ -235,11 +235,11 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Country selected: ${chosen}`);
   }
 
-  private async selectPresentAtMeeting(answer?: string): Promise<void> {
+  public async selectPresentAtMeeting(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Present at Meeting', answer);
   }
 
-  private async fillNotesIfPresent(): Promise<void> {
+  public async fillNotesIfPresent(): Promise<void> {
     if (await this.elementNotExists('Notes')) return;
 
     const notes = TestDataGenerator.shortText();
@@ -253,7 +253,7 @@ export class KycFactFindDetailsPageSteps extends BaseKYCSteps {
     this.logInfo('✓ Notes filled');
   }
 
-  private async selectIf3rdPartyPowerOfAttorney(answer?: string): Promise<void> {
+  public async selectIf3rdPartyPowerOfAttorney(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Is the 3rd Party Power of Attorney', answer);
   }
 }

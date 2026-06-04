@@ -29,7 +29,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerLiabilitiesAndExpendituresQuestions(): Promise<void> {
+  public async answerLiabilitiesAndExpendituresQuestions(): Promise<void> {
     await this.answerHasMortgageOnProperty('Yes');
     await this.selectCurrentMortgageEndTerm('I know the date');
     await this.setMortgageTermEndDate(2, 3);
@@ -58,7 +58,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
    *
    * @param answer - The answer to select (optional, will use random if not provided)
    */
-  private async answerHasMortgageOnProperty(answer?: string): Promise<void> {
+  public async answerHasMortgageOnProperty(answer?: string): Promise<void> {
     const question = /do you have a mortgage on this property\?/i;
     const selected = await this.action.setRadioByQuestionPattern(question, answer);
 
@@ -67,7 +67,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Mortgage question answered: ${selected}`);
   }
 
-  private async selectCurrentMortgageEndTerm(answer?: string): Promise<void> {
+  public async selectCurrentMortgageEndTerm(answer?: string): Promise<void> {
     const question = 'When does your current mortgage term end?';
 
     const q = this.page.getByText(question, { exact: false }).first();
@@ -98,7 +98,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     return selected;
   }
 
-  private async selectMortgageLender(value?: string): Promise<void> {
+  public async selectMortgageLender(value?: string): Promise<void> {
     if (await this.elementNotExists('Mortgage Lender')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Mortgage Lender', value);
@@ -107,7 +107,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Mortgage Lender selected: ${chosen}`);
   }
 
-  private async selectTypeOfMortgage(value?: string): Promise<void> {
+  public async selectTypeOfMortgage(value?: string): Promise<void> {
     if (await this.elementNotExists('Type of mortgage')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown(
@@ -119,7 +119,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Type of mortgage selected: ${chosen}`);
   }
 
-  private async fillFirstOutstandingBalance(value: string | number): Promise<void> {
+  public async fillFirstOutstandingBalance(value: string | number): Promise<void> {
     const input = this.locators.firstOutstandingBalance;
 
     if (!(await this.action.ensureVisibleOrSkip(input, 'First outstanding balance'))) return;
@@ -127,7 +127,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     await this.action.fillFormattedNumberInput(input, value, 'First outstanding balance');
   }
 
-  private async fillMortgageAccountNumber(value?: string | number): Promise<void> {
+  public async fillMortgageAccountNumber(value?: string | number): Promise<void> {
     const input = await this.action.findInputFieldByLabel('Mortgage account number');
 
     if (!(await this.action.ensureVisibleOrSkip(input, 'Mortgage account number'))) return;
@@ -136,7 +136,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     await this.action.fillInputByLabel('Mortgage account number', String(finalValue));
   }
 
-  private async selectMortgageRepaymentType(value?: string): Promise<void> {
+  public async selectMortgageRepaymentType(value?: string): Promise<void> {
     if (await this.elementNotExists('Mortgage repayment type')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown(
@@ -148,14 +148,14 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Mortgage repayment type selected: ${chosen}`);
   }
 
-  private async fillFirstMonthlyPayment(value: string | number): Promise<void> {
+  public async fillFirstMonthlyPayment(value: string | number): Promise<void> {
     const input = this.locators.firstMonthlyPayment;
 
     if (!(await this.action.ensureVisibleOrSkip(input, 'First Monthly Payment'))) return;
     await this.action.fillFormattedNumberInput(input, value, 'First Monthly Payment');
   }
 
-  private async selectInterestType(value?: string): Promise<void> {
+  public async selectInterestType(value?: string): Promise<void> {
     if (await this.elementNotExists('Interest type')) return;
 
     const chosen = await this.action.chooseFromLabeledReactSelectDropdown('Interest type', value);
@@ -164,7 +164,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     this.logInfo(`✓ Interest type selected: ${chosen}`);
   }
 
-  private async fillFixedLengthYears(value: string): Promise<void> {
+  public async fillFixedLengthYears(value: string): Promise<void> {
     const label = 'Fixed length (years)';
     const input = this.page.getByLabel(label, { exact: false });
 
@@ -174,7 +174,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     await expect(input).toHaveValue(value);
   }
 
-  private async fillRemainingMortgageTermYears(value: string): Promise<void> {
+  public async fillRemainingMortgageTermYears(value: string): Promise<void> {
     const label = 'Remaining mortgage term (years)';
     const input = this.page.getByLabel(label, { exact: false });
 
@@ -184,7 +184,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     await expect(input).toHaveValue(value);
   }
 
-  private async fillFirstCurrentInterestRate(value: string | number): Promise<void> {
+  public async fillFirstCurrentInterestRate(value: string | number): Promise<void> {
     const input = this.locators.firstCurrentInterestRate;
 
     if (!(await this.action.ensureVisibleOrSkip(input, 'First Current interest Rate'))) return;
@@ -209,7 +209,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
     return date;
   }
 
-  private async answerOtherLiabilities(answer?: string): Promise<void> {
+  public async answerOtherLiabilities(answer?: string): Promise<void> {
     const question = 'Do you have any other liabilities?';
 
     await expect(this.page.getByText(question, { exact: false }).first()).toBeVisible();
@@ -336,7 +336,7 @@ export class KycLiabilitiesAndExpendituresPageSteps extends BaseKYCSteps {
 
   /* -------------------- Committed Expenditures -------------------- */
 
-  private async fillCommittedExpenditures(): Promise<void> {
+  public async fillCommittedExpenditures(): Promise<void> {
     const items: Array<{ name: string; monthly: number }> = [
       { name: 'Buildings insurance', monthly: TestDataGenerator.randomNumber() },
       { name: 'Ground rent and service charge', monthly: TestDataGenerator.randomNumber() },

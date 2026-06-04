@@ -57,7 +57,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
    *
    * This ensures we're on the right page before proceeding with form filling.
    */
-  private async validateCurrentSituationPage(): Promise<void> {
+  public async validateCurrentSituationPage(): Promise<void> {
     await this.assert.assertPageURLContains('page=current-situation');
     await this.assert.assertHeadingVisible('Current situation', 15_000);
     this.logInfo('✓ Current Situation page validated');
@@ -73,7 +73,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
    * This method breaks down the complex form into logical sections.
    * Each section is handled by a separate method for better readability.
    */
-  private async answerAllCurrentSituationQuestions(): Promise<void> {
+  public async answerAllCurrentSituationQuestions(): Promise<void> {
     // Employment related questions
     await this.handleEmploymentQuestions();
     
@@ -95,7 +95,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Handle employment-related questions
    */
-  private async handleEmploymentQuestions(): Promise<void> {
+  public async handleEmploymentQuestions(): Promise<void> {
     await this.selectEmploymentStatus('Unemployed');
     await this.selectEmploymentContract();
     await this.selectEmploymentChangeExpected();
@@ -105,7 +105,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Handle retirement-related questions
    */
-  private async handleRetirementQuestions(): Promise<void> {
+  public async handleRetirementQuestions(): Promise<void> {
     await this.answerRetirementAndAge('No');
     await this.fillRetirementAge('When do you plan to retire?', '75');
     this.logInfo('✓ Retirement questions completed');
@@ -114,7 +114,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Handle health-related questions
    */
-  private async handleHealthQuestions(): Promise<void> {
+  public async handleHealthQuestions(): Promise<void> {
     await this.selectOverallHealth();
     await this.answerMedicalConditions();
     await this.answerSmoking12Months();
@@ -124,7 +124,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Handle personal details questions and save the data
    */
-  private async handlePersonalDetailsQuestions(): Promise<void> {
+  public async handlePersonalDetailsQuestions(): Promise<void> {
     const occupation = await this.fillOccupation(
       'What is your occupation?',
       dataStore.getValue<string>('kyc.currentSituation.occupation')
@@ -143,7 +143,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Handle legal document questions
    */
-  private async handleLegalDocumentQuestions(): Promise<void> {
+  public async handleLegalDocumentQuestions(): Promise<void> {
     await this.answerWillQuestion('Yes');
     await this.answerPowerOfAttorney('Yes');
     await this.selectPowerOfAttorneyType('Enduring POA', 'Lasting POA Both', 'Ordinary POA');
@@ -171,7 +171,7 @@ export class KycCurrentSituationPageSteps extends BaseKYCSteps {
   /**
    * 🎯 Save the form and continue to the next page
    */
-  private async saveAndContinue(): Promise<void> {
+  public async saveAndContinue(): Promise<void> {
     await this.action.clickButtonByText('Save & Continue');
     this.logInfo('✓ Current Situation form saved and continuing to next page');
   }

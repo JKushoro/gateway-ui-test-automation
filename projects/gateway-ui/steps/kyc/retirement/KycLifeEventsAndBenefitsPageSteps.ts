@@ -22,7 +22,7 @@ export class KycKycLifeEventsAndBenefitsPageSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerLifeEventsAndBenefitsQuestions(): Promise<void> {
+  public async answerLifeEventsAndBenefitsQuestions(): Promise<void> {
     await this.selectMaximumStatePension('No');
     await this.fillProvideFurtherInformation(
       'Please provide further information',
@@ -50,18 +50,18 @@ export class KycKycLifeEventsAndBenefitsPageSteps extends BaseKYCSteps {
 
   /* -------------------- State Pension & Benefits Question Methods -------------------- */
 
-  private async selectMaximumStatePension(answer?: string): Promise<void> {
+  public async selectMaximumStatePension(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists('Are you due the maximum State Pension?', answer);
   }
 
   // When 'No' is selected for maximum State Pension question
-  private async fillProvideFurtherInformation(label: string, value: string): Promise<void> {
+  public async fillProvideFurtherInformation(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   // When 'No' is selected for maximum State Pension question
-  private async fillShortfallAmount(value: string | number): Promise<void> {
+  public async fillShortfallAmount(value: string | number): Promise<void> {
     const label = 'What is the shortfall?';
     const input = await this.action.findInputFieldByLabel(label);
 
@@ -69,35 +69,35 @@ export class KycKycLifeEventsAndBenefitsPageSteps extends BaseKYCSteps {
     await this.action.fillFormattedNumberInput(input, value, label);
   }
 
-  private async selectMeansTestedBenefitsReceipt(answer?: string): Promise<void> {
+  public async selectMeansTestedBenefitsReceipt(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Are you in receipt of any means tested benefits?',
       answer
     );
   }
 
-  private async fillPostStatePensionDetails(label: string, value: string): Promise<void> {
+  public async fillPostStatePensionDetails(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   /* -------------------- Inheritance & Windfalls Question Methods -------------------- */
 
-  private async selectFutureInheritanceOrWindfalls(answer?: string): Promise<void> {
+  public async selectFutureInheritanceOrWindfalls(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Are you expecting any inheritances or windfalls in the future?',
       answer
     );
   }
 
-  private async fillAmountAndTimescaleDetails(label: string, value: string): Promise<void> {
+  public async fillAmountAndTimescaleDetails(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }
 
   /* -------------------- Death Question Methods -------------------- */
 
-  private async fillPensionDeathBenefitPlans(label: string, value: string): Promise<void> {
+  public async fillPensionDeathBenefitPlans(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }

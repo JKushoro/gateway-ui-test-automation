@@ -94,21 +94,21 @@ export default async function globalSetup(_config: FullConfig) {
 
   try {
     const authService = new AuthenticationService(page);
-    
+
     console.log(`Starting authentication for environment: ${envName}`);
     console.log(`Base URL: ${process.env.BASE_URL}`);
     console.log(`Advisor Email: ${process.env.ADVISOR_EMAIL}`);
-    
+
     // First check if we're already authenticated by navigating to the application
     await page.goto(process.env.BASE_URL || 'https://qa-fairstonegateway.fairstone.co.uk');
     await page.waitForLoadState('networkidle');
-    
+
     // Wait a bit to see if we're redirected to dashboard via OAuth
     await page.waitForTimeout(5000);
-    
+
     const currentUrl = page.url();
     console.log(`Current URL after navigation: ${currentUrl}`);
-    
+
     if (currentUrl.includes('/dashboard')) {
       console.log('✓ Already authenticated via OAuth flow');
     } else {
@@ -133,7 +133,7 @@ export default async function globalSetup(_config: FullConfig) {
 
     // Save authentication state
     await context.storageState({ path: authFile });
-    
+
     // Verify cookies were saved
     const savedState = JSON.parse(require('fs').readFileSync(authFile, 'utf8'));
     console.log(`✓ Authentication state saved with ${savedState.cookies.length} cookies`);

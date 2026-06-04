@@ -1,51 +1,125 @@
 // projects/gateway-ui/tests/smoke/abandon_fact_find.smoke.spec.ts
-import { test } from '@playwright/test';
-import BaseTest from '../shared/TestUtils';
-import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
+import { Browser, expect, test } from '@playwright/test';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';
+import { cleanupClient1FactFinds } from '@framework/utils/TestCleanupHelper';
+import BaseTest from '../shared/TestUtils';
 
-/**
- * Abandon Fact Find Test Suite
- *
- * Validates the complete abandonment behavior of a KYC Fact Find:
- * - Creates an active KYC Fact Find
- * - Performs abandon action with modal confirmation
- * - Verifies system prevents launching abandoned fact finds
- * - Confirms abandoned status persistence
- *
- * CI-CD Pipeline Ready: Robust error handling and reliable assertions
- */
+type AbandonFactFindSetup = {
+  testBase: Awaited<ReturnType<typeof BaseTest.create>>;
+};
+
+async function arrangeFactFindTab(browser: Browser): Promise<AbandonFactFindSetup> {
+  const testBase = await BaseTest.create(browser, 'qa');
+
+  await testBase.factFindSteps.executeAddClientAndNavigateToFactFindTab(
+    testBase.sideNav,
+    testBase.navBar
+  );
+
+  return { testBase };
+}
+
+async function arrangeCreatedCoreFactFind(browser: Browser): Promise<AbandonFactFindSetup> {
+  const setup = await arrangeFactFindTab(browser);
+  await setup.testBase.factFindSteps.executeCreateFactFind('Core Fact Find');
+  return setup;
+}
+
+async function arrangeAbandonedCoreFactFind(browser: Browser): Promise<AbandonFactFindSetup> {
+  const setup = await arrangeCreatedCoreFactFind(browser);
+  await setup.testBase.factFindSteps.executeAbandonFirstRowFactFind();
+  return setup;
+}
+
 test.describe('Abandon Fact Find', () => {
+  let currentSetup: AbandonFactFindSetup | undefined;
+
   test.beforeEach(async () => {
-    // Clear any shared state before each test
     clearWorkerDataStore();
   });
 
-  test('Complete abandon fact find workflow', async ({ browser }) => {
-    const testBase = await BaseTest.create(browser, 'qa');
-    
-    try {
-      // Create retail client and navigate to Fact Find tab
-      await testBase.factFindSteps.executeAddClientAndNavigateToFactFindTab(testBase.sideNav, testBase.navBar);
-
-      // Create Core Fact Find
-      await testBase.factFindSteps.executeCreateFactFind('Core Fact Find');
-
-      // Abandon Fact Find with status verification
-      await testBase.factFindSteps.executeAbandonFirstRowFactFind();
-
-      // Verify abandoned Fact Find cannot be launched
-      await testBase.factFindSteps.executeVerifyFirstRowAbandonedFactFindCannotBeLaunched();
-
-      // Verify abandonment status persists after page reload
-      await testBase.factFindSteps.executeVerifyFirstRowAbandonmentStatusMaintained();
-
-      // Verify system response for abandoned Fact Find
-      await testBase.factFindSteps.executeVerifySystemResponseForFirstRowAbandonedFactFind();
-
-    } finally {
-      await cleanupClient1FactFinds();
-      await testBase.cleanup();
-    }
+  test.afterEach(async () => {
+    await cleanupClient1FactFinds();
+    await currentSetup?.testBase.cleanup();
+    currentSetup = undefined;
   });
+
+  test('Abandon Fact Find - creates Core Fact Find', async ({ browser }) => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    currentSetup = await arrangeFactFindTab(browser);
+    const setup = currentSetup;
+
+    // Act
+    const factFindType = await setup.testBase.factFindSteps.executeCreateFactFind(
+      'Core Fact Find'
+    );
+
+    // Assert
+    expect(factFindType).toBe('Core Fact Find');
+  });
+
+  test('Abandon Fact Find - abandons first row Fact Find', async ({ browser }) => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    currentSetup = await arrangeCreatedCoreFactFind(browser);
+    const setup = currentSetup;
+
+    // Act
+    await setup.testBase.factFindSteps.executeAbandonFirstRowFactFind();
+
+    // Assert
+    await setup.testBase.factFindSteps.verifyFirstRowLaunchFactFindNotAvailable();
+  });
+
+  test('Abandon Fact Find - verifies abandoned Fact Find cannot be launched', async ({
+    browser,
+  }) => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    currentSetup = await arrangeAbandonedCoreFactFind(browser);
+    const setup = currentSetup;
+
+    // Act
+    await setup.testBase.factFindSteps.verifyFirstRowLaunchFactFindNotAvailable();
+
+    // Assert
+    await setup.testBase.factFindSteps.executeVerifySystemResponseForFirstRowAbandonedFactFind();
+  });
+
+  test('Abandon Fact Find - verifies abandonment status persists after reload', async ({
+    browser,
+  }) => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    currentSetup = await arrangeAbandonedCoreFactFind(browser);
+    const setup = currentSetup;
+
+    // Act
+    await setup.testBase.factFindSteps.executeVerifyFirstRowAbandonmentStatusMaintained();
+
+    // Assert
+    await setup.testBase.factFindSteps.verifyFirstRowLaunchFactFindNotAvailable();
+  });
+
+  test('Abandon Fact Find - verifies system response for abandoned Fact Find', async ({
+    browser,
+  }) => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    currentSetup = await arrangeAbandonedCoreFactFind(browser);
+    const setup = currentSetup;
+
+    // Act
+    await setup.testBase.factFindSteps.executeVerifySystemResponseForFirstRowAbandonedFactFind();
+
+    // Assert
+    await setup.testBase.factFindSteps.verifyFirstRowLaunchFactFindNotAvailable();
+  });
+
 });

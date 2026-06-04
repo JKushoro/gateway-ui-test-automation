@@ -42,7 +42,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Answers all questions on the page, safely skipping those not shown.
    */
-  private async answerInvestmentKnowledgeAndPreferencesQuestions(): Promise<void> {
+  public async answerInvestmentKnowledgeAndPreferencesQuestions(): Promise<void> {
     await this.answerInvestmentKnowledgeAndPreference('Yes');
     await this.answerClientClassification('Retail');
     await this.answerInvestmentExperience('Basic');
@@ -68,7 +68,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Do you need to provide or update Investment Knowledge & Preference?
    */
-  private async answerInvestmentKnowledgeAndPreference(value?: string): Promise<void> {
+  public async answerInvestmentKnowledgeAndPreference(value?: string): Promise<void> {
     if (!value) throw new Error('answerInvestmentKnowledgeAndPreference requires a value');
 
     // Use verification method to ensure selection is successful
@@ -78,7 +78,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: What is the client's classification?
    */
-  private async answerClientClassification(answer?: string): Promise<void> {
+  public async answerClientClassification(answer?: string): Promise<void> {
     if (!answer) throw new Error('answerClientClassification requires a value');
 
     // Use verification method to ensure selection is successful
@@ -91,7 +91,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: What's the client's level of investment experience?
    */
-  private async answerInvestmentExperience(value?: string): Promise<void> {
+  public async answerInvestmentExperience(value?: string): Promise<void> {
     // Use verification method to ensure selection is successful
     await this.answerRadioQuestionWithVerificationIfPresent(
       "What's the client's level of investment experience?",
@@ -102,7 +102,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Do you have sustainability linked requirements...?
    */
-  private async answerSustainabilityRequirements(value?: string): Promise<void> {
+  public async answerSustainabilityRequirements(value?: string): Promise<void> {
     // Use verification method to ensure selection is successful
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Do you have sustainability linked requirements, that need to be considered in addition to your financial objectives?',
@@ -116,7 +116,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    * If the question is displayed, selects the provided value.
    * If not displayed, logs and safely skips.
    */
-  private async answerSustainabilityAwareness(value?: string): Promise<void> {
+  public async answerSustainabilityAwareness(value?: string): Promise<void> {
     const questionText =
       'Is the client aware that in applying sustainability preferences they will be reducing their investable universe ' +
       'and this can have an effect on financial returns as well as increasing investment costs?';
@@ -137,7 +137,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
    * - Skips if section is not displayed
    * - Fails clearly if text changes
    */
-  private async assertResponsibleInvestmentFramework(): Promise<void> {
+  public async assertResponsibleInvestmentFramework(): Promise<void> {
     const box = this.locators.responsibleInvestmentFrameworkBox;
 
     // Optional section: skip if not present
@@ -159,7 +159,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Does Fairstone's Responsible Investment Framework align...?
    */
-  private async answerResponsibleInvestmentFramework(value?: string): Promise<void> {
+  public async answerResponsibleInvestmentFramework(value?: string): Promise<void> {
     // Use verification method to ensure selection is successful
     await this.answerRadioQuestionWithVerificationIfPresent(
       "Does the Fairstone's Responsible Investment Framework align with their sustainability linked requirements?",
@@ -170,7 +170,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Are the client's requirements faith based?
    */
-  private async answerFaithBasedRequirements(value?: string): Promise<void> {
+  public async answerFaithBasedRequirements(value?: string): Promise<void> {
     // Use verification method to ensure selection is successful
     await this.answerRadioQuestionWithVerificationIfPresent(
       "Are the client's requirements faith based?",
@@ -181,7 +181,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Does the client have specific negative screens...?
    */
-  private async answerNegativeScreens(value?: string): Promise<void> {
+  public async answerNegativeScreens(value?: string): Promise<void> {
     // Use verification method to ensure selection is successful
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Does the client have specific negative screens that need to be employed?',
@@ -192,7 +192,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Select negative screens checkboxes if the aria-group is shown.
    */
-  private async selectNegativeScreens(...values: string[]): Promise<string[]> {
+  public async selectNegativeScreens(...values: string[]): Promise<string[]> {
     await this.waitHelper.waitForElement(this.locators.negativeScreensFieldset, 5_000).catch(
       () => {}
     );
@@ -209,7 +209,7 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
   /**
    * Q: Which statement aligns with the client's sustainable investment requirements?
    */
-  private async answerSustainableInvestmentStatement(value?: string): Promise<void> {
+  public async answerSustainableInvestmentStatement(value?: string): Promise<void> {
     if (
       await this.elementNotExists(
         "Which of the below statements most closely aligns with the client's sustainable investment requirements?"
@@ -224,5 +224,4 @@ export class KycInvestmentKnowledgeAndPreferencesPageSteps extends BaseKYCSteps 
     await this.assert.assertElementVisible(this.page.getByText(chosen, { exact: false }).first());
     this.logInfo(`✓ Answered sustainable investment statement: ${chosen}`);
   }
-
 }

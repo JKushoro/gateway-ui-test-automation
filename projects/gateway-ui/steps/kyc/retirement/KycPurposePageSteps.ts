@@ -20,7 +20,7 @@ export class KycPurposePageSteps extends BaseKYCSteps {
     await this.action.clickButtonByText('Save & Continue');
   }
 
-  private async answerPurposeQuestions(): Promise<void> {
+  public async answerPurposeQuestions(): Promise<void> {
     await this.fillPensionDiscussionPurpose(
       'What is the purpose of this pension discussion?',
       'This is to test Pension Discussion Purpose field works'
@@ -29,7 +29,7 @@ export class KycPurposePageSteps extends BaseKYCSteps {
 
   /* -------------------- Question Methods -------------------- */
 
-  private async fillPensionDiscussionPurpose(label: string, value: string): Promise<void> {
+  public async fillPensionDiscussionPurpose(label: string, value: string): Promise<void> {
     if (await this.elementNotExists(label)) return;
     await this.action.fillInputByLabelAndAssert(label, value);
   }

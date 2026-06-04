@@ -29,7 +29,7 @@ export class KycProtectionPageSteps extends BaseKYCSteps {
    * Answer all protection-related questions
    * Each method handles one specific question using standardized patterns
    */
-  private async answerAllProtectionQuestions(): Promise<void> {
+  public async answerAllProtectionQuestions(): Promise<void> {
     await this.answerIncomeProtectionQuestion('No');
     await this.answerLifeOrCriticalIllnessCoverQuestion('No');
     await this.answerPrivateMedicalInsuranceQuestion('No');
@@ -39,7 +39,7 @@ export class KycProtectionPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any income protection (not provided by an employer)?"
    * Uses the standardized radio question pattern
    */
-  private async answerIncomeProtectionQuestion(answer?: string): Promise<void> {
+  public async answerIncomeProtectionQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any income protection (not provided by an employer)?',
       answer
@@ -50,7 +50,7 @@ export class KycProtectionPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any life insurance or critical illness cover (not provided by an employer)?"
    * Uses the standardized radio question pattern
    */
-  private async answerLifeOrCriticalIllnessCoverQuestion(answer?: string): Promise<void> {
+  public async answerLifeOrCriticalIllnessCoverQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any life insurance or critical illness cover (not provided by an employer)?',
       answer
@@ -61,7 +61,7 @@ export class KycProtectionPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any Private Medical Insurance (not provided by an employer)?"
    * Uses the standardized radio question pattern
    */
-  private async answerPrivateMedicalInsuranceQuestion(answer?: string): Promise<void> {
+  public async answerPrivateMedicalInsuranceQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionIfExists(
       'Do you have any Private Medical Insurance (not provided by an employer)?',
       answer

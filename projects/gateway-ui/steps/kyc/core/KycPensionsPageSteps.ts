@@ -30,7 +30,7 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Answer all pension-related questions
    * Each method handles one specific question using standardized patterns
    */
-  private async answerAllPensionQuestions(): Promise<void> {
+  public async answerAllPensionQuestions(): Promise<void> {
     await this.answerWorkplacePensionQuestion('No');
     await this.answerPreviousEmploymentPensionsQuestion('No');
     await this.answerOtherPensionsQuestion('No');
@@ -41,7 +41,7 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Answer: "Are you an active member of a workplace pension scheme?"
    * Uses the standardized radio question pattern with verification
    */
-  private async answerWorkplacePensionQuestion(answer?: string): Promise<void> {
+  public async answerWorkplacePensionQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Are you an active member of a workplace pension scheme?',
       answer
@@ -52,7 +52,7 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any pensions from previous employment?"
    * Uses the standardized radio question pattern with verification
    */
-  private async answerPreviousEmploymentPensionsQuestion(answer?: string): Promise<void> {
+  public async answerPreviousEmploymentPensionsQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Do you have any pensions from previous employment?',
       answer
@@ -63,7 +63,7 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Answer: "Do you have any other pensions?"
    * Uses the standardized radio question pattern with verification
    */
-  private async answerOtherPensionsQuestion(answer?: string): Promise<void> {
+  public async answerOtherPensionsQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Do you have any other pensions?',
       answer
@@ -74,7 +74,7 @@ export class KycPensionsPageSteps extends BaseKYCSteps {
    * Answer: "Have you requested a state pension forecast?"
    * Uses the standardized radio question pattern with verification
    */
-  private async answerStatePensionForecastQuestion(answer?: string): Promise<void> {
+  public async answerStatePensionForecastQuestion(answer?: string): Promise<void> {
     await this.answerRadioQuestionWithVerificationIfPresent(
       'Have you requested a state pension forecast?',
       answer
