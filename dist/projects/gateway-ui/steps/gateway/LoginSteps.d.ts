@@ -1,64 +1,38 @@
 import { Page, BasePage, FrameworkConfig, Environment } from '../../shared/SharedImports';
 /**
- * LoginSteps - Complete Login Engine and Setup
- * - Loads environment settings
- * - Resolves BASE_URL
- * - Performs Microsoft login flow (AAD) with OTP support
- * - Provides complete setup functionality (replaces GatewaySetup)
+ * LoginSteps - Orchestrates complete authentication flows
+ *
+ * Single Responsibility: Coordinates authentication workflows only
+ * Delegates actual authentication logic to AuthenticationService
  */
 export declare class LoginSteps extends BasePage {
-    private readonly loginPage;
     private readonly dashboardSteps;
-    private readonly envManager;
     private readonly authService;
     constructor(page: Page, config?: Partial<FrameworkConfig>);
     /**
-     * Resolve base URL from env file.
-     */
-    private getBaseUrl;
-    /**
-     * Get credentials from environment or process.env
-     * Uses ADVISOR_EMAIL and ADVISOR_PASSWORD only
-     */
-    private getCredentials;
-    /**
-     * Navigate to Gateway application landing page.
+     * Navigate to Gateway application landing page
      */
     navigateToApplication(environment?: Environment): Promise<void>;
     /**
-     * Start AAD login flow by clicking app login button.
+     * Start AAD login flow
      */
     startMicrosoftLogin(): Promise<void>;
     /**
-     * Perform a full login with OTP support.
-     * If username/password not provided, uses env credentials.
+     * Perform complete login flow with optional credentials and OTP control
      */
-    login(username?: string, password?: string, environment?: Environment): Promise<void>;
+    login(username?: string, password?: string, environment?: Environment, skipOtp?: boolean): Promise<void>;
     /**
-     * Convenience: Navigate + login using env credentials with OTP support.
+     * Complete authentication flow: Navigate + Login + Verify
      */
-    performValidLogin(environment?: Environment): Promise<void>;
+    performCompleteLogin(environment?: Environment): Promise<void>;
     /**
-     * Login with OTP support
-     */
-    loginWithOtp(username?: string, password?: string, environment?: Environment): Promise<void>;
-    /**
-     * Login without OTP (skip OTP step)
-     */
-    loginWithoutOtp(username?: string, password?: string, environment?: Environment): Promise<void>;
-    /**
-     * Complete Gateway setup for testing - Navigate, login and verify dashboard
-     * This replaces the old GatewaySetup.setupForEnvironment method
-     */
-    static setupForEnvironment(page: Page, environment?: Environment): Promise<void>;
-    /**
-     * Verify dashboard is loaded after login
+     * Verify dashboard is accessible after authentication
      */
     verifyDashboard(): Promise<void>;
     /**
-     * Legacy method for backward compatibility
-     * @deprecated Use login() instead
+     * Static factory method for test setup
+     * Creates instance, performs complete login, and returns configured page
      */
-    clickLogin(username?: string, password?: string): Promise<void>;
+    static setupForEnvironment(page: Page, environment?: Environment): Promise<void>;
 }
 //# sourceMappingURL=LoginSteps.d.ts.map

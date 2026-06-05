@@ -403,6 +403,13 @@ class ActionHelper {
         await radio.check({ force: options.force });
         await this.slowMo();
     }
+    async selectCustomRadioOptionByLabel(label) {
+        const option = this.page.getByRole('button', {
+            name: new RegExp(`^${label}$`, 'i'),
+        });
+        await option.waitFor({ state: 'visible' });
+        await option.click();
+    }
     /**
      * Set radio answer for a question text (KYC style)
      * - Finds the radiogroup following the question text

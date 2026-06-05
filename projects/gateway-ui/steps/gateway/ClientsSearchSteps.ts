@@ -25,6 +25,21 @@ export class ClientsSearchSteps extends BasePage {
     await expect(this.page).toHaveTitle('Gateway | Search Clients');
   }
 
+  public async navigateToSearchClientsPage(): Promise<void> {
+    await this.sideNav.clickSideMenuItem('Clients', 'Search Clients');
+    await this.verifySearchClientPage();
+  }
+
+  public async navigateToDashboardFromClientDetailsPage(): Promise<void> {
+    if (!this.page.url().includes('/clientfiles/details/')) {
+      return;
+    }
+
+    const baseUrl = this.page.url().split('/clientfiles')[0];
+    await this.page.goto(`${baseUrl}/dashboard/developmentdash`);
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
   async searchClients(): Promise<void> {
     await this.action.clickLocator(this.searchClientPage.searchClientButton);
   }
@@ -33,11 +48,43 @@ export class ClientsSearchSteps extends BasePage {
     searchData: GatewaySearchFormData = {},
     dataPrefix: string = 'gateway.formData'
   ): Promise<GatewaySearchFormData> {
-    await this.sideNav.clickSideMenuItem('Clients', 'Search Clients');
-    await this.verifySearchClientPage();
-    const used = await this.forms.searchMinimalForm(searchData, dataPrefix);
+    await this.navigateToSearchClientsPage();
+    const used = await this.searchForStoredCompanyClientDetails(searchData, dataPrefix);
     await this.searchClients();
     return used;
+  }
+
+  async searchForStoredCompanyClientDetails(
+    searchData: GatewaySearchFormData = {},
+    dataPrefix: string = 'gateway.formData'
+  ): Promise<GatewaySearchFormData> {
+    return this.forms.searchMinimalForm(searchData, dataPrefix);
+  }
+
+  async searchForStoredIndividualClientDetails(
+    searchData: GatewaySearchFormData = {},
+    dataPrefix: string = 'gateway.clientData.complete'
+  ): Promise<GatewaySearchFormData> {
+    const stored = dataStore.getValue(dataPrefix);
+    if (!stored?.forename || !stored?.surname) {
+      throw new Error(`No individual client data found at ${dataPrefix}`);
+    }
+
+    return this.forms.searchMinimalForm({
+      forename: stored.forename,
+      surname: stored.surname,
+      ...searchData,
+    });
+  }
+
+  async openStoredIndividualClientSearchResult(
+    dataPrefix: string = 'gateway.clientData.complete'
+  ): Promise<boolean> {
+    return this.clickIndividualRowByName(dataPrefix);
+  }
+
+  async verifyClientDetailsPageIsOpen(): Promise<void> {
+    await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
   }
 
   // --- Generic result row clickers using TableHelper ---
@@ -48,15 +95,23 @@ export class ClientsSearchSteps extends BasePage {
 
     const rows = await this.table.getRows(this.searchClientPage.clientsTable);
     const idx = await this.table.findRowIndex(rows, {
-      getCell: (row) => this.searchClientPage.getCompanyNameFromRow(row),
-      textEquals: expected
+      getCell: row => this.searchClientPage.getCompanyNameFromRow(row),
+      textEquals: expected,
     });
 
     if (idx < 0) return false;
 
-    await this.table.clickInRow(rows, idx, (row) => this.searchClientPage.getViewClientButtonFromRow(row));
+    await this.table.clickInRow(rows, idx, row =>
+      this.searchClientPage.getViewClientButtonFromRow(row)
+    );
     await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
     return true;
+  }
+
+  async openStoredCompanyClientSearchResult(
+    dataPrefix: string = 'gateway.formData'
+  ): Promise<boolean> {
+    return this.clickCompanyRowByExactName(dataPrefix);
   }
 
   async clickIndividualRowByName(dataPrefix: string = 'clientData.complete'): Promise<boolean> {
@@ -67,16 +122,18 @@ export class ClientsSearchSteps extends BasePage {
 
     const rows = await this.table.getRows(this.searchClientPage.clientsTable);
     const idx = await this.table.findRowIndex(rows, {
-      predicate: async (row) => {
+      predicate: async row => {
         const cell = this.searchClientPage.getCompanyNameFromRow(row);
-        const full = await cell.textContent() ?? '';
+        const full = (await cell.textContent()) ?? '';
         return TextHelper.nameContains(full, client.forename, client.surname);
-      }
+      },
     });
 
     if (idx < 0) return false;
 
-    await this.table.clickInRow(rows, idx, (row) => this.searchClientPage.getViewClientButtonFromRow(row));
+    await this.table.clickInRow(rows, idx, row =>
+      this.searchClientPage.getViewClientButtonFromRow(row)
+    );
     await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
     return true;
   }
@@ -86,7 +143,7 @@ export class ClientsSearchSteps extends BasePage {
   async searchAndVerifyStoredClient(
     searchData: GatewaySearchFormData = {},
     dataPrefix: string = 'gateway.formData'
-  ): Promise<{ searchData: GatewaySearchFormData; clientFound: boolean; }> {
+  ): Promise<{ searchData: GatewaySearchFormData; clientFound: boolean }> {
     const used = await this.searchForStoredClient(searchData, dataPrefix);
     const found = await this.clickCompanyRowByExactName(dataPrefix);
     return { searchData: used, clientFound: found };
@@ -95,31 +152,15 @@ export class ClientsSearchSteps extends BasePage {
   async searchAndVerifyStoredIndividualClient(
     searchData: GatewaySearchFormData = {},
     dataPrefix: string = 'gateway.clientData.complete'
-  ): Promise<{ searchData: GatewaySearchFormData; clientFound: boolean; }> {
-    const stored = dataStore.getValue(dataPrefix);
-    if (!stored?.forename || !stored?.surname) {
-      throw new Error(`No individual client data found at ${dataPrefix}`);
-    }
-
+  ): Promise<{ searchData: GatewaySearchFormData; clientFound: boolean }> {
     // If currently on details page, bounce to dashboard (kept from your original)
-    if (this.page.url().includes('/clientfiles/details/')) {
-      const baseUrl = this.page.url().split('/clientfiles')[0];
-      await this.page.goto(`${baseUrl}/dashboard/developmentdash`);
-      await this.page.waitForLoadState('domcontentloaded');
-    }
+    await this.navigateToDashboardFromClientDetailsPage();
+    await this.navigateToSearchClientsPage();
 
-    await this.sideNav.clickSideMenuItem('Clients', 'Search Clients');
-    await this.verifySearchClientPage();
-
-    const used = await this.forms.searchMinimalForm({
-      forename: stored.forename,
-      surname: stored.surname,
-      ...searchData
-    });
-
+    const used = await this.searchForStoredIndividualClientDetails(searchData, dataPrefix);
     await this.searchClients();
 
-    const found = await this.clickIndividualRowByName(dataPrefix);
+    const found = await this.openStoredIndividualClientSearchResult(dataPrefix);
     return { searchData: used, clientFound: found };
   }
 

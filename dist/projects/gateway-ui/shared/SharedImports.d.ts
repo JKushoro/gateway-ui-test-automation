@@ -18,7 +18,7 @@ export type { FrameworkConfig } from '@framework/types';
 export type { Environment } from '@framework/types/Environment';
 export type { Address, Dependent, ThirdParty } from '@framework/types/KYCTypes';
 export type { AuthConfig, AuthenticationOptions, AuthenticationResult } from '@framework/types/AuthTypes';
-export { BaseKYCSteps } from '@steps/kyc_forms/BaseKYCSteps';
+export { BaseKYCSteps } from '@steps/kyc/BaseKYCSteps';
 export { PostcodeLookupService } from '@steps/components/PostcodeLookup';
 export { KYCDatePickerService } from '@steps/components/KYCDatePickerService';
 export { AlertService } from '@steps/components/AlertService';
@@ -44,6 +44,6 @@ export interface TestSetup {
  * @returns Promise<TestSetup> - Configured test setup with common services
  */
 export declare function createTestSetup(browser: Browser, environment?: Environment): Promise<TestSetup>;
-export { LoginPageLocators } from '@pages/gatewayElementLocators/LoginPageLocators';
+export { LoginPage } from '@pages/auth/LoginPageLocators';
 export { KYCDatePickerLocators } from '@pages/componentsLocator/KYCDatePickerLocators';
 //# sourceMappingURL=SharedImports.d.ts.map

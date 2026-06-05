@@ -14,11 +14,11 @@ import { dataStore } from '@framework/utils/DataStore';
 /** Corporate Client Creation Form Data (UI shown in screenshot) */
 export type CorporateClientData = {
   companyName?: string;
-  dateEstablished?: string;        // dd/MM/yyyy
+  dateEstablished?: string; // dd/MM/yyyy
   emailAddress?: string;
   phone?: string;
   activePlanLabel?: string;
-  adviserLabel?: string;           // Select2
+  adviserLabel?: string; // Select2
   contactForename?: string;
   contactSurname?: string;
 };
@@ -32,6 +32,11 @@ export type CorporateClientFormResult = {
   adviserLabel: string | undefined;
   contactForename: string;
   contactSurname: string;
+};
+
+export type CorporateClientCreationResult = {
+  formData: CorporateClientFormResult;
+  selectedAddress: string;
 };
 
 /**
@@ -72,17 +77,24 @@ export class AddCorporateClientSteps extends BasePage {
   async createCorporateClient(
     formData?: CorporateClientData,
     postcode?: string
-  ): Promise<{ formData: CorporateClientFormResult; selectedAddress: string }> {
+  ): Promise<CorporateClientCreationResult> {
     const usedFormData = await this.fillCorporateClientForm(formData);
 
     // postcode lookup + store for later assertions
-    const selectedAddress = await this.postcode.performPostcodeLookup(postcode);
-    dataStore.setValue('formData.selectedAddress', selectedAddress);
+    const selectedAddress = await this.performCorporatePostcodeLookup(postcode);
 
     await this.submitForm();
-    await this.confirmCorporateClientCreation()
+    await this.confirmCorporateClientCreation();
 
     return { formData: usedFormData, selectedAddress };
+  }
+
+  /** Complete postcode lookup and store selected address for later assertions. */
+  public async performCorporatePostcodeLookup(postcode?: string): Promise<string> {
+    const selectedAddress = await this.postcode.performPostcodeLookup(postcode);
+    dataStore.setValue('gateway.formData.selectedAddress', selectedAddress);
+    dataStore.setValue('formData.selectedAddress', selectedAddress);
+    return selectedAddress;
   }
 
   /** Just submits the page */
@@ -101,14 +113,18 @@ export class AddCorporateClientSteps extends BasePage {
   // ------------------------------------------------------------------
   // Corporate-specific form fill
   // ------------------------------------------------------------------
-  public async fillCorporateClientForm(data: CorporateClientData = {}): Promise<CorporateClientFormResult> {
+  public async fillCorporateClientForm(
+    data: CorporateClientData = {}
+  ): Promise<CorporateClientFormResult> {
     const contact = this.makeContactNames(data.contactForename, data.contactSurname);
 
     const generated = {
       contactForename: contact.forename,
       contactSurname: contact.surname,
       companyName: data.companyName ?? TestDataGenerator.companyName(),
-      email: data.emailAddress ?? TestDataGenerator.email({ first: contact.forename, last: contact.surname }),
+      email:
+        data.emailAddress ??
+        TestDataGenerator.email({ first: contact.forename, last: contact.surname }),
       phone: data.phone ?? TestDataGenerator.phone(),
     };
 
@@ -129,7 +145,7 @@ export class AddCorporateClientSteps extends BasePage {
     dataStore.setValue('gateway.formData.dateEstablished', dateEstablished);
     dataStore.setValue('formData.dateEstablished', dateEstablished);
 
-// Adviser
+    // Adviser
     let adviserLabel: string | undefined;
     try {
       adviserLabel = await this.action.selectDropdownByLabel('Adviser');
@@ -141,10 +157,12 @@ export class AddCorporateClientSteps extends BasePage {
       );
     }
 
-
     // Active Plan (native select; several label variants exist)
     const activePlanLabel = await this.action
-      .selectDropdownByAnyLabel(['Active Plan', 'Active Plan *', 'ActivePlan'], data.activePlanLabel)
+      .selectDropdownByAnyLabel(
+        ['Active Plan', 'Active Plan *', 'ActivePlan'],
+        data.activePlanLabel
+      )
       .catch(() => undefined);
 
     const result: CorporateClientFormResult = {
@@ -169,7 +187,10 @@ export class AddCorporateClientSteps extends BasePage {
   }
 
   // --------------------- private helpers ---------------------
-  private makeContactNames(forename?: string, surname?: string): { forename: string; surname: string } {
+  private makeContactNames(
+    forename?: string,
+    surname?: string
+  ): { forename: string; surname: string } {
     return {
       forename: forename ?? TestDataGenerator.firstName(),
       surname: surname ?? TestDataGenerator.lastName(),
@@ -177,7 +198,9 @@ export class AddCorporateClientSteps extends BasePage {
   }
 
   private persist(prefix: string, obj: Record<string, unknown>): void {
-    for (const [k, v] of Object.entries(obj)) {dataStore.setValue(`${prefix}.${k}`, v);}
+    for (const [k, v] of Object.entries(obj)) {
+      dataStore.setValue(`${prefix}.${k}`, v);
+    }
   }
 
   private async handleDateEstablished(date?: string): Promise<string | undefined> {

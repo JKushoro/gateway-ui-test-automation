@@ -23,7 +23,9 @@ export declare class EnvironmentManager {
     ensureEnvLoaded(environment?: Environment): void;
     /**
      * Get environment variable value
-     * Checks process.env first, then loaded environment file
+     * Checks the requested environment file first when a non-default environment
+     * is explicitly requested, so BaseTest.create(browser, 'dev') is not
+     * overridden by QA values loaded earlier into process.env.
      */
     getEnvValue(key: string, environment?: Environment): string | undefined;
     /**

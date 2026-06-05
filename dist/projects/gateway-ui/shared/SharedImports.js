@@ -37,7 +37,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KYCDatePickerLocators = exports.LoginPageLocators = exports.EnvironmentManager = exports.getEnvironmentManager = exports.SideNavService = exports.NavBarService = exports.AlertService = exports.KYCDatePickerService = exports.PostcodeLookupService = exports.BaseKYCSteps = exports.MESSAGES = exports.UI_SELECTORS = exports.logger = exports.createLogger = exports.QuestionHelper = exports.KYCHelper = exports.FormDataHelper = exports.TestDataGenerator = exports.DataStore = exports.dataStore = exports.TableHelper = exports.TextHelper = exports.LocatorHelper = exports.WaitHelper = exports.AssertionHelper = exports.ActionHelper = exports.AuthenticationService = exports.BasePage = exports.test = exports.expect = void 0;
+exports.KYCDatePickerLocators = exports.LoginPage = exports.EnvironmentManager = exports.getEnvironmentManager = exports.SideNavService = exports.NavBarService = exports.AlertService = exports.KYCDatePickerService = exports.PostcodeLookupService = exports.BaseKYCSteps = exports.MESSAGES = exports.UI_SELECTORS = exports.logger = exports.createLogger = exports.QuestionHelper = exports.KYCHelper = exports.FormDataHelper = exports.TestDataGenerator = exports.DataStore = exports.dataStore = exports.TableHelper = exports.TextHelper = exports.LocatorHelper = exports.WaitHelper = exports.AssertionHelper = exports.ActionHelper = exports.AuthenticationService = exports.BasePage = exports.test = exports.expect = void 0;
 exports.createTestSetup = createTestSetup;
 // ==========================================
 // PLAYWRIGHT CORE IMPORTS
@@ -87,7 +87,7 @@ Object.defineProperty(exports, "MESSAGES", { enumerable: true, get: function () 
 // ==========================================
 // PROJECT-SPECIFIC BASE CLASSES
 // ==========================================
-var BaseKYCSteps_1 = require("@steps/kyc_forms/BaseKYCSteps");
+var BaseKYCSteps_1 = require("@steps/kyc/BaseKYCSteps");
 Object.defineProperty(exports, "BaseKYCSteps", { enumerable: true, get: function () { return BaseKYCSteps_1.BaseKYCSteps; } });
 // ==========================================
 // PROJECT-SPECIFIC SERVICES
@@ -134,8 +134,8 @@ async function createTestSetup(browser, environment = 'qa') {
 // ==========================================
 // COMMONLY USED PAGE LOCATORS
 // ==========================================
-var LoginPageLocators_1 = require("@pages/gatewayElementLocators/LoginPageLocators");
-Object.defineProperty(exports, "LoginPageLocators", { enumerable: true, get: function () { return LoginPageLocators_1.LoginPageLocators; } });
+var LoginPageLocators_1 = require("@pages/auth/LoginPageLocators");
+Object.defineProperty(exports, "LoginPage", { enumerable: true, get: function () { return LoginPageLocators_1.LoginPage; } });
 var KYCDatePickerLocators_1 = require("@pages/componentsLocator/KYCDatePickerLocators");
 Object.defineProperty(exports, "KYCDatePickerLocators", { enumerable: true, get: function () { return KYCDatePickerLocators_1.KYCDatePickerLocators; } });
 // ==========================================

@@ -11,7 +11,9 @@ type CurrentSituationSetup = {
   kycSteps: KycCurrentSituationPageSteps;
 };
 
-async function arrangeCurrentSituationPage(browser: Parameters<typeof BaseTest.create>[0]): Promise<CurrentSituationSetup> {
+async function arrangeCurrentSituationPage(
+  browser: Parameters<typeof BaseTest.create>[0]
+): Promise<CurrentSituationSetup> {
   const testBase = await BaseTest.create(browser, 'qa');
 
   await testBase.factFindSteps.addClientAndNavigateToFactFindTab(

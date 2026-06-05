@@ -151,17 +151,17 @@ export class GatewayManagementSteps extends BasePage {
     await this.wait.waitForDOMContentLoaded();
 
     // Search for client by email
-    const searchInput = this.page.getByRole('textbox', { name: /search/i }).or(
-      this.page.getByPlaceholder(/search/i)
-    );
+    const searchInput = this.page
+      .getByRole('textbox', { name: /search/i })
+      .or(this.page.getByPlaceholder(/search/i));
     await expect(searchInput).toBeVisible();
     await searchInput.fill(clientEmail);
     await searchInput.press('Enter');
-    
+
     // Wait for search results to load with longer timeout
     await this.page.waitForTimeout(5000);
     await this.wait.waitForDOMContentLoaded();
-    
+
     // Try multiple ways to find the client record
     let clientElement: any = null;
     const searchStrategies = [
@@ -171,7 +171,7 @@ export class GatewayManagementSteps extends BasePage {
       () => this.page.locator(`a:has-text("${clientEmail}")`).first(),
       () => this.page.getByText('Pipeline Automation').first(), // Try by name
       () => this.page.locator('tr').filter({ hasText: clientEmail }).first(),
-      () => this.page.locator('[data-testid*="client"]').filter({ hasText: clientEmail }).first()
+      () => this.page.locator('[data-testid*="client"]').filter({ hasText: clientEmail }).first(),
     ];
 
     for (const strategy of searchStrategies) {
@@ -192,17 +192,17 @@ export class GatewayManagementSteps extends BasePage {
       await searchInput.fill('Pipeline Automation');
       await searchInput.press('Enter');
       await this.page.waitForTimeout(3000);
-      
+
       const nameElement = this.page.getByText('Pipeline Automation').first();
       await expect(nameElement).toBeVisible({ timeout: 5000 });
       clientElement = nameElement;
     }
 
     await this.action.clickLocator(clientElement);
-    
+
     // Wait for client details page to load
     await this.wait.waitForDOMContentLoaded();
-    
+
     // Navigate to Fact Find tab
     await this.navigateToFactFindTab(navBar);
     await this.waitForFactFindHistoryTable();
@@ -342,6 +342,15 @@ export class GatewayManagementSteps extends BasePage {
    */
   public async verifyFirstRowLaunchFactFindNotAvailable(): Promise<void> {
     await expect(this.factFindLocators.launchFactFindLinkFirstRow).not.toBeVisible();
+  }
+
+  /**
+   * Verify the Launch Fact Find link is available on the first row.
+   */
+  public async verifyFirstRowLaunchFactFindAvailable(): Promise<void> {
+    await expect(this.factFindLocators.launchFactFindLinkFirstRow).toBeVisible({
+      timeout: GatewayManagementSteps.FACT_FIND_HISTORY_TIMEOUT_MS,
+    });
   }
 
   /**
@@ -658,10 +667,27 @@ export class GatewayManagementSteps extends BasePage {
   }
 
   /**
+   * Verify the Enable new fact find checkbox is selected.
+   */
+  public async verifyEnableNewFactFindCheckBoxIsSelected(): Promise<void> {
+    await expect(this.factFindLocators.enableNewFactFindCheckbox).toBeChecked();
+  }
+
+  /**
    * Click the Confirm & Migrate button.
    */
   public async clickConfirmAndMigrateButton(): Promise<void> {
     await this.action.clickLinkByText('Confirm & Migrate', false);
+  }
+
+  /**
+   * Verify the enable client confirmation alert is visible.
+   */
+  public async verifyEnableClientForNewFactFindAlertIsVisible(): Promise<void> {
+    await expect(this.alertServiceLocator.container).toBeVisible({ timeout: 15000 });
+    await expect(this.alertServiceLocator.alertTitle).toContainText(
+      'Enable client for new fact find?'
+    );
   }
 
   /**
@@ -677,9 +703,10 @@ export class GatewayManagementSteps extends BasePage {
   public async chooseFactFindType(value: string): Promise<string> {
     await this.wait.waitForNetworkIdle(GatewayManagementSteps.KYC_TIMEOUT_MS);
     // Select from dropdown using direct locator approach
-    const dropdown = this.page.locator('select').filter({ hasText: 'Choose Fact Find Type' }).or(
-      this.page.getByLabel('Choose Fact Find Type')
-    );
+    const dropdown = this.page
+      .locator('select')
+      .filter({ hasText: 'Choose Fact Find Type' })
+      .or(this.page.getByLabel('Choose Fact Find Type'));
     await dropdown.selectOption(value);
     return value;
   }

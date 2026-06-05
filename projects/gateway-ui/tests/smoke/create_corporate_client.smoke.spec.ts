@@ -1,119 +1,223 @@
 // projects/gateway-ui/tests/smoke/create_corporate_client.smoke.spec.ts
-import { Browser, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { clearWorkerDataStore } from '@framework/utils/DataStore';
 import { AddCorporateClientSteps } from '@steps/clients/CorporateClientCreationSteps';
+import type { CorporateClientFormResult } from '@steps/clients/CorporateClientCreationSteps';
 import { ClientFilesSteps } from '@steps/clients/ClientFilesSteps';
 import { ClientsSearchSteps } from '@steps/clients/ClientsSearchSteps';
+import type { GatewaySearchFormData } from '@steps/components/Forms';
 import BaseTest from '../shared/TestUtils';
 
-type CorporateClientSetup = {
-  testBase: Awaited<ReturnType<typeof BaseTest.create>>;
-  clientSteps: AddCorporateClientSteps;
-  searchSteps: ClientsSearchSteps;
-  clientFilesSteps: ClientFilesSteps;
-};
+test.describe.serial('Create Corporate Client', () => {
+  let testBase: BaseTest;
+  let clientSteps: AddCorporateClientSteps;
+  let searchSteps: ClientsSearchSteps;
+  let clientFilesSteps: ClientFilesSteps;
+  let corporateClient: CorporateClientFormResult;
+  let selectedAddress: string;
+  let searchData: GatewaySearchFormData;
+  let clientFound = false;
 
-async function arrangeCorporateClientServices(browser: Browser): Promise<CorporateClientSetup> {
-  const testBase = await BaseTest.create(browser, 'qa');
+  test.afterAll(async () => {
+    await testBase?.cleanup();
+  });
 
-  return {
-    testBase,
-    clientSteps: new AddCorporateClientSteps(testBase.page),
-    searchSteps: new ClientsSearchSteps(testBase.page),
-    clientFilesSteps: new ClientFilesSteps(testBase.page),
-  };
-}
+  test('Arrange - clear shared worker data before creating a corporate client', async () => {
+    test.setTimeout(300_000);
 
-async function arrangeCorporateClientPage(browser: Browser): Promise<CorporateClientSetup> {
-  const setup = await arrangeCorporateClientServices(browser);
-  await setup.clientSteps.executeNavigateToAddCorporateClient(setup.testBase.sideNav);
-  return setup;
-}
+    // Arrange
+    const clearDataStore = true;
 
-async function arrangeCreatedCorporateClient(browser: Browser): Promise<CorporateClientSetup> {
-  const setup = await arrangeCorporateClientPage(browser);
-  const result = await setup.clientSteps.createCorporateClient();
-  expect(result.formData.companyName).toBeTruthy();
-  return setup;
-}
-
-async function arrangeCreatedCorporateClientDetailsPage(
-  browser: Browser
-): Promise<CorporateClientSetup> {
-  const setup = await arrangeCreatedCorporateClient(browser);
-  const result = await setup.searchSteps.searchAndVerifyStoredClient();
-  expect(result.clientFound).toBe(true);
-  return setup;
-}
-
-test.describe('Create Corporate Client', () => {
-  let currentSetup: CorporateClientSetup | undefined;
-
-  test.beforeEach(async () => {
+    // Act
     clearWorkerDataStore();
+
+    // Assert
+    expect(clearDataStore).toBe(true);
   });
 
-  test.afterEach(async () => {
-    await currentSetup?.testBase.cleanup();
-    currentSetup = undefined;
-  });
-
-  test('Corporate Client - navigates to Add Corporate Client page', async ({ browser }) => {
+  test('Arrange - create an authenticated Gateway session for QA', async ({ browser }) => {
     test.setTimeout(300_000);
 
     // Arrange
-    currentSetup = await arrangeCorporateClientServices(browser);
-    const setup = currentSetup;
+    const environment = 'qa';
 
     // Act
-    await setup.clientSteps.executeNavigateToAddCorporateClient(setup.testBase.sideNav);
+    testBase = await BaseTest.create(browser, environment);
+    clientSteps = new AddCorporateClientSteps(testBase.page);
+    searchSteps = new ClientsSearchSteps(testBase.page);
+    clientFilesSteps = new ClientFilesSteps(testBase.page);
 
     // Assert
-    await setup.clientSteps.verifyCorporateClientPage();
+    expect(testBase.page.isClosed()).toBe(false);
+    expect(clientSteps).toBeDefined();
+    expect(searchSteps).toBeDefined();
+    expect(clientFilesSteps).toBeDefined();
+    expect(testBase.sideNav).toBeDefined();
   });
 
-  test('Corporate Client - creates corporate client', async ({ browser }) => {
+  test('Arrange - navigate to the Add Corporate Client page', async () => {
     test.setTimeout(300_000);
 
     // Arrange
-    currentSetup = await arrangeCorporateClientPage(browser);
-    const setup = currentSetup;
+    expect(clientSteps).toBeDefined();
 
     // Act
-    const result = await setup.clientSteps.createCorporateClient();
+    await clientSteps.executeNavigateToAddCorporateClient(testBase.sideNav);
 
     // Assert
-    expect(result.formData.companyName).toBeTruthy();
-    expect(result.selectedAddress).toBeTruthy();
+    await clientSteps.verifyCorporateClientPage();
   });
 
-  test('Corporate Client - searches for created client', async ({ browser }) => {
+  test('Arrange - complete the corporate client form fields', async () => {
     test.setTimeout(300_000);
 
     // Arrange
-    currentSetup = await arrangeCreatedCorporateClient(browser);
-    const setup = currentSetup;
+    expect(clientSteps).toBeDefined();
 
     // Act
-    const result = await setup.searchSteps.searchAndVerifyStoredClient();
+    corporateClient = await clientSteps.fillCorporateClientForm();
 
     // Assert
-    expect(result.clientFound).toBe(true);
+    expect(corporateClient).toBeDefined();
   });
 
-  test('Corporate Client - verifies stored client data matches client details page', async ({
-    browser,
-  }) => {
+  test('Assert - verify required corporate client details were generated', async () => {
     test.setTimeout(300_000);
 
     // Arrange
-    currentSetup = await arrangeCreatedCorporateClientDetailsPage(browser);
-    const setup = currentSetup;
+    expect(corporateClient).toBeDefined();
 
     // Act
-    await setup.clientFilesSteps.verifyClientFilesPage();
+    const requiredCorporateClientDetails = [
+      corporateClient.companyName,
+      corporateClient.emailAddress,
+      corporateClient.phone,
+      corporateClient.contactForename,
+      corporateClient.contactSurname,
+    ];
 
     // Assert
-    await setup.clientFilesSteps.assertStoredClientDataMatches();
+    for (const requiredCorporateClientDetail of requiredCorporateClientDetails) {
+      expect(requiredCorporateClientDetail).toBeTruthy();
+    }
+  });
+
+  test('Act - complete postcode lookup for the corporate client address', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(clientSteps).toBeDefined();
+
+    // Act
+    selectedAddress = await clientSteps.performCorporatePostcodeLookup();
+
+    // Assert
+    expect(selectedAddress).toBeTruthy();
+  });
+
+  test('Act - submit the corporate client creation request', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(corporateClient.companyName).toBeTruthy();
+    expect(selectedAddress).toBeTruthy();
+
+    // Act
+    await clientSteps.submitForm();
+
+    // Assert
+    expect(corporateClient.companyName).toBeTruthy();
+  });
+
+  test('Act - accept the corporate client creation success alert', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(clientSteps).toBeDefined();
+
+    // Act
+    await clientSteps.confirmCorporateClientCreation();
+
+    // Assert
+    expect(corporateClient.companyName).toBeTruthy();
+  });
+
+  test('Arrange - navigate to the Search Clients page', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(searchSteps).toBeDefined();
+
+    // Act
+    await searchSteps.navigateToSearchClientsPage();
+
+    // Assert
+    await searchSteps.verifySearchClientPage();
+  });
+
+  test('Act - populate Search Clients with the stored corporate client details', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(searchSteps).toBeDefined();
+    expect(corporateClient.companyName).toBeTruthy();
+
+    // Act
+    searchData = await searchSteps.searchForStoredCompanyClientDetails();
+
+    // Assert
+    expect(searchData.company).toBe(corporateClient.companyName);
+  });
+
+  test('Act - submit the Search Clients request', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(searchData).toBeDefined();
+
+    // Act
+    await searchSteps.searchClients();
+
+    // Assert
+    expect(searchData.company).toBeTruthy();
+  });
+
+  test('Act - open the matching corporate client from search results', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(searchSteps).toBeDefined();
+
+    // Act
+    clientFound = await searchSteps.openStoredCompanyClientSearchResult();
+
+    // Assert
+    expect(clientFound).toBe(true);
+  });
+
+  test('Assert - verify the searched corporate client details page is open', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    expect(clientFound).toBe(true);
+
+    // Act
+    await clientFilesSteps.verifyClientFilesPage();
+
+    // Assert
+    expect(testBase.page.url()).toContain('/clientfiles/details/');
+  });
+
+  test('Assert - verify stored corporate client data matches the details page', async () => {
+    test.setTimeout(300_000);
+
+    // Arrange
+    await clientFilesSteps.verifyClientFilesPage();
+
+    // Act
+    await clientFilesSteps.assertStoredClientDataMatches();
+
+    // Assert
+    expect(clientFound).toBe(true);
   });
 });

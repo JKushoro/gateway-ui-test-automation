@@ -3,32 +3,66 @@ import { GatewayManagementSteps } from '@steps/gateway/GatewayManagementSteps';
 import { SideNavService } from '@steps/components/SideNav';
 import { NavBarService } from '@steps/components/NavBar';
 /**
- * Base test class to eliminate all duplicated code patterns
- * Usage: class MyTest extends BaseTest { ... }
+ * Test environment configuration
  */
-export default class BaseTest {
-    page: Page;
-    factFindSteps: GatewayManagementSteps;
-    sideNav: SideNavService;
-    navBar: NavBarService;
-    constructor(page: Page);
-    static create(browser: Browser, environment?: 'qa' | 'dev'): Promise<BaseTest>;
-    cleanup(): Promise<void>;
+export type TestEnvironment = 'qa' | 'dev';
+/**
+ * Factory for creating authenticated test contexts
+ * Single Responsibility: Creates authenticated browser contexts for E2E tests
+ */
+export declare class AuthenticatedTestFactory {
+    static create(browser: Browser, environment?: TestEnvironment): Promise<{
+        page: Page;
+        factFindSteps: GatewayManagementSteps;
+        sideNav: SideNavService;
+        navBar: NavBarService;
+        cleanup(): Promise<void>;
+    }>;
 }
 /**
- * Simple utility function (kept for backward compatibility)
+ * Factory for creating isolated test contexts (no authentication)
+ * Single Responsibility: Creates clean browser contexts for UI validation tests
  */
-type SetupTestResult = {
+export declare class IsolatedTestFactory {
+    static create(browser: Browser, _environment?: TestEnvironment): Promise<{
+        context: BrowserContext;
+        page: Page;
+        cleanup(): Promise<void>;
+    }>;
+}
+/**
+ * Legacy support - maintained for backward compatibility
+ * @deprecated Use AuthenticatedTestFactory.create() instead
+ */
+export declare function setupTest(browser: Browser, environment?: TestEnvironment): Promise<{
     page: Page;
     factFindSteps: GatewayManagementSteps;
     sideNav: SideNavService;
     navBar: NavBarService;
-};
-export declare function setupTest(browser: Browser, environment?: 'qa' | 'dev'): Promise<SetupTestResult>;
-type SetupLoginValidationResult = {
+    cleanup(): Promise<void>;
+}>;
+/**
+ * Legacy support - maintained for backward compatibility
+ * @deprecated Use IsolatedTestFactory.create() instead
+ */
+export declare function setupLoginValidationTest(browser: Browser, environment?: TestEnvironment): Promise<{
     context: BrowserContext;
     page: Page;
-};
-export declare function setupLoginValidationTest(browser: Browser, _environment?: 'qa' | 'dev'): Promise<SetupLoginValidationResult>;
-export {};
+    cleanup(): Promise<void>;
+}>;
+/**
+ * Base test class using composition pattern
+ * Single Responsibility: Provides common test functionality through composition
+ */
+export declare class BaseTestContext {
+    readonly page: Page;
+    readonly factFindSteps: GatewayManagementSteps;
+    readonly sideNav: SideNavService;
+    readonly navBar: NavBarService;
+    constructor(page: Page, factFindSteps: GatewayManagementSteps, sideNav: SideNavService, navBar: NavBarService);
+    static create(browser: Browser, environment?: TestEnvironment): Promise<BaseTestContext>;
+    static createAuthenticated(browser: Browser, environment?: TestEnvironment): Promise<BaseTestContext>;
+    cleanup(): Promise<void>;
+}
+export default BaseTestContext;
 //# sourceMappingURL=TestUtils.d.ts.map

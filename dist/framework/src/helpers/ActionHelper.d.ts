@@ -144,6 +144,7 @@ export declare class ActionHelper {
      * - Good for non-KYC generic pages
      */
     selectRadioByLabel(labelText: string, options?: ActionOptions): Promise<void>;
+    selectCustomRadioOptionByLabel(label: string): Promise<void>;
     /**
      * Set radio answer for a question text (KYC style)
      * - Finds the radiogroup following the question text

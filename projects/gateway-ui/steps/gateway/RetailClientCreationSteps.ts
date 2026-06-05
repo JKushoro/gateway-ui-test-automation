@@ -9,7 +9,10 @@ import { DatePickerService } from '@steps/components/DatePicker';
 import { FormsComponent } from '@pages/componentsLocator/FormsLocators';
 import { TestDataGenerator } from '@framework/utils/TestDataGenerator';
 import { dataStore } from '@framework/utils/DataStore';
-import type { RetailClientData, RetailClientFormResult } from './fact_find/types/RetailClientCreation.types';
+import type {
+  RetailClientData,
+  RetailClientFormResult,
+} from './fact_find/types/RetailClientCreation.types';
 import { client1 } from '@framework/data/clientData';
 import fs from 'fs';
 import path from 'path';
@@ -46,22 +49,46 @@ export class RetailClientCreationSteps extends BasePage {
   public async createClient(clientData: RetailClientData = {}): Promise<RetailClientFormResult> {
     const selectedGatewayClient = await this.completeRetailClientForm(clientData);
 
+    await this.saveRetailClientDetails(selectedGatewayClient);
+
+    return selectedGatewayClient;
+  }
+
+  public async saveRetailClientDetails(
+    selectedGatewayClient?: RetailClientFormResult
+  ): Promise<RetailClientFormResult | undefined> {
     await this.action.clickButtonByText('Save Details', false);
     await this.alert.handleClientCreationSuccessAlert('OK');
+    await this.verifyClientDetailsPage();
 
-    // Wait for navigation to client details page and extract clientId
+    if (!selectedGatewayClient) {
+      return undefined;
+    }
+
+    return this.storeCreatedRetailClientData(selectedGatewayClient);
+  }
+
+  public async verifyClientDetailsPage(): Promise<void> {
     await this.wait.waitForUrlToMatch('**/clientfiles/details/**');
+  }
+
+  public storeCreatedRetailClientData(
+    selectedGatewayClient: RetailClientFormResult
+  ): RetailClientFormResult {
     const url = this.page.url();
     this.logger.info?.('Current URL after client creation:', url);
     const clientIdMatch = url.match(/\/clientfiles\/details\/([^/?]+)/);
     if (clientIdMatch) {
       selectedGatewayClient.clientId = clientIdMatch[1];
       this.logger.info?.('Extracted new clientId from URL:', selectedGatewayClient.clientId);
-      
+
       // Save clientId to JSON file
       const clientJsonPath = path.resolve('playwright/currentClient1.json');
       try {
-        fs.writeFileSync(clientJsonPath, JSON.stringify({ clientId: selectedGatewayClient.clientId }, null, 2));
+        fs.writeFileSync(
+          clientJsonPath,
+          JSON.stringify({ clientId: selectedGatewayClient.clientId }, null, 2)
+        );
         this.logger.info?.('Saved clientId to JSON file:', clientJsonPath);
       } catch (error) {
         console.warn('Failed to save clientId to JSON file:', error);
@@ -247,4 +274,3 @@ export class RetailClientCreationSteps extends BasePage {
 
   /* -------------------- Helpers -------------------- */
 }
-

@@ -1,0 +1,1 @@
+{"version":3,"file":"ResourceMonitor.d.ts","sourceRoot":"","sources":["../../../../framework/src/helpers/ResourceMonitor.ts"],"names":[],"mappings":"AAEA,qBAAa,eAAe;IAC1B,OAAO,CAAC,UAAU,CAAa;IAE/B,qEAAqE;mBAChD,WAAW;IA6BhC,4DAA4D;IAC5D,OAAO,CAAC,MAAM,CAAC,WAAW;IAO1B,+EAA+E;IAC/E,KAAK,CAAC,UAAU,SAAS,GAAG,IAAI;IAyBhC,yBAAyB;IACzB,IAAI,IAAI,IAAI;CAOb"}

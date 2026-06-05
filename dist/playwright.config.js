@@ -6,6 +6,7 @@ exports.default = (0, test_1.defineConfig)({
     fullyParallel: true,
     retries: 0,
     workers: process.env.CI ? 2 : undefined, // Use 2 workers in CI, auto-detect locally
+    globalSetup: './playwright/global-setup.ts',
     reporter: [
         [
             'html',
@@ -27,6 +28,7 @@ exports.default = (0, test_1.defineConfig)({
         video: 'retain-on-failure',
         actionTimeout: 60000,
         navigationTimeout: 60000,
+        storageState: './playwright/.auth/user.json',
         viewport: null,
         launchOptions: {
             args: [

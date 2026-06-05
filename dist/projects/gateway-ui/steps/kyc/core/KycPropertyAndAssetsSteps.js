@@ -1,0 +1,77 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.KycPropertyAndAssetsSteps = void 0;
+const src_1 = require("@/framework/src");
+const BaseKYCSteps_1 = require("@steps/kyc/BaseKYCSteps");
+const KYCDatePickerService_1 = require("@steps/components/KYCDatePickerService");
+class KycPropertyAndAssetsSteps extends BaseKYCSteps_1.BaseKYCSteps {
+    constructor(page, config) {
+        super(page, config);
+        this.purchaseHomeDatePicker = new KYCDatePickerService_1.KYCDatePickerService(page);
+    }
+    /* -------------------- Main Flow  -------------------- */
+    /**
+     * Main method to complete the entire Property & Assets page
+     * Uses the standardized KYC page completion flow
+     */
+    async completeKYC_PropertyAndAssets() {
+        await this.assert.assertPageURLContains('page=property-and-assets');
+        await this.assert.assertHeadingVisible('Property & assets', 15000);
+        await this.answerPropertyAndAssetQuestions();
+        this.logInfo('✓ Completed all KYC Property & assets questions');
+        await this.action.clickButtonByText('Save & Continue');
+    }
+    async answerPropertyAndAssetQuestions() {
+        await this.answerOwnOrRentPropertyQuestion('Owner');
+        await this.answerAssetOwnerQuestion();
+        await this.fillPropertyValue('£250,000');
+        await this.fillPurchaseHomeDate(5, 15);
+        await this.answerOtherPropertiesOrAssets();
+    }
+    /* -------------------- Questions (split into methods) -------------------- */
+    async answerOwnOrRentPropertyQuestion(answer) {
+        const selected = await this.action.setRadioByQuestionPattern(/do you own or rent .+\?/i, answer);
+        this.logInfo(`✓ Answered own or rent property question: ${selected}`);
+    }
+    /* -------------------- Supporting methods -------------------- */
+    /** ---- (2) Answer: Asset owner */
+    async answerAssetOwnerQuestion(answer = 'Joint') {
+        const label = 'Asset owner';
+        if (await this.elementNotExists(label)) {
+            this.logInfo('Asset owner question not present, skipping');
+            return;
+        }
+        await this.action.setRadioByQuestion(label, answer);
+        this.logInfo(`✓ Answered asset owner question: ${answer}`);
+    }
+    /** ---- (3) Fill the current property value field */
+    async fillPropertyValue(value) {
+        const label = 'Current property value';
+        if (await this.elementNotExists(label)) {
+            this.logInfo('Property value field not present, skipping');
+            return;
+        }
+        await this.action.fillInputByLabel(label, value);
+        this.logInfo(`✓ Filled property value: ${value}`);
+    }
+    async fillPurchaseHomeDate(minYears, maxYears) {
+        const label = 'When did you purchase your home?';
+        if (await this.elementNotExists(label)) {
+            this.logInfo('Purchase home date field not present, skipping');
+            return;
+        }
+        let moveInDate = src_1.dataStore.getValue('kyc.address1.moveInDate');
+        if (!moveInDate) {
+            moveInDate = this.purchaseHomeDatePicker.generateRandomPastDate(minYears, maxYears);
+            this.logInfo(`Move in date not found in dataStore, generated random date: ${moveInDate}`);
+        }
+        await this.purchaseHomeDatePicker.setDateByLabelOrFallback(label, this.page.getByLabel(label), moveInDate);
+        this.logInfo(`✓ Filled purchase home date: ${moveInDate}`);
+    }
+    async answerOtherPropertiesOrAssets(answer = 'No') {
+        await this.action.setRadioByQuestion('Do you have any other properties or assets?', answer);
+        this.logInfo(`✓ Answered other properties or assets: ${answer}`);
+    }
+}
+exports.KycPropertyAndAssetsSteps = KycPropertyAndAssetsSteps;
+//# sourceMappingURL=KycPropertyAndAssetsSteps.js.map

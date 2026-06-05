@@ -1,5 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { FrameworkConfig } from '../types';
+export declare function getFieldInputByTestId(page: Page, testId: string): Locator;
 /**
  * 🎯 AssertionHelper - Simplified Playwright Assertions for Junior Developers
  *
@@ -136,6 +137,16 @@ export declare class AssertionHelper {
      */
     assertHeadingVisible(headingText: string, timeout?: number): Promise<void>;
     /**
+     * 🚫 Assert that a heading with specific text is NOT visible
+     *
+     * This method locates the heading using the test ID and filters by the provided text,
+     * then verifies that the element is either hidden or not present in the DOM.
+     *
+     * @param headingText - The text of the heading
+     * @param timeout - Optional timeout (uses default if not provided)
+     */
+    assertHeadingNotVisible(headingText: string, timeout?: number): Promise<void>;
+    /**
      * 🎯 Assert element is clickable (visible and enabled)
      *
      * @param locator - The element locator
@@ -253,5 +264,15 @@ export declare class AssertionHelper {
      * @example await this.assert.assertResponseStatus(response, 418);
      */
     assertResponseStatus(response: any, expectedStatus: number): Promise<void>;
+    assertInputValue(page: Page, fieldName: string, expected: string): Promise<void>;
+    assertMoneyValue(page: Page, fieldName: string, expected: string): Promise<void>;
+    assertNumberValue(page: Page, fieldName: string, expected: string): Promise<void>;
+    assertDropdownValue(page: Page, fieldName: string, expected: string): Promise<void>;
+    assertDateValue(page: Page, fieldName: string, expected: string): Promise<void>;
+    assertRadioChecked(page: Page, fieldName: string, expectedLabel: string): Promise<void>;
+    assertDropdownValueOneOf(page: Page, fieldName: string, acceptableValues: string[]): Promise<void>;
+    assertMoneyValueOneOf(page: Page, fieldName: string, acceptableValues: string[]): Promise<void>;
+    assertInputValueOneOf(page: Page, fieldName: string, acceptableValues: string[]): Promise<void>;
+    assertDateValueOneOf(page: Page, fieldName: string, acceptableValues: string[]): Promise<void>;
 }
 //# sourceMappingURL=AssertionHelper.d.ts.map

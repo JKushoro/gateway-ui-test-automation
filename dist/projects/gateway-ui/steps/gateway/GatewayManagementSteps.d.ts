@@ -39,6 +39,11 @@ export declare class GatewayManagementSteps extends BasePage {
      */
     addClientAndNavigateToFactFindTab(sideNav: SideNavService, navBar: NavBarService, clientData?: RetailClientData): Promise<RetailClientFormResult>;
     /**
+     * Open an existing client by email and navigate to the Fact Find tab.
+     * This method does NOT create a new client - it searches for an existing one.
+     */
+    openExistingClientAndNavigateToFactFindTab(clientEmail: string, sideNav: SideNavService, navBar: NavBarService): Promise<void>;
+    /**
      * Execute the complete flow to add a client and navigate to the Fact Find tab.
      */
     executeAddClientAndNavigateToFactFindTab(sideNav: SideNavService, navBar: NavBarService): Promise<void>;
@@ -309,10 +314,6 @@ export declare class GatewayManagementSteps extends BasePage {
      * Abandon the first row Fact Find and verify the status is updated.
      */
     executeAbandonFirstRowFactFind(): Promise<void>;
-    /**
-     * Verify the first row abandoned Fact Find cannot be launched.
-     */
-    executeVerifyFirstRowAbandonedFactFindCannotBeLaunched(): Promise<void>;
     /**
      * Verify the first row abandoned Fact Find status remains after page reload.
      */
